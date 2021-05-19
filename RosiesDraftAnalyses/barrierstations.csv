@@ -1,0 +1,43 @@
+Station,Region,Include
+508,,No
+513,,No
+519,,No
+520,,No
+608,,No
+610,,No
+703,Sacramento,Yes
+704,Sacramento,Yes
+705,Sacramento,Yes
+706,Sacramento,Yes
+707,Sacramento,Yes
+801,San Joaquin,Yes
+802,San Joaquin,Yes
+804,San Joaquin,Yes
+809,San Joaquin,Yes
+812,San Joaquin,Yes
+815,San Joaquin,Yes
+901,Central,Yes
+902,Central,Yes
+906,Central,Yes
+910,Central,Yes
+912,Central,Yes
+914,Central,Yes
+915,Central,Yes
+919,Central,Yes
+Honk,Suisun,No
+Mont,Suisun,No
+NZ054,Sacramento,No
+NZ060,Sacramento,Yes
+NZ064,Sacramento,Yes
+NZ068,Sacramento,Yes
+NZ074,San Joaquin,Yes
+NZ086,Central,Yes
+NZ092,Central,Yes
+NZD16,San Joaquin,Yes
+NZD19,Central,Yes
+NZD28,Central,Yes
+NZEZ2,,No
+NZEZ2SJR,,No
+NZEZ6,,No
+NZEZ6SJR,,No
+NZM10,Central,Yes
