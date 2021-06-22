@@ -1,0 +1,121 @@
+SubRegion,Season,Long_term,Short_term
+Suisun Marsh,Winter,TRUE,TRUE
+Suisun Marsh,Spring,TRUE,TRUE
+Suisun Marsh,Summer,TRUE,TRUE
+Suisun Marsh,Fall,TRUE,TRUE
+Grizzly Bay,Winter,TRUE,TRUE
+Grizzly Bay,Spring,TRUE,TRUE
+Grizzly Bay,Summer,TRUE,TRUE
+Grizzly Bay,Fall,TRUE,TRUE
+West Suisun Bay,Winter,TRUE,TRUE
+West Suisun Bay,Spring,TRUE,TRUE
+West Suisun Bay,Summer,TRUE,TRUE
+West Suisun Bay,Fall,TRUE,TRUE
+Mid Suisun Bay,Winter,TRUE,TRUE
+Mid Suisun Bay,Spring,TRUE,TRUE
+Mid Suisun Bay,Summer,TRUE,TRUE
+Mid Suisun Bay,Fall,TRUE,TRUE
+Honker Bay,Winter,TRUE,TRUE
+Honker Bay,Spring,TRUE,TRUE
+Honker Bay,Summer,TRUE,TRUE
+Honker Bay,Fall,TRUE,TRUE
+Confluence,Winter,TRUE,TRUE
+Confluence,Spring,TRUE,TRUE
+Confluence,Summer,TRUE,TRUE
+Confluence,Fall,TRUE,TRUE
+Lower Sacramento River,Winter,TRUE,TRUE
+Lower Sacramento River,Spring,TRUE,TRUE
+Lower Sacramento River,Summer,TRUE,TRUE
+Lower Sacramento River,Fall,TRUE,TRUE
+San Joaquin River at Twitchell Island,Winter,TRUE,TRUE
+San Joaquin River at Twitchell Island,Spring,TRUE,TRUE
+San Joaquin River at Twitchell Island,Summer,TRUE,TRUE
+San Joaquin River at Twitchell Island,Fall,TRUE,TRUE
+San Joaquin River at Prisoners Pt,Winter,TRUE,TRUE
+San Joaquin River at Prisoners Pt,Spring,TRUE,TRUE
+San Joaquin River at Prisoners Pt,Summer,TRUE,TRUE
+San Joaquin River at Prisoners Pt,Fall,TRUE,TRUE
+Disappointment Slough,Winter,TRUE,TRUE
+Disappointment Slough,Spring,TRUE,TRUE
+Disappointment Slough,Summer,TRUE,TRUE
+Disappointment Slough,Fall,TRUE,TRUE
+Lower San Joaquin River,Winter,TRUE,TRUE
+Lower San Joaquin River,Spring,TRUE,TRUE
+Lower San Joaquin River,Summer,TRUE,TRUE
+Lower San Joaquin River,Fall,TRUE,TRUE
+Franks Tract,Winter,FALSE,FALSE
+Franks Tract,Spring,FALSE,FALSE
+Franks Tract,Summer,TRUE,TRUE
+Franks Tract,Fall,FALSE,FALSE
+Holland Cut,Winter,FALSE,FALSE
+Holland Cut,Spring,FALSE,FALSE
+Holland Cut,Summer,TRUE,TRUE
+Holland Cut,Fall,FALSE,FALSE
+Mildred Island,Winter,FALSE,FALSE
+Mildred Island,Spring,FALSE,FALSE
+Mildred Island,Summer,TRUE,TRUE
+Mildred Island,Fall,FALSE,FALSE
+San Joaquin River near Stockton,Winter,TRUE,TRUE
+San Joaquin River near Stockton,Spring,TRUE,TRUE
+San Joaquin River near Stockton,Summer,TRUE,TRUE
+San Joaquin River near Stockton,Fall,TRUE,TRUE
+Old River,Winter,TRUE,TRUE
+Old River,Spring,TRUE,TRUE
+Old River,Summer,TRUE,TRUE
+Old River,Fall,TRUE,TRUE
+Middle River,Winter,FALSE,FALSE
+Middle River,Spring,FALSE,FALSE
+Middle River,Summer,FALSE,FALSE
+Middle River,Fall,TRUE,TRUE
+Victoria Canal,Winter,FALSE,FALSE
+Victoria Canal,Spring,TRUE,TRUE
+Victoria Canal,Summer,TRUE,TRUE
+Victoria Canal,Fall,FALSE,FALSE
+Upper San Joaquin River,Winter,TRUE,TRUE
+Upper San Joaquin River,Spring,TRUE,TRUE
+Upper San Joaquin River,Summer,TRUE,TRUE
+Upper San Joaquin River,Fall,TRUE,TRUE
+Sacramento River near Rio Vista,Winter,TRUE,TRUE
+Sacramento River near Rio Vista,Spring,TRUE,TRUE
+Sacramento River near Rio Vista,Summer,TRUE,TRUE
+Sacramento River near Rio Vista,Fall,TRUE,TRUE
+Lower Mokelumne River,Winter,TRUE,TRUE
+Lower Mokelumne River,Spring,TRUE,TRUE
+Lower Mokelumne River,Summer,TRUE,TRUE
+Lower Mokelumne River,Fall,TRUE,TRUE
+Middle Sacramento River,Winter,TRUE,TRUE
+Middle Sacramento River,Spring,TRUE,TRUE
+Middle Sacramento River,Summer,TRUE,TRUE
+Middle Sacramento River,Fall,TRUE,TRUE
+Cache Slough and Lindsey Slough,Winter,FALSE,TRUE
+Cache Slough and Lindsey Slough,Spring,FALSE,TRUE
+Cache Slough and Lindsey Slough,Summer,FALSE,TRUE
+Cache Slough and Lindsey Slough,Fall,FALSE,TRUE
+Liberty Island,Winter,FALSE,TRUE
+Liberty Island,Spring,FALSE,TRUE
+Liberty Island,Summer,FALSE,TRUE
+Liberty Island,Fall,FALSE,TRUE
+Lower Sacramento River Ship Channel,Winter,FALSE,TRUE
+Lower Sacramento River Ship Channel,Spring,FALSE,TRUE
+Lower Sacramento River Ship Channel,Summer,FALSE,TRUE
+Lower Sacramento River Ship Channel,Fall,FALSE,TRUE
+Upper Sacramento River Ship Channel,Winter,FALSE,TRUE
+Upper Sacramento River Ship Channel,Spring,FALSE,TRUE
+Upper Sacramento River Ship Channel,Summer,FALSE,TRUE
+Upper Sacramento River Ship Channel,Fall,FALSE,TRUE
+Lower Cache Slough,Winter,FALSE,TRUE
+Lower Cache Slough,Spring,FALSE,TRUE
+Lower Cache Slough,Summer,FALSE,TRUE
+Lower Cache Slough,Fall,FALSE,TRUE
+Steamboat and Miner Slough,Winter,FALSE,TRUE
+Steamboat and Miner Slough,Spring,FALSE,TRUE
+Steamboat and Miner Slough,Summer,FALSE,TRUE
+Steamboat and Miner Slough,Fall,FALSE,TRUE
+Upper Mokelumne River,Winter,FALSE,TRUE
+Upper Mokelumne River,Spring,FALSE,TRUE
+Upper Mokelumne River,Summer,FALSE,TRUE
+Upper Mokelumne River,Fall,FALSE,TRUE
+Sacramento River near Ryde,Winter,FALSE,TRUE
+Sacramento River near Ryde,Spring,FALSE,TRUE
+Sacramento River near Ryde,Summer,FALSE,TRUE
+Sacramento River near Ryde,Fall,FALSE,TRUE

@@ -23,7 +23,7 @@ ggplot(testdat, aes(x=Category, group = Metric)) +
 scale_y_continuous( name = NULL)
 
 
-test2 = read.csv("testdata.csv")
+test2 = read.csv("RosiesDraftAnalyses/testdata.csv")
 test2 = filter(test2, !is.na(Year))
 test2w = group_by(test2, Drought) %>%
   summarize(mpred = mean(Predators, na.rm = T), sdpred = sd(Predators, na.rm = T),
@@ -53,3 +53,17 @@ ggplot(test3, aes(x = Drought, y = temp, fill = Drought)) + geom_boxplot()+
   ylab("Water Temperature (C)")+ theme_bw()
 ggplot(test3, aes(x = Drought, y = secchi, fill = Drought)) + geom_boxplot()+
   ylab("secchi depth (cm)")+ theme_bw()
+
+
+#Test some other things
+Nutrients <- read_csv("~/Drought/FLOATDrought/Analyses/Nutrients.csv")
+yeartypes <- read_csv("~/Drought/FLOATDrought/yeartypes.csv")
+Nuts = left_join(Nutrients, yeartypes)
+Nuts2 = group_by(Nuts, Year, Drought, Index) %>%
+  summarize(chla = mean(Chla, na.rm = T))
+
+ggplot(Nuts2, aes(x = Year, y = chla, color = Drought)) + geom_line()
+ggplot(Nuts2, aes(x = Index, y = chla, color = Drought)) + geom_line()
+ggplot(Nuts2, aes(x = Drought, y = chla, fill = Drought)) + geom_boxplot()
+ggplot(filter(Nuts, Drought != "N", !is.na(Drought)), 
+       aes(x = Drought, y = log(Chla), fill = Drought)) + geom_boxplot() + facet_wrap(~Season)

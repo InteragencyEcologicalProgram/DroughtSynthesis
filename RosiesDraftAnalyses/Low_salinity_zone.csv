@@ -1,0 +1,892 @@
+Season,SubRegion,Year,N,Long_term,Short_term
+Fall,Confluence,1978,31,TRUE,TRUE
+Fall,Confluence,1979,8,TRUE,TRUE
+Fall,Confluence,1980,34,TRUE,TRUE
+Fall,Confluence,1981,28,TRUE,TRUE
+Fall,Confluence,1984,38,TRUE,TRUE
+Fall,Confluence,1985,27,TRUE,TRUE
+Fall,Confluence,1986,28,TRUE,TRUE
+Fall,Confluence,1988,39,TRUE,TRUE
+Fall,Confluence,1989,28,TRUE,TRUE
+Fall,Confluence,1990,27,TRUE,TRUE
+Fall,Confluence,1993,32,TRUE,TRUE
+Fall,Confluence,1994,33,TRUE,TRUE
+Fall,Confluence,1995,32,TRUE,TRUE
+Fall,Confluence,1996,33,TRUE,TRUE
+Fall,Confluence,1997,32,TRUE,TRUE
+Fall,Confluence,1998,30,TRUE,TRUE
+Fall,Confluence,1999,36,TRUE,TRUE
+Fall,Confluence,2000,33,TRUE,TRUE
+Fall,Confluence,2001,33,TRUE,TRUE
+Fall,Confluence,2002,33,TRUE,TRUE
+Fall,Confluence,2003,33,TRUE,TRUE
+Fall,Confluence,2004,29,TRUE,TRUE
+Fall,Confluence,2005,34,TRUE,TRUE
+Fall,Confluence,2006,34,TRUE,TRUE
+Fall,Confluence,2007,33,TRUE,TRUE
+Fall,Confluence,2009,33,TRUE,TRUE
+Fall,Confluence,2010,31,TRUE,TRUE
+Fall,Confluence,2011,35,TRUE,TRUE
+Fall,Confluence,2012,32,TRUE,TRUE
+Fall,Confluence,2013,33,TRUE,TRUE
+Fall,Confluence,2016,30,TRUE,TRUE
+Fall,Confluence,2017,35,TRUE,TRUE
+Fall,Confluence,2018,31,TRUE,TRUE
+Fall,Confluence,2019,143,TRUE,TRUE
+Fall,Franks Tract,1977,5,FALSE,FALSE
+Fall,Franks Tract,1987,6,FALSE,FALSE
+Fall,Franks Tract,1988,5,FALSE,FALSE
+Fall,Franks Tract,2008,3,FALSE,FALSE
+Fall,Franks Tract,2010,3,FALSE,FALSE
+Fall,Franks Tract,2014,3,FALSE,FALSE
+Fall,Franks Tract,2015,3,FALSE,FALSE
+Fall,Franks Tract,2016,3,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1976,5,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1977,5,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1987,6,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1988,5,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1989,5,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1990,4,FALSE,FALSE
+Fall,Grant Line Canal and Old River,1992,5,FALSE,FALSE
+Fall,Grizzly Bay,1975,9,TRUE,TRUE
+Fall,Grizzly Bay,1978,14,TRUE,TRUE
+Fall,Grizzly Bay,1980,20,TRUE,TRUE
+Fall,Grizzly Bay,1982,19,TRUE,TRUE
+Fall,Grizzly Bay,1984,19,TRUE,TRUE
+Fall,Grizzly Bay,1986,19,TRUE,TRUE
+Fall,Grizzly Bay,1995,18,TRUE,TRUE
+Fall,Grizzly Bay,1998,15,TRUE,TRUE
+Fall,Grizzly Bay,2011,18,TRUE,TRUE
+Fall,Holland Cut,1977,3,FALSE,FALSE
+Fall,Holland Cut,1987,3,FALSE,FALSE
+Fall,Holland Cut,1988,3,FALSE,FALSE
+Fall,Honker Bay,1975,13,TRUE,TRUE
+Fall,Honker Bay,1978,22,TRUE,TRUE
+Fall,Honker Bay,1979,8,TRUE,TRUE
+Fall,Honker Bay,1980,23,TRUE,TRUE
+Fall,Honker Bay,1984,24,TRUE,TRUE
+Fall,Honker Bay,1985,19,TRUE,TRUE
+Fall,Honker Bay,1986,19,TRUE,TRUE
+Fall,Honker Bay,1989,19,TRUE,TRUE
+Fall,Honker Bay,1993,20,TRUE,TRUE
+Fall,Honker Bay,1995,20,TRUE,TRUE
+Fall,Honker Bay,1996,18,TRUE,TRUE
+Fall,Honker Bay,1997,17,TRUE,TRUE
+Fall,Honker Bay,1998,16,TRUE,TRUE
+Fall,Honker Bay,1999,18,TRUE,TRUE
+Fall,Honker Bay,2000,18,TRUE,TRUE
+Fall,Honker Bay,2005,18,TRUE,TRUE
+Fall,Honker Bay,2006,18,TRUE,TRUE
+Fall,Honker Bay,2010,17,TRUE,TRUE
+Fall,Honker Bay,2011,19,TRUE,TRUE
+Fall,Honker Bay,2017,19,TRUE,TRUE
+Fall,Honker Bay,2019,15,TRUE,TRUE
+Fall,Lower Sacramento River,1976,9,TRUE,TRUE
+Fall,Lower Sacramento River,1977,22,TRUE,TRUE
+Fall,Lower Sacramento River,1979,9,TRUE,TRUE
+Fall,Lower Sacramento River,1981,25,TRUE,TRUE
+Fall,Lower Sacramento River,1985,23,TRUE,TRUE
+Fall,Lower Sacramento River,1987,27,TRUE,TRUE
+Fall,Lower Sacramento River,1988,32,TRUE,TRUE
+Fall,Lower Sacramento River,1989,23,TRUE,TRUE
+Fall,Lower Sacramento River,1990,22,TRUE,TRUE
+Fall,Lower Sacramento River,1991,28,TRUE,TRUE
+Fall,Lower Sacramento River,1992,28,TRUE,TRUE
+Fall,Lower Sacramento River,1993,25,TRUE,TRUE
+Fall,Lower Sacramento River,1994,27,TRUE,TRUE
+Fall,Lower Sacramento River,1996,24,TRUE,TRUE
+Fall,Lower Sacramento River,1997,23,TRUE,TRUE
+Fall,Lower Sacramento River,1999,21,TRUE,TRUE
+Fall,Lower Sacramento River,2000,24,TRUE,TRUE
+Fall,Lower Sacramento River,2001,21,TRUE,TRUE
+Fall,Lower Sacramento River,2002,24,TRUE,TRUE
+Fall,Lower Sacramento River,2003,24,TRUE,TRUE
+Fall,Lower Sacramento River,2004,26,TRUE,TRUE
+Fall,Lower Sacramento River,2005,27,TRUE,TRUE
+Fall,Lower Sacramento River,2006,28,TRUE,TRUE
+Fall,Lower Sacramento River,2007,28,TRUE,TRUE
+Fall,Lower Sacramento River,2008,26,TRUE,TRUE
+Fall,Lower Sacramento River,2009,29,TRUE,TRUE
+Fall,Lower Sacramento River,2010,27,TRUE,TRUE
+Fall,Lower Sacramento River,2011,26,TRUE,TRUE
+Fall,Lower Sacramento River,2012,27,TRUE,TRUE
+Fall,Lower Sacramento River,2013,28,TRUE,TRUE
+Fall,Lower Sacramento River,2014,24,TRUE,TRUE
+Fall,Lower Sacramento River,2015,24,TRUE,TRUE
+Fall,Lower Sacramento River,2016,21,TRUE,TRUE
+Fall,Lower Sacramento River,2017,27,TRUE,TRUE
+Fall,Lower Sacramento River,2018,26,TRUE,TRUE
+Fall,Lower Sacramento River,2019,20,TRUE,TRUE
+Fall,Lower San Joaquin River,1976,9,TRUE,TRUE
+Fall,Lower San Joaquin River,1977,20,TRUE,TRUE
+Fall,Lower San Joaquin River,1979,7,TRUE,TRUE
+Fall,Lower San Joaquin River,1981,25,TRUE,TRUE
+Fall,Lower San Joaquin River,1985,23,TRUE,TRUE
+Fall,Lower San Joaquin River,1987,26,TRUE,TRUE
+Fall,Lower San Joaquin River,1988,25,TRUE,TRUE
+Fall,Lower San Joaquin River,1989,22,TRUE,TRUE
+Fall,Lower San Joaquin River,1990,22,TRUE,TRUE
+Fall,Lower San Joaquin River,1991,26,TRUE,TRUE
+Fall,Lower San Joaquin River,1992,26,TRUE,TRUE
+Fall,Lower San Joaquin River,1993,22,TRUE,TRUE
+Fall,Lower San Joaquin River,1994,24,TRUE,TRUE
+Fall,Lower San Joaquin River,1996,19,TRUE,TRUE
+Fall,Lower San Joaquin River,1997,21,TRUE,TRUE
+Fall,Lower San Joaquin River,1999,17,TRUE,TRUE
+Fall,Lower San Joaquin River,2000,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2001,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2002,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2003,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2004,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2005,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2006,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2007,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2008,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2009,23,TRUE,TRUE
+Fall,Lower San Joaquin River,2010,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2012,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2013,21,TRUE,TRUE
+Fall,Lower San Joaquin River,2014,24,TRUE,TRUE
+Fall,Lower San Joaquin River,2015,23,TRUE,TRUE
+Fall,Lower San Joaquin River,2016,20,TRUE,TRUE
+Fall,Lower San Joaquin River,2018,23,TRUE,TRUE
+Fall,Mid Suisun Bay,1975,32,TRUE,TRUE
+Fall,Mid Suisun Bay,1978,41,TRUE,TRUE
+Fall,Mid Suisun Bay,1980,43,TRUE,TRUE
+Fall,Mid Suisun Bay,1982,35,TRUE,TRUE
+Fall,Mid Suisun Bay,1984,46,TRUE,TRUE
+Fall,Mid Suisun Bay,1986,33,TRUE,TRUE
+Fall,Mid Suisun Bay,1995,37,TRUE,TRUE
+Fall,Mid Suisun Bay,1998,38,TRUE,TRUE
+Fall,Mid Suisun Bay,2011,39,TRUE,TRUE
+Fall,Mid Suisun Bay,2017,39,TRUE,TRUE
+Fall,Mid Suisun Bay,2019,37,TRUE,TRUE
+Fall,Old River,1977,5,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1976,10,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1977,25,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1987,30,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1988,35,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1990,25,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1991,36,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,1992,36,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,2001,28,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,2014,44,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,2015,42,TRUE,TRUE
+Fall,Sacramento River near Rio Vista,2016,32,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1976,10,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1977,24,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1981,19,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1985,23,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1987,26,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1988,25,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1989,25,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1990,23,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1991,25,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1992,25,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,1994,25,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,2001,21,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,2014,24,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,2015,23,TRUE,TRUE
+Fall,San Joaquin River at Twitchell Island,2016,20,TRUE,TRUE
+Fall,Suisun Marsh,1978,14,TRUE,TRUE
+Fall,Suisun Marsh,1980,14,TRUE,TRUE
+Fall,Suisun Marsh,1982,13,TRUE,TRUE
+Fall,Suisun Marsh,1984,12,TRUE,TRUE
+Fall,Suisun Marsh,1986,53,TRUE,TRUE
+Fall,Suisun Marsh,1988,50,TRUE,TRUE
+Fall,Suisun Marsh,1989,28,TRUE,TRUE
+Fall,Suisun Marsh,1993,54,TRUE,TRUE
+Fall,Suisun Marsh,1994,66,TRUE,TRUE
+Fall,Suisun Marsh,1995,66,TRUE,TRUE
+Fall,Suisun Marsh,1996,72,TRUE,TRUE
+Fall,Suisun Marsh,1997,72,TRUE,TRUE
+Fall,Suisun Marsh,1998,72,TRUE,TRUE
+Fall,Suisun Marsh,1999,70,TRUE,TRUE
+Fall,Suisun Marsh,2000,71,TRUE,TRUE
+Fall,Suisun Marsh,2003,72,TRUE,TRUE
+Fall,Suisun Marsh,2005,76,TRUE,TRUE
+Fall,Suisun Marsh,2006,72,TRUE,TRUE
+Fall,Suisun Marsh,2011,80,TRUE,TRUE
+Fall,Suisun Marsh,2017,85,TRUE,TRUE
+Fall,Suisun Marsh,2019,82,TRUE,TRUE
+Fall,Upper San Joaquin River,1976,5,TRUE,TRUE
+Fall,Upper San Joaquin River,1977,5,TRUE,TRUE
+Fall,Victoria Canal,1977,5,FALSE,FALSE
+Fall,West Suisun Bay,1975,22,TRUE,TRUE
+Fall,West Suisun Bay,1982,44,TRUE,TRUE
+Fall,West Suisun Bay,1983,42,TRUE,TRUE
+Fall,West Suisun Bay,1998,48,TRUE,TRUE
+Spring,Confluence,1976,12,TRUE,TRUE
+Spring,Confluence,1981,9,TRUE,TRUE
+Spring,Confluence,1984,6,TRUE,TRUE
+Spring,Confluence,1985,8,TRUE,TRUE
+Spring,Confluence,1987,8,TRUE,TRUE
+Spring,Confluence,1988,12,TRUE,TRUE
+Spring,Confluence,1989,12,TRUE,TRUE
+Spring,Confluence,1990,12,TRUE,TRUE
+Spring,Confluence,1991,21,TRUE,TRUE
+Spring,Confluence,1992,23,TRUE,TRUE
+Spring,Confluence,1994,26,TRUE,TRUE
+Spring,Confluence,2001,42,TRUE,TRUE
+Spring,Confluence,2002,40,TRUE,TRUE
+Spring,Confluence,2004,46,TRUE,TRUE
+Spring,Confluence,2007,50,TRUE,TRUE
+Spring,Confluence,2008,52,TRUE,TRUE
+Spring,Confluence,2012,48,TRUE,TRUE
+Spring,Confluence,2013,47,TRUE,TRUE
+Spring,Confluence,2014,51,TRUE,TRUE
+Spring,Confluence,2015,48,TRUE,TRUE
+Spring,Confluence,2016,48,TRUE,TRUE
+Spring,Confluence,2018,47,TRUE,TRUE
+Spring,Franks Tract,1977,6,FALSE,FALSE
+Spring,Grant Line Canal and Old River,1976,6,FALSE,FALSE
+Spring,Grant Line Canal and Old River,1977,6,FALSE,FALSE
+Spring,Grant Line Canal and Old River,1991,6,FALSE,FALSE
+Spring,Grant Line Canal and Old River,1992,6,FALSE,FALSE
+Spring,Grizzly Bay,1979,6,TRUE,TRUE
+Spring,Grizzly Bay,1980,11,TRUE,TRUE
+Spring,Grizzly Bay,1981,11,TRUE,TRUE
+Spring,Grizzly Bay,1984,9,TRUE,TRUE
+Spring,Grizzly Bay,1986,9,TRUE,TRUE
+Spring,Grizzly Bay,1987,11,TRUE,TRUE
+Spring,Grizzly Bay,1994,15,TRUE,TRUE
+Spring,Grizzly Bay,1997,16,TRUE,TRUE
+Spring,Grizzly Bay,1999,16,TRUE,TRUE
+Spring,Grizzly Bay,2000,17,TRUE,TRUE
+Spring,Grizzly Bay,2001,15,TRUE,TRUE
+Spring,Grizzly Bay,2002,16,TRUE,TRUE
+Spring,Grizzly Bay,2003,18,TRUE,TRUE
+Spring,Grizzly Bay,2004,17,TRUE,TRUE
+Spring,Grizzly Bay,2005,17,TRUE,TRUE
+Spring,Grizzly Bay,2007,19,TRUE,TRUE
+Spring,Grizzly Bay,2008,17,TRUE,TRUE
+Spring,Grizzly Bay,2009,18,TRUE,TRUE
+Spring,Grizzly Bay,2010,17,TRUE,TRUE
+Spring,Grizzly Bay,2012,17,TRUE,TRUE
+Spring,Grizzly Bay,2016,14,TRUE,TRUE
+Spring,Grizzly Bay,2018,14,TRUE,TRUE
+Spring,Honker Bay,1976,9,TRUE,TRUE
+Spring,Honker Bay,1981,9,TRUE,TRUE
+Spring,Honker Bay,1984,6,TRUE,TRUE
+Spring,Honker Bay,1985,8,TRUE,TRUE
+Spring,Honker Bay,1987,8,TRUE,TRUE
+Spring,Honker Bay,1988,11,TRUE,TRUE
+Spring,Honker Bay,1989,10,TRUE,TRUE
+Spring,Honker Bay,1991,16,TRUE,TRUE
+Spring,Honker Bay,1992,18,TRUE,TRUE
+Spring,Honker Bay,1994,17,TRUE,TRUE
+Spring,Honker Bay,1997,13,TRUE,TRUE
+Spring,Honker Bay,2001,15,TRUE,TRUE
+Spring,Honker Bay,2002,12,TRUE,TRUE
+Spring,Honker Bay,2003,14,TRUE,TRUE
+Spring,Honker Bay,2004,14,TRUE,TRUE
+Spring,Honker Bay,2007,16,TRUE,TRUE
+Spring,Honker Bay,2008,15,TRUE,TRUE
+Spring,Honker Bay,2009,16,TRUE,TRUE
+Spring,Honker Bay,2010,17,TRUE,TRUE
+Spring,Honker Bay,2012,16,TRUE,TRUE
+Spring,Honker Bay,2013,12,TRUE,TRUE
+Spring,Honker Bay,2014,12,TRUE,TRUE
+Spring,Honker Bay,2016,14,TRUE,TRUE
+Spring,Honker Bay,2018,14,TRUE,TRUE
+Spring,Lower Sacramento River,1976,12,TRUE,TRUE
+Spring,Lower Sacramento River,1977,11,TRUE,TRUE
+Spring,Lower Sacramento River,1985,13,TRUE,TRUE
+Spring,Lower Sacramento River,1987,12,TRUE,TRUE
+Spring,Lower Sacramento River,1988,15,TRUE,TRUE
+Spring,Lower Sacramento River,1989,14,TRUE,TRUE
+Spring,Lower Sacramento River,1990,15,TRUE,TRUE
+Spring,Lower Sacramento River,1991,25,TRUE,TRUE
+Spring,Lower Sacramento River,1992,26,TRUE,TRUE
+Spring,Lower Sacramento River,2013,38,TRUE,TRUE
+Spring,Lower Sacramento River,2014,37,TRUE,TRUE
+Spring,Lower Sacramento River,2015,38,TRUE,TRUE
+Spring,Lower San Joaquin River,1976,12,TRUE,TRUE
+Spring,Lower San Joaquin River,1977,11,TRUE,TRUE
+Spring,Lower San Joaquin River,1988,15,TRUE,TRUE
+Spring,Lower San Joaquin River,1990,12,TRUE,TRUE
+Spring,Lower San Joaquin River,1991,22,TRUE,TRUE
+Spring,Lower San Joaquin River,1992,22,TRUE,TRUE
+Spring,Lower San Joaquin River,2014,18,TRUE,TRUE
+Spring,Lower San Joaquin River,2015,20,TRUE,TRUE
+Spring,Mid Suisun Bay,1979,12,TRUE,TRUE
+Spring,Mid Suisun Bay,1981,9,TRUE,TRUE
+Spring,Mid Suisun Bay,1984,6,TRUE,TRUE
+Spring,Mid Suisun Bay,1985,8,TRUE,TRUE
+Spring,Mid Suisun Bay,1987,8,TRUE,TRUE
+Spring,Mid Suisun Bay,1989,13,TRUE,TRUE
+Spring,Mid Suisun Bay,1992,24,TRUE,TRUE
+Spring,Mid Suisun Bay,1994,30,TRUE,TRUE
+Spring,Mid Suisun Bay,1997,26,TRUE,TRUE
+Spring,Mid Suisun Bay,1999,25,TRUE,TRUE
+Spring,Mid Suisun Bay,2000,31,TRUE,TRUE
+Spring,Mid Suisun Bay,2001,28,TRUE,TRUE
+Spring,Mid Suisun Bay,2002,25,TRUE,TRUE
+Spring,Mid Suisun Bay,2003,28,TRUE,TRUE
+Spring,Mid Suisun Bay,2004,29,TRUE,TRUE
+Spring,Mid Suisun Bay,2007,28,TRUE,TRUE
+Spring,Mid Suisun Bay,2008,29,TRUE,TRUE
+Spring,Mid Suisun Bay,2009,28,TRUE,TRUE
+Spring,Mid Suisun Bay,2010,33,TRUE,TRUE
+Spring,Mid Suisun Bay,2012,30,TRUE,TRUE
+Spring,Mid Suisun Bay,2013,26,TRUE,TRUE
+Spring,Mid Suisun Bay,2016,31,TRUE,TRUE
+Spring,Mid Suisun Bay,2018,30,TRUE,TRUE
+Spring,Old River,1977,6,TRUE,TRUE
+Spring,Sacramento River near Rio Vista,1977,12,TRUE,TRUE
+Spring,Sacramento River near Rio Vista,1990,14,TRUE,TRUE
+Spring,Sacramento River near Rio Vista,2015,49,TRUE,TRUE
+Spring,San Joaquin River at Twitchell Island,1977,12,TRUE,TRUE
+Spring,San Joaquin River at Twitchell Island,1988,11,TRUE,TRUE
+Spring,San Joaquin River at Twitchell Island,1990,10,TRUE,TRUE
+Spring,Suisun Marsh,1978,7,TRUE,TRUE
+Spring,Suisun Marsh,1979,6,TRUE,TRUE
+Spring,Suisun Marsh,1980,5,TRUE,TRUE
+Spring,Suisun Marsh,1981,6,TRUE,TRUE
+Spring,Suisun Marsh,1985,38,TRUE,TRUE
+Spring,Suisun Marsh,1986,34,TRUE,TRUE
+Spring,Suisun Marsh,1987,42,TRUE,TRUE
+Spring,Suisun Marsh,1988,47,TRUE,TRUE
+Spring,Suisun Marsh,1989,44,TRUE,TRUE
+Spring,Suisun Marsh,1990,46,TRUE,TRUE
+Spring,Suisun Marsh,1991,47,TRUE,TRUE
+Spring,Suisun Marsh,1992,54,TRUE,TRUE
+Spring,Suisun Marsh,1993,53,TRUE,TRUE
+Spring,Suisun Marsh,1994,54,TRUE,TRUE
+Spring,Suisun Marsh,1996,276,TRUE,TRUE
+Spring,Suisun Marsh,1997,273,TRUE,TRUE
+Spring,Suisun Marsh,1998,221,TRUE,TRUE
+Spring,Suisun Marsh,1999,76,TRUE,TRUE
+Spring,Suisun Marsh,2000,88,TRUE,TRUE
+Spring,Suisun Marsh,2001,81,TRUE,TRUE
+Spring,Suisun Marsh,2002,86,TRUE,TRUE
+Spring,Suisun Marsh,2003,91,TRUE,TRUE
+Spring,Suisun Marsh,2004,85,TRUE,TRUE
+Spring,Suisun Marsh,2005,85,TRUE,TRUE
+Spring,Suisun Marsh,2007,91,TRUE,TRUE
+Spring,Suisun Marsh,2008,90,TRUE,TRUE
+Spring,Suisun Marsh,2009,85,TRUE,TRUE
+Spring,Suisun Marsh,2010,93,TRUE,TRUE
+Spring,Suisun Marsh,2011,95,TRUE,TRUE
+Spring,Suisun Marsh,2012,87,TRUE,TRUE
+Spring,Suisun Marsh,2013,93,TRUE,TRUE
+Spring,Suisun Marsh,2014,105,TRUE,TRUE
+Spring,Suisun Marsh,2015,94,TRUE,TRUE
+Spring,Suisun Marsh,2016,97,TRUE,TRUE
+Spring,Suisun Marsh,2017,102,TRUE,TRUE
+Spring,Suisun Marsh,2018,78,TRUE,TRUE
+Spring,Suisun Marsh,2019,77,TRUE,TRUE
+Spring,Upper San Joaquin River,1977,6,TRUE,TRUE
+Spring,West Suisun Bay,1975,7,TRUE,TRUE
+Spring,West Suisun Bay,1978,11,TRUE,TRUE
+Spring,West Suisun Bay,1979,9,TRUE,TRUE
+Spring,West Suisun Bay,1980,21,TRUE,TRUE
+Spring,West Suisun Bay,1982,13,TRUE,TRUE
+Spring,West Suisun Bay,1984,12,TRUE,TRUE
+Spring,West Suisun Bay,1986,19,TRUE,TRUE
+Spring,West Suisun Bay,1993,50,TRUE,TRUE
+Spring,West Suisun Bay,1995,48,TRUE,TRUE
+Spring,West Suisun Bay,1996,38,TRUE,TRUE
+Spring,West Suisun Bay,1997,37,TRUE,TRUE
+Spring,West Suisun Bay,1998,37,TRUE,TRUE
+Spring,West Suisun Bay,1999,34,TRUE,TRUE
+Spring,West Suisun Bay,2000,42,TRUE,TRUE
+Spring,West Suisun Bay,2002,35,TRUE,TRUE
+Spring,West Suisun Bay,2003,37,TRUE,TRUE
+Spring,West Suisun Bay,2004,35,TRUE,TRUE
+Spring,West Suisun Bay,2005,33,TRUE,TRUE
+Spring,West Suisun Bay,2007,36,TRUE,TRUE
+Spring,West Suisun Bay,2009,38,TRUE,TRUE
+Spring,West Suisun Bay,2010,39,TRUE,TRUE
+Spring,West Suisun Bay,2011,41,TRUE,TRUE
+Spring,West Suisun Bay,2012,37,TRUE,TRUE
+Spring,West Suisun Bay,2016,33,TRUE,TRUE
+Spring,West Suisun Bay,2017,41,TRUE,TRUE
+Spring,West Suisun Bay,2018,31,TRUE,TRUE
+Spring,West Suisun Bay,2019,32,TRUE,TRUE
+Summer,Confluence,1970,16,TRUE,TRUE
+Summer,Confluence,1972,7,TRUE,TRUE
+Summer,Confluence,1973,18,TRUE,TRUE
+Summer,Confluence,1976,18,TRUE,TRUE
+Summer,Confluence,1978,25,TRUE,TRUE
+Summer,Confluence,1979,24,TRUE,TRUE
+Summer,Confluence,1980,28,TRUE,TRUE
+Summer,Confluence,1981,20,TRUE,TRUE
+Summer,Confluence,1984,16,TRUE,TRUE
+Summer,Confluence,1985,21,TRUE,TRUE
+Summer,Confluence,1986,8,TRUE,TRUE
+Summer,Confluence,1987,9,TRUE,TRUE
+Summer,Confluence,1988,34,TRUE,TRUE
+Summer,Confluence,1989,22,TRUE,TRUE
+Summer,Confluence,1990,26,TRUE,TRUE
+Summer,Confluence,1991,27,TRUE,TRUE
+Summer,Confluence,1992,28,TRUE,TRUE
+Summer,Confluence,1994,36,TRUE,TRUE
+Summer,Confluence,1996,44,TRUE,TRUE
+Summer,Confluence,1997,43,TRUE,TRUE
+Summer,Confluence,1999,39,TRUE,TRUE
+Summer,Confluence,2000,43,TRUE,TRUE
+Summer,Confluence,2001,33,TRUE,TRUE
+Summer,Confluence,2002,37,TRUE,TRUE
+Summer,Confluence,2003,45,TRUE,TRUE
+Summer,Confluence,2004,49,TRUE,TRUE
+Summer,Confluence,2005,36,TRUE,TRUE
+Summer,Confluence,2006,48,TRUE,TRUE
+Summer,Confluence,2007,47,TRUE,TRUE
+Summer,Confluence,2008,49,TRUE,TRUE
+Summer,Confluence,2009,50,TRUE,TRUE
+Summer,Confluence,2010,47,TRUE,TRUE
+Summer,Confluence,2012,51,TRUE,TRUE
+Summer,Confluence,2013,49,TRUE,TRUE
+Summer,Confluence,2014,47,TRUE,TRUE
+Summer,Confluence,2016,48,TRUE,TRUE
+Summer,Confluence,2017,48,TRUE,TRUE
+Summer,Confluence,2018,50,TRUE,TRUE
+Summer,Confluence,2019,162,TRUE,TRUE
+Summer,Franks Tract,1977,6,TRUE,TRUE
+Summer,Grant Line Canal and Old River,1976,6,FALSE,FALSE
+Summer,Grant Line Canal and Old River,1977,6,FALSE,FALSE
+Summer,Grant Line Canal and Old River,1991,6,FALSE,FALSE
+Summer,Grant Line Canal and Old River,1992,6,FALSE,FALSE
+Summer,Grizzly Bay,1975,10,TRUE,TRUE
+Summer,Grizzly Bay,1980,14,TRUE,TRUE
+Summer,Grizzly Bay,1982,16,TRUE,TRUE
+Summer,Grizzly Bay,1984,13,TRUE,TRUE
+Summer,Grizzly Bay,1986,11,TRUE,TRUE
+Summer,Grizzly Bay,1993,14,TRUE,TRUE
+Summer,Grizzly Bay,1995,17,TRUE,TRUE
+Summer,Grizzly Bay,1996,18,TRUE,TRUE
+Summer,Grizzly Bay,1998,19,TRUE,TRUE
+Summer,Grizzly Bay,1999,18,TRUE,TRUE
+Summer,Grizzly Bay,2000,18,TRUE,TRUE
+Summer,Grizzly Bay,2003,18,TRUE,TRUE
+Summer,Grizzly Bay,2005,18,TRUE,TRUE
+Summer,Grizzly Bay,2006,15,TRUE,TRUE
+Summer,Grizzly Bay,2010,17,TRUE,TRUE
+Summer,Grizzly Bay,2011,18,TRUE,TRUE
+Summer,Grizzly Bay,2017,14,TRUE,TRUE
+Summer,Grizzly Bay,2019,12,TRUE,TRUE
+Summer,Holland Cut,1977,4,TRUE,TRUE
+Summer,Honker Bay,1969,3,TRUE,TRUE
+Summer,Honker Bay,1975,12,TRUE,TRUE
+Summer,Honker Bay,1976,9,TRUE,TRUE
+Summer,Honker Bay,1978,12,TRUE,TRUE
+Summer,Honker Bay,1979,12,TRUE,TRUE
+Summer,Honker Bay,1980,16,TRUE,TRUE
+Summer,Honker Bay,1981,12,TRUE,TRUE
+Summer,Honker Bay,1982,13,TRUE,TRUE
+Summer,Honker Bay,1984,10,TRUE,TRUE
+Summer,Honker Bay,1985,12,TRUE,TRUE
+Summer,Honker Bay,1986,8,TRUE,TRUE
+Summer,Honker Bay,1989,14,TRUE,TRUE
+Summer,Honker Bay,1993,15,TRUE,TRUE
+Summer,Honker Bay,1996,17,TRUE,TRUE
+Summer,Honker Bay,1997,16,TRUE,TRUE
+Summer,Honker Bay,1999,12,TRUE,TRUE
+Summer,Honker Bay,2000,15,TRUE,TRUE
+Summer,Honker Bay,2001,11,TRUE,TRUE
+Summer,Honker Bay,2002,13,TRUE,TRUE
+Summer,Honker Bay,2003,14,TRUE,TRUE
+Summer,Honker Bay,2004,14,TRUE,TRUE
+Summer,Honker Bay,2005,12,TRUE,TRUE
+Summer,Honker Bay,2006,15,TRUE,TRUE
+Summer,Honker Bay,2007,13,TRUE,TRUE
+Summer,Honker Bay,2009,16,TRUE,TRUE
+Summer,Honker Bay,2010,15,TRUE,TRUE
+Summer,Honker Bay,2011,15,TRUE,TRUE
+Summer,Honker Bay,2012,15,TRUE,TRUE
+Summer,Honker Bay,2016,13,TRUE,TRUE
+Summer,Honker Bay,2017,14,TRUE,TRUE
+Summer,Honker Bay,2018,14,TRUE,TRUE
+Summer,Honker Bay,2019,12,TRUE,TRUE
+Summer,Lower Sacramento River,1976,18,TRUE,TRUE
+Summer,Lower Sacramento River,1977,20,TRUE,TRUE
+Summer,Lower Sacramento River,1978,19,TRUE,TRUE
+Summer,Lower Sacramento River,1979,18,TRUE,TRUE
+Summer,Lower Sacramento River,1981,19,TRUE,TRUE
+Summer,Lower Sacramento River,1985,21,TRUE,TRUE
+Summer,Lower Sacramento River,1987,14,TRUE,TRUE
+Summer,Lower Sacramento River,1988,28,TRUE,TRUE
+Summer,Lower Sacramento River,1989,22,TRUE,TRUE
+Summer,Lower Sacramento River,1990,23,TRUE,TRUE
+Summer,Lower Sacramento River,1991,25,TRUE,TRUE
+Summer,Lower Sacramento River,1992,28,TRUE,TRUE
+Summer,Lower Sacramento River,1994,29,TRUE,TRUE
+Summer,Lower Sacramento River,2001,25,TRUE,TRUE
+Summer,Lower Sacramento River,2002,27,TRUE,TRUE
+Summer,Lower Sacramento River,2004,36,TRUE,TRUE
+Summer,Lower Sacramento River,2007,32,TRUE,TRUE
+Summer,Lower Sacramento River,2008,37,TRUE,TRUE
+Summer,Lower Sacramento River,2009,35,TRUE,TRUE
+Summer,Lower Sacramento River,2013,34,TRUE,TRUE
+Summer,Lower Sacramento River,2014,32,TRUE,TRUE
+Summer,Lower Sacramento River,2015,32,TRUE,TRUE
+Summer,Lower Sacramento River,2016,35,TRUE,TRUE
+Summer,Lower Sacramento River,2017,30,TRUE,TRUE
+Summer,Lower San Joaquin River,1970,4,TRUE,TRUE
+Summer,Lower San Joaquin River,1976,15,TRUE,TRUE
+Summer,Lower San Joaquin River,1977,14,TRUE,TRUE
+Summer,Lower San Joaquin River,1978,14,TRUE,TRUE
+Summer,Lower San Joaquin River,1979,13,TRUE,TRUE
+Summer,Lower San Joaquin River,1981,13,TRUE,TRUE
+Summer,Lower San Joaquin River,1985,18,TRUE,TRUE
+Summer,Lower San Joaquin River,1987,15,TRUE,TRUE
+Summer,Lower San Joaquin River,1988,17,TRUE,TRUE
+Summer,Lower San Joaquin River,1989,17,TRUE,TRUE
+Summer,Lower San Joaquin River,1990,18,TRUE,TRUE
+Summer,Lower San Joaquin River,1991,19,TRUE,TRUE
+Summer,Lower San Joaquin River,1992,22,TRUE,TRUE
+Summer,Lower San Joaquin River,1994,22,TRUE,TRUE
+Summer,Lower San Joaquin River,2001,15,TRUE,TRUE
+Summer,Lower San Joaquin River,2002,15,TRUE,TRUE
+Summer,Lower San Joaquin River,2004,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2007,17,TRUE,TRUE
+Summer,Lower San Joaquin River,2008,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2009,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2012,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2013,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2014,19,TRUE,TRUE
+Summer,Lower San Joaquin River,2015,21,TRUE,TRUE
+Summer,Lower San Joaquin River,2016,18,TRUE,TRUE
+Summer,Lower San Joaquin River,2018,19,TRUE,TRUE
+Summer,Mid Suisun Bay,1969,6,TRUE,TRUE
+Summer,Mid Suisun Bay,1975,24,TRUE,TRUE
+Summer,Mid Suisun Bay,1978,18,TRUE,TRUE
+Summer,Mid Suisun Bay,1979,18,TRUE,TRUE
+Summer,Mid Suisun Bay,1980,26,TRUE,TRUE
+Summer,Mid Suisun Bay,1982,16,TRUE,TRUE
+Summer,Mid Suisun Bay,1984,12,TRUE,TRUE
+Summer,Mid Suisun Bay,1986,8,TRUE,TRUE
+Summer,Mid Suisun Bay,1989,19,TRUE,TRUE
+Summer,Mid Suisun Bay,1993,27,TRUE,TRUE
+Summer,Mid Suisun Bay,1995,29,TRUE,TRUE
+Summer,Mid Suisun Bay,1996,32,TRUE,TRUE
+Summer,Mid Suisun Bay,1997,33,TRUE,TRUE
+Summer,Mid Suisun Bay,1999,24,TRUE,TRUE
+Summer,Mid Suisun Bay,2000,27,TRUE,TRUE
+Summer,Mid Suisun Bay,2003,27,TRUE,TRUE
+Summer,Mid Suisun Bay,2004,30,TRUE,TRUE
+Summer,Mid Suisun Bay,2005,22,TRUE,TRUE
+Summer,Mid Suisun Bay,2006,29,TRUE,TRUE
+Summer,Mid Suisun Bay,2007,26,TRUE,TRUE
+Summer,Mid Suisun Bay,2009,30,TRUE,TRUE
+Summer,Mid Suisun Bay,2010,30,TRUE,TRUE
+Summer,Mid Suisun Bay,2011,33,TRUE,TRUE
+Summer,Mid Suisun Bay,2012,30,TRUE,TRUE
+Summer,Mid Suisun Bay,2013,28,TRUE,TRUE
+Summer,Mid Suisun Bay,2017,29,TRUE,TRUE
+Summer,Mid Suisun Bay,2018,26,TRUE,TRUE
+Summer,Mid Suisun Bay,2019,30,TRUE,TRUE
+Summer,Old River,1977,10,TRUE,TRUE
+Summer,Sacramento River near Rio Vista,1977,22,TRUE,TRUE
+Summer,Sacramento River near Rio Vista,1992,32,TRUE,TRUE
+Summer,Sacramento River near Rio Vista,2014,40,TRUE,TRUE
+Summer,Sacramento River near Rio Vista,2015,44,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,1977,19,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,1987,12,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,1988,19,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,1992,22,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,2014,26,TRUE,TRUE
+Summer,San Joaquin River at Twitchell Island,2015,27,TRUE,TRUE
+Summer,San Joaquin River near Stockton,2015,21,TRUE,TRUE
+Summer,Suisun Marsh,1978,15,TRUE,TRUE
+Summer,Suisun Marsh,1979,15,TRUE,TRUE
+Summer,Suisun Marsh,1980,16,TRUE,TRUE
+Summer,Suisun Marsh,1982,18,TRUE,TRUE
+Summer,Suisun Marsh,1984,13,TRUE,TRUE
+Summer,Suisun Marsh,1985,45,TRUE,TRUE
+Summer,Suisun Marsh,1989,47,TRUE,TRUE
+Summer,Suisun Marsh,1990,54,TRUE,TRUE
+Summer,Suisun Marsh,1993,57,TRUE,TRUE
+Summer,Suisun Marsh,1994,72,TRUE,TRUE
+Summer,Suisun Marsh,1995,80,TRUE,TRUE
+Summer,Suisun Marsh,1996,63,TRUE,TRUE
+Summer,Suisun Marsh,1997,102,TRUE,TRUE
+Summer,Suisun Marsh,1998,120,TRUE,TRUE
+Summer,Suisun Marsh,1999,85,TRUE,TRUE
+Summer,Suisun Marsh,2000,90,TRUE,TRUE
+Summer,Suisun Marsh,2001,82,TRUE,TRUE
+Summer,Suisun Marsh,2002,81,TRUE,TRUE
+Summer,Suisun Marsh,2003,90,TRUE,TRUE
+Summer,Suisun Marsh,2004,90,TRUE,TRUE
+Summer,Suisun Marsh,2005,88,TRUE,TRUE
+Summer,Suisun Marsh,2006,93,TRUE,TRUE
+Summer,Suisun Marsh,2007,91,TRUE,TRUE
+Summer,Suisun Marsh,2009,90,TRUE,TRUE
+Summer,Suisun Marsh,2010,91,TRUE,TRUE
+Summer,Suisun Marsh,2011,90,TRUE,TRUE
+Summer,Suisun Marsh,2012,90,TRUE,TRUE
+Summer,Suisun Marsh,2013,93,TRUE,TRUE
+Summer,Suisun Marsh,2016,100,TRUE,TRUE
+Summer,Suisun Marsh,2017,103,TRUE,TRUE
+Summer,Suisun Marsh,2018,106,TRUE,TRUE
+Summer,Suisun Marsh,2019,98,TRUE,TRUE
+Summer,Upper San Joaquin River,1976,6,TRUE,TRUE
+Summer,Upper San Joaquin River,1977,6,TRUE,TRUE
+Summer,Victoria Canal,1977,8,TRUE,TRUE
+Summer,West Suisun Bay,1969,3,TRUE,TRUE
+Summer,West Suisun Bay,1975,16,TRUE,TRUE
+Summer,West Suisun Bay,1982,23,TRUE,TRUE
+Summer,West Suisun Bay,1983,19,TRUE,TRUE
+Summer,West Suisun Bay,1993,37,TRUE,TRUE
+Summer,West Suisun Bay,1995,36,TRUE,TRUE
+Summer,West Suisun Bay,1998,41,TRUE,TRUE
+Summer,West Suisun Bay,1999,37,TRUE,TRUE
+Summer,West Suisun Bay,2005,32,TRUE,TRUE
+Summer,West Suisun Bay,2006,35,TRUE,TRUE
+Summer,West Suisun Bay,2011,40,TRUE,TRUE
+Summer,West Suisun Bay,2017,33,TRUE,TRUE
+Summer,West Suisun Bay,2019,30,TRUE,TRUE
+Winter,Confluence,1976,9,TRUE,TRUE
+Winter,Confluence,1978,16,TRUE,TRUE
+Winter,Confluence,1979,16,TRUE,TRUE
+Winter,Confluence,1980,4,TRUE,TRUE
+Winter,Confluence,1981,15,TRUE,TRUE
+Winter,Confluence,1985,12,TRUE,TRUE
+Winter,Confluence,1986,12,TRUE,TRUE
+Winter,Confluence,1987,13,TRUE,TRUE
+Winter,Confluence,1988,13,TRUE,TRUE
+Winter,Confluence,1990,15,TRUE,TRUE
+Winter,Confluence,1992,33,TRUE,TRUE
+Winter,Confluence,1993,28,TRUE,TRUE
+Winter,Confluence,1994,31,TRUE,TRUE
+Winter,Confluence,1995,30,TRUE,TRUE
+Winter,Confluence,1996,29,TRUE,TRUE
+Winter,Confluence,1998,24,TRUE,TRUE
+Winter,Confluence,1999,22,TRUE,TRUE
+Winter,Confluence,2000,26,TRUE,TRUE
+Winter,Confluence,2001,33,TRUE,TRUE
+Winter,Confluence,2002,20,TRUE,TRUE
+Winter,Confluence,2003,23,TRUE,TRUE
+Winter,Confluence,2004,27,TRUE,TRUE
+Winter,Confluence,2005,29,TRUE,TRUE
+Winter,Confluence,2006,31,TRUE,TRUE
+Winter,Confluence,2007,28,TRUE,TRUE
+Winter,Confluence,2008,27,TRUE,TRUE
+Winter,Confluence,2009,28,TRUE,TRUE
+Winter,Confluence,2010,25,TRUE,TRUE
+Winter,Confluence,2011,30,TRUE,TRUE
+Winter,Confluence,2012,26,TRUE,TRUE
+Winter,Confluence,2013,27,TRUE,TRUE
+Winter,Confluence,2015,39,TRUE,TRUE
+Winter,Confluence,2016,28,TRUE,TRUE
+Winter,Confluence,2017,27,TRUE,TRUE
+Winter,Confluence,2018,31,TRUE,TRUE
+Winter,Confluence,2019,28,TRUE,TRUE
+Winter,Confluence,2020,88,TRUE,TRUE
+Winter,Franks Tract,1989,3,FALSE,FALSE
+Winter,Franks Tract,1991,3,FALSE,FALSE
+Winter,Franks Tract,2014,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1977,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1978,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1988,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1989,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1990,3,FALSE,FALSE
+Winter,Grant Line Canal and Old River,1991,3,FALSE,FALSE
+Winter,Grizzly Bay,1978,9,TRUE,TRUE
+Winter,Grizzly Bay,1979,9,TRUE,TRUE
+Winter,Grizzly Bay,1981,11,TRUE,TRUE
+Winter,Grizzly Bay,1985,12,TRUE,TRUE
+Winter,Grizzly Bay,1996,18,TRUE,TRUE
+Winter,Grizzly Bay,1997,12,TRUE,TRUE
+Winter,Grizzly Bay,1998,15,TRUE,TRUE
+Winter,Grizzly Bay,1999,15,TRUE,TRUE
+Winter,Grizzly Bay,2000,16,TRUE,TRUE
+Winter,Grizzly Bay,2002,10,TRUE,TRUE
+Winter,Grizzly Bay,2003,13,TRUE,TRUE
+Winter,Grizzly Bay,2004,12,TRUE,TRUE
+Winter,Grizzly Bay,2005,14,TRUE,TRUE
+Winter,Grizzly Bay,2006,14,TRUE,TRUE
+Winter,Grizzly Bay,2008,14,TRUE,TRUE
+Winter,Grizzly Bay,2011,13,TRUE,TRUE
+Winter,Grizzly Bay,2013,14,TRUE,TRUE
+Winter,Grizzly Bay,2017,15,TRUE,TRUE
+Winter,Grizzly Bay,2019,11,TRUE,TRUE
+Winter,Grizzly Bay,2020,7,TRUE,TRUE
+Winter,Holland Cut,1991,3,FALSE,FALSE
+Winter,Honker Bay,1976,7,TRUE,TRUE
+Winter,Honker Bay,1978,11,TRUE,TRUE
+Winter,Honker Bay,1979,13,TRUE,TRUE
+Winter,Honker Bay,1980,5,TRUE,TRUE
+Winter,Honker Bay,1981,12,TRUE,TRUE
+Winter,Honker Bay,1985,10,TRUE,TRUE
+Winter,Honker Bay,1986,10,TRUE,TRUE
+Winter,Honker Bay,1987,10,TRUE,TRUE
+Winter,Honker Bay,1988,9,TRUE,TRUE
+Winter,Honker Bay,1990,11,TRUE,TRUE
+Winter,Honker Bay,1993,19,TRUE,TRUE
+Winter,Honker Bay,1994,19,TRUE,TRUE
+Winter,Honker Bay,1995,17,TRUE,TRUE
+Winter,Honker Bay,1996,18,TRUE,TRUE
+Winter,Honker Bay,1997,13,TRUE,TRUE
+Winter,Honker Bay,1998,12,TRUE,TRUE
+Winter,Honker Bay,2000,15,TRUE,TRUE
+Winter,Honker Bay,2002,8,TRUE,TRUE
+Winter,Honker Bay,2003,11,TRUE,TRUE
+Winter,Honker Bay,2004,10,TRUE,TRUE
+Winter,Honker Bay,2005,11,TRUE,TRUE
+Winter,Honker Bay,2006,12,TRUE,TRUE
+Winter,Honker Bay,2007,13,TRUE,TRUE
+Winter,Honker Bay,2008,13,TRUE,TRUE
+Winter,Honker Bay,2010,11,TRUE,TRUE
+Winter,Honker Bay,2011,12,TRUE,TRUE
+Winter,Honker Bay,2012,10,TRUE,TRUE
+Winter,Honker Bay,2013,9,TRUE,TRUE
+Winter,Honker Bay,2015,13,TRUE,TRUE
+Winter,Honker Bay,2016,13,TRUE,TRUE
+Winter,Honker Bay,2017,12,TRUE,TRUE
+Winter,Honker Bay,2018,12,TRUE,TRUE
+Winter,Honker Bay,2019,10,TRUE,TRUE
+Winter,Honker Bay,2020,8,TRUE,TRUE
+Winter,Lower Sacramento River,1976,9,TRUE,TRUE
+Winter,Lower Sacramento River,1978,18,TRUE,TRUE
+Winter,Lower Sacramento River,1981,15,TRUE,TRUE
+Winter,Lower Sacramento River,1986,13,TRUE,TRUE
+Winter,Lower Sacramento River,1987,12,TRUE,TRUE
+Winter,Lower Sacramento River,1988,13,TRUE,TRUE
+Winter,Lower Sacramento River,1989,15,TRUE,TRUE
+Winter,Lower Sacramento River,1990,13,TRUE,TRUE
+Winter,Lower Sacramento River,1991,23,TRUE,TRUE
+Winter,Lower Sacramento River,1992,24,TRUE,TRUE
+Winter,Lower Sacramento River,1993,23,TRUE,TRUE
+Winter,Lower Sacramento River,1994,23,TRUE,TRUE
+Winter,Lower Sacramento River,1995,24,TRUE,TRUE
+Winter,Lower Sacramento River,2000,21,TRUE,TRUE
+Winter,Lower Sacramento River,2001,24,TRUE,TRUE
+Winter,Lower Sacramento River,2003,18,TRUE,TRUE
+Winter,Lower Sacramento River,2005,19,TRUE,TRUE
+Winter,Lower Sacramento River,2007,23,TRUE,TRUE
+Winter,Lower Sacramento River,2008,18,TRUE,TRUE
+Winter,Lower Sacramento River,2009,20,TRUE,TRUE
+Winter,Lower Sacramento River,2010,20,TRUE,TRUE
+Winter,Lower Sacramento River,2012,23,TRUE,TRUE
+Winter,Lower Sacramento River,2014,20,TRUE,TRUE
+Winter,Lower Sacramento River,2015,28,TRUE,TRUE
+Winter,Lower Sacramento River,2016,20,TRUE,TRUE
+Winter,Lower Sacramento River,2017,21,TRUE,TRUE
+Winter,Lower Sacramento River,2018,27,TRUE,TRUE
+Winter,Lower Sacramento River,2019,19,TRUE,TRUE
+Winter,Lower Sacramento River,2020,13,TRUE,TRUE
+Winter,Lower San Joaquin River,1978,12,TRUE,TRUE
+Winter,Lower San Joaquin River,1981,12,TRUE,TRUE
+Winter,Lower San Joaquin River,1986,11,TRUE,TRUE
+Winter,Lower San Joaquin River,1987,11,TRUE,TRUE
+Winter,Lower San Joaquin River,1988,13,TRUE,TRUE
+Winter,Lower San Joaquin River,1989,12,TRUE,TRUE
+Winter,Lower San Joaquin River,1990,11,TRUE,TRUE
+Winter,Lower San Joaquin River,1991,20,TRUE,TRUE
+Winter,Lower San Joaquin River,1992,21,TRUE,TRUE
+Winter,Lower San Joaquin River,1993,20,TRUE,TRUE
+Winter,Lower San Joaquin River,1994,19,TRUE,TRUE
+Winter,Lower San Joaquin River,1995,22,TRUE,TRUE
+Winter,Lower San Joaquin River,1998,16,TRUE,TRUE
+Winter,Lower San Joaquin River,1999,11,TRUE,TRUE
+Winter,Lower San Joaquin River,2000,19,TRUE,TRUE
+Winter,Lower San Joaquin River,2001,21,TRUE,TRUE
+Winter,Lower San Joaquin River,2003,14,TRUE,TRUE
+Winter,Lower San Joaquin River,2004,11,TRUE,TRUE
+Winter,Lower San Joaquin River,2005,15,TRUE,TRUE
+Winter,Lower San Joaquin River,2007,15,TRUE,TRUE
+Winter,Lower San Joaquin River,2008,15,TRUE,TRUE
+Winter,Lower San Joaquin River,2009,14,TRUE,TRUE
+Winter,Lower San Joaquin River,2010,13,TRUE,TRUE
+Winter,Lower San Joaquin River,2012,15,TRUE,TRUE
+Winter,Lower San Joaquin River,2014,15,TRUE,TRUE
+Winter,Lower San Joaquin River,2015,17,TRUE,TRUE
+Winter,Lower San Joaquin River,2016,16,TRUE,TRUE
+Winter,Lower San Joaquin River,2018,19,TRUE,TRUE
+Winter,Lower San Joaquin River,2019,13,TRUE,TRUE
+Winter,Lower San Joaquin River,2020,10,TRUE,TRUE
+Winter,Mid Suisun Bay,1973,3,TRUE,TRUE
+Winter,Mid Suisun Bay,1976,12,TRUE,TRUE
+Winter,Mid Suisun Bay,1978,20,TRUE,TRUE
+Winter,Mid Suisun Bay,1979,23,TRUE,TRUE
+Winter,Mid Suisun Bay,1980,9,TRUE,TRUE
+Winter,Mid Suisun Bay,1981,18,TRUE,TRUE
+Winter,Mid Suisun Bay,1982,14,TRUE,TRUE
+Winter,Mid Suisun Bay,1985,15,TRUE,TRUE
+Winter,Mid Suisun Bay,1986,14,TRUE,TRUE
+Winter,Mid Suisun Bay,1995,36,TRUE,TRUE
+Winter,Mid Suisun Bay,1996,37,TRUE,TRUE
+Winter,Mid Suisun Bay,1997,29,TRUE,TRUE
+Winter,Mid Suisun Bay,1998,28,TRUE,TRUE
+Winter,Mid Suisun Bay,1999,28,TRUE,TRUE
+Winter,Mid Suisun Bay,2000,29,TRUE,TRUE
+Winter,Mid Suisun Bay,2002,18,TRUE,TRUE
+Winter,Mid Suisun Bay,2003,23,TRUE,TRUE
+Winter,Mid Suisun Bay,2004,24,TRUE,TRUE
+Winter,Mid Suisun Bay,2005,23,TRUE,TRUE
+Winter,Mid Suisun Bay,2006,27,TRUE,TRUE
+Winter,Mid Suisun Bay,2007,25,TRUE,TRUE
+Winter,Mid Suisun Bay,2008,23,TRUE,TRUE
+Winter,Mid Suisun Bay,2011,24,TRUE,TRUE
+Winter,Mid Suisun Bay,2013,25,TRUE,TRUE
+Winter,Mid Suisun Bay,2017,26,TRUE,TRUE
+Winter,Mid Suisun Bay,2019,23,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,1978,19,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,1988,12,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,1989,15,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,1991,32,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,1992,34,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,2014,34,TRUE,TRUE
+Winter,Sacramento River near Rio Vista,2016,30,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1978,16,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1986,11,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1988,11,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1989,8,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1990,11,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1991,21,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,1992,21,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,2009,15,TRUE,TRUE
+Winter,San Joaquin River at Twitchell Island,2014,15,TRUE,TRUE
+Winter,San Joaquin River near Stockton,1995,13,TRUE,TRUE
+Winter,Suisun Marsh,1978,6,TRUE,TRUE
+Winter,Suisun Marsh,1981,6,TRUE,TRUE
+Winter,Suisun Marsh,1982,10,TRUE,TRUE
+Winter,Suisun Marsh,1986,23,TRUE,TRUE
+Winter,Suisun Marsh,1987,49,TRUE,TRUE
+Winter,Suisun Marsh,1988,45,TRUE,TRUE
+Winter,Suisun Marsh,1990,44,TRUE,TRUE
+Winter,Suisun Marsh,1991,54,TRUE,TRUE
+Winter,Suisun Marsh,1992,54,TRUE,TRUE
+Winter,Suisun Marsh,1993,53,TRUE,TRUE
+Winter,Suisun Marsh,1994,49,TRUE,TRUE
+Winter,Suisun Marsh,1995,66,TRUE,TRUE
+Winter,Suisun Marsh,1996,130,TRUE,TRUE
+Winter,Suisun Marsh,1997,129,TRUE,TRUE
+Winter,Suisun Marsh,1998,56,TRUE,TRUE
+Winter,Suisun Marsh,1999,67,TRUE,TRUE
+Winter,Suisun Marsh,2000,72,TRUE,TRUE
+Winter,Suisun Marsh,2001,72,TRUE,TRUE
+Winter,Suisun Marsh,2002,72,TRUE,TRUE
+Winter,Suisun Marsh,2003,69,TRUE,TRUE
+Winter,Suisun Marsh,2004,75,TRUE,TRUE
+Winter,Suisun Marsh,2005,64,TRUE,TRUE
+Winter,Suisun Marsh,2006,76,TRUE,TRUE
+Winter,Suisun Marsh,2007,76,TRUE,TRUE
+Winter,Suisun Marsh,2008,77,TRUE,TRUE
+Winter,Suisun Marsh,2010,74,TRUE,TRUE
+Winter,Suisun Marsh,2011,73,TRUE,TRUE
+Winter,Suisun Marsh,2012,72,TRUE,TRUE
+Winter,Suisun Marsh,2013,78,TRUE,TRUE
+Winter,Suisun Marsh,2015,89,TRUE,TRUE
+Winter,Suisun Marsh,2016,87,TRUE,TRUE
+Winter,Suisun Marsh,2017,86,TRUE,TRUE
+Winter,Suisun Marsh,2018,87,TRUE,TRUE
+Winter,Suisun Marsh,2019,84,TRUE,TRUE
+Winter,Suisun Marsh,2020,58,TRUE,TRUE
+Winter,Upper San Joaquin River,1977,3,TRUE,TRUE
+Winter,Upper San Joaquin River,1988,3,TRUE,TRUE
+Winter,Upper San Joaquin River,1989,3,TRUE,TRUE
+Winter,Upper San Joaquin River,1990,3,TRUE,TRUE
+Winter,Upper San Joaquin River,1991,3,TRUE,TRUE
+Winter,West Suisun Bay,1982,21,TRUE,TRUE
+Winter,West Suisun Bay,1983,22,TRUE,TRUE
+Winter,West Suisun Bay,1984,21,TRUE,TRUE
+Winter,West Suisun Bay,1996,49,TRUE,TRUE
+Winter,West Suisun Bay,1997,35,TRUE,TRUE
+Winter,West Suisun Bay,1998,37,TRUE,TRUE
+Winter,West Suisun Bay,1999,38,TRUE,TRUE
+Winter,West Suisun Bay,2002,28,TRUE,TRUE
+Winter,West Suisun Bay,2006,35,TRUE,TRUE
+Winter,West Suisun Bay,2017,35,TRUE,TRUE

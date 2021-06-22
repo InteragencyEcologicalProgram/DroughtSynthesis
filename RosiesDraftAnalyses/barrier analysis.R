@@ -5,6 +5,14 @@
 
 library(tidyverse)
 
+library(MASS)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(visreg)
+library(cder)
+
+
 #load data set
 zoops = read_csv("RosiesDraftAnalyses/barrierzoops2015.csv", guess_max = 21000)
 
@@ -20,7 +28,10 @@ zoosum = group_by(zoops, SampleID, Year, Date, SalSurf, Latitude, Longitude, Sta
 #Designate regions for each of the stations
 #unique(zoosum$Station)
 #write.csv(unique(zoosum$Station), "barrierstations.csv")
-stations = read_csv("barrierstations.csv")
+stations = read_csv("RosiesDraftAnalyses/barrierstations.csv")
+stations = mutate(stations, Region2 = Region)
+stations$Region2[which(stations$Region== "San Joaquin")] = "Sacramento"
+
 zoosum2 = left_join(zoosum, stations) %>%
   filter(Include == "Yes")
 
@@ -29,16 +40,16 @@ zoopsEZ = left_join(zoosum, stations) %>%
 
 #Plot zooplankton and water quality info to see if there are
 #any differences between 2015 and other years. 
-ggplot(zoosum2, aes(x = Region, y = CPUE)) +geom_boxplot()+
+ggplot(zoosum2, aes(x = Region2, y = CPUE)) +geom_boxplot()+
   facet_grid(.~Year)+scale_y_log10()
 
-ggplot(zoosum2, aes(x = Region, y = Chl)) +geom_boxplot()+
+ggplot(zoosum2, aes(x = Region2, y = Chl)) +geom_boxplot()+
   facet_grid(.~Year)+scale_y_log10()
 
-ggplot(zoosum2, aes(x = Region, y = Secchi)) +geom_boxplot()+
+ggplot(zoosum2, aes(x = Region2, y = Secchi)) +geom_boxplot()+
   facet_grid(.~Year)
 
-ggplot(zoosum2, aes(x = Region, y = SalSurf)) +geom_boxplot()+
+ggplot(zoosum2, aes(x = Region2, y = SalSurf)) +geom_boxplot()+
   facet_grid(.~Year)
 
 #add water year and run some models
@@ -48,13 +59,6 @@ ind = filter(indecies, location == "Sacramento Valley", WY >2011) %>%
   mutate(fyear = as.factor(Year))
  
 zoosum2 = left_join(zoosum2, ind)
-
-library(MASS)
-library(lme4)
-library(lmerTest)
-library(emmeans)
-library(visreg)
-library(cder)
 
 #Now try using a linear model to statistically test differences between years
 z1 = lmer(log(CPUE +1)~ Region*fyear + (1|Station), data = zoosum2) 
@@ -119,4 +123,36 @@ ggplot(filter(cdecH, SensorType == "DIS OXY", Value > 1, Value < 20), aes(x = ju
                                                                                                                    )
 ggplot(filter(cdecH, SensorType == "DIS OXY", Value > 1, Value < 20), aes(x = Year, y = Value, fill = Year)) + geom_boxplot() +
   facet_wrap(~StationID) + ylab("Dissolved Oxygen mg/L") + xlab("Year") + theme_bw() + scale_color_discrete(name = NULL)
-                                                                                                            
+
+###############################################################################
+
+#Compare salinity intrusion from 2015 versus 2021
+
+cdec2015 = cdec_query(c("EMM", "MAL", "FAL", "FCT", "MOK", "ANH", "SJJ"), 
+                  c(5, 100), start.date = as.Date("2015-05-01"), 
+                  end.date = as.Date("2015-11-01"))
+
+cdec2021 = cdec_query(c("EMM", "MAL", "FAL", "FCT", "MOK", "ANH", "SJJ"), 
+                  c(5, 100), start.date = as.Date("2021-05-01"), 
+                  end.date = as.Date("2021-06-18"))
+
+
+cdec2017 = cdec_query(c("EMM", "MAL", "FAL", "FCT", "MOK", "ANH", "SJJ"), 
+                      c(5, 100), start.date = as.Date("2017-05-01"), 
+                      end.date = as.Date("2017-11-01"))
+
+cdecCond = bind_rows(cdec2015, cdec2017, cdec2021) %>%
+mutate(Year = as.factor(year(ObsDate)), day = yday(ObsDate))
+
+cdecave = group_by(cdecCond, day, Year, SensorType, StationID) %>%
+  summarise(Cond = mean(Value)) %>%
+  filter(!(StationID == "SJJ" & Cond >5000), StationID != "MAL") %>%
+  mutate(StationID = factor(StationID, levels = c("ANH", "EMM", "SJJ", "FAL", "FCT", "MOK"),
+                            labels = c("Antioch", "Emmanton", "Jersy Point", "False River", "Fishermans Cut",
+                                       "Mokolumne")))
+  
+
+ggplot(cdecave, aes(x = day, y = Cond, color = Year)) + geom_line() + geom_point()+
+  facet_wrap(~StationID) + ylab("Specific Conductance uS/cm")
+
+test = filter(cdecave, StationID == "SJJ", Cond > 5000)  
