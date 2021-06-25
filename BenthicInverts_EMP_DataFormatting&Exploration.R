@@ -1,7 +1,7 @@
 #Drought Synthesis
 #Special Studies Project
 #Environmental Monitoring Program data
-#Benthic Invertebrate Survey
+#Benthic Invertebrate Survey data
 #1975 - October 2020
 #Catch per unit effort (CPUE)
 #Organisms/m2 = (sum per visit /# of grabs per visit)/(0.052 grabs/meter squared)
