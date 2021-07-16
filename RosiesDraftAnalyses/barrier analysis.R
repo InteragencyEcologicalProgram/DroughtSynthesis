@@ -33,15 +33,18 @@ stations = mutate(stations, Region2 = Region)
 stations$Region2[which(stations$Region== "San Joaquin")] = "Sacramento"
 
 zoosum2 = left_join(zoosum, stations) %>%
-  filter(Include == "Yes")
+  filter(Include == "Yes") %>%
+  mutate(Region2 = factor(Region2, levels = c("Sacramento", "Central")))
 
 zoopsEZ = left_join(zoosum, stations) %>%
   filter(Station %in% c("NZEZ2SJR", "NZEZ6SJR", "NZEZ2", "NZEZ6"))
 
 #Plot zooplankton and water quality info to see if there are
 #any differences between 2015 and other years. 
-ggplot(zoosum2, aes(x = Region2, y = CPUE)) +geom_boxplot()+
-  facet_grid(.~Year)+scale_y_log10()
+ggplot(zoosum2, aes(x = Region2, y = CPUE, fill = Region2)) +geom_boxplot()+
+  facet_grid(.~Year)+scale_y_log10() + 
+  xlab("Region") + ylab("Zooplankton Catch per Unit Effort") + theme_bw() +
+  scale_fill_manual(values = c("lightblue", "red"), guide = NULL)
 
 ggplot(zoosum2, aes(x = Region2, y = Chl)) +geom_boxplot()+
   facet_grid(.~Year)+scale_y_log10()

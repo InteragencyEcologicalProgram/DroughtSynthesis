@@ -9,17 +9,17 @@ testdat$Metric = factor(testdat$Metric, levels = unique(testdat$Metric),
                                    "microcystis","phytoplankton", "contaminants", "smelt life history"))
 
 ggplot(testdat, aes(x=Category, group = Metric)) +
-  geom_col(aes(fill = Uncertainty, y = length), position =position_dodge2(width = 1, preserve = "single"))+
-  geom_text(aes(label = Metric, y = length), position = position_dodge(.9))+
-  
     geom_hline(yintercept = seq(0, 5, by = 1),
              color = "grey", size = 1) +
+  geom_col(aes(fill = Uncertainty, y = length), position =position_dodge2(width = 1, preserve = "single"))+
   geom_vline(xintercept = seq(.5, 16.5, by = 1),
              color = "grey", size = 1) +
   scale_fill_manual(values = c("red", "darkcyan", "orange", "grey"), labels = c("High", "Low", "Med", "????"))+
+  geom_text(aes(label = Metric, y = length), position = position_dodge(.9))+
+  
  # annotate("text", x = rep("water", 5), y = c(.9, 1.9, 2.9, 3.9, 4.9), 
 #           label = c("no impact", "minor impact", "major impact", "management trigger", "ecosystem shift"), size = 3)+
-  coord_polar() +
+  coord_polar() + theme_bw()+
 scale_y_continuous( name = NULL)
 
 
