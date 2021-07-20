@@ -41,7 +41,7 @@ zoopsEZ = left_join(zoosum, stations) %>%
 
 #Plot zooplankton and water quality info to see if there are
 #any differences between 2015 and other years. 
-ggplot(zoosum2, aes(x = Region2, y = CPUE, fill = Region2)) +geom_boxplot()+
+ggplot(filter(zoosum2, Year > 2013), aes(x = Region2, y = CPUE, fill = Region2)) +geom_boxplot()+
   facet_grid(.~Year)+scale_y_log10() + 
   xlab("Region") + ylab("Zooplankton Catch per Unit Effort") + theme_bw() +
   scale_fill_manual(values = c("lightblue", "red"), guide = NULL)
@@ -64,10 +64,12 @@ ind = filter(indecies, location == "Sacramento Valley", WY >2011) %>%
 zoosum2 = left_join(zoosum2, ind)
 
 #Now try using a linear model to statistically test differences between years
-z1 = lmer(log(CPUE +1)~ Region*fyear + (1|Station), data = zoosum2) 
+zoosum3 = filter(zoosum2, Year > 2013)
+z1 = lmer(log(CPUE +1)~ Region2*fyear + (1|Station), 
+          data = zoosum3) 
 summary(z1)
-Foo = emmeans(z1, pairwise ~ Region:fyear)
-visreg(z1, xvar = "Region", by = "fyear")
+Foo = emmeans(z1, pairwise ~ Region2:fyear)
+visreg(z1, xvar = "Region2", by = "fyear")
 plot(z1)
 
 z1 = lmer(log(Chl)~ Region*fyear + (1|Station), data = zoosum2) 

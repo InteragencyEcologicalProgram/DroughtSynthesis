@@ -6,7 +6,7 @@ library(viridis)
 #check out the integrated data set so far
 Integrated_data_set <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
   filter(Year >1974) %>%
-  select(-Secchi) %>%
+  dplyr::select(-Secchi) %>%
   mutate(Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall")))
 
 #add more water quality variables
@@ -17,7 +17,7 @@ Integrated = left_join(Integrated_data_set, WQ)
 
 Int = mutate(Integrated, logChla = log(Chla), logzoopB = log(Zoop_BPUE_mg), 
              logzooC = log(Zoop_CPUE)) %>%
-  select(-Chla, -Zoop_BPUE_mg, -Zoop_CPUE) 
+  dplyr::select(-Chla, -Zoop_BPUE_mg, -Zoop_CPUE) 
 
 
 
@@ -57,7 +57,7 @@ ggplot(DrIm2, aes(x = Season, y = Index)) + facet_wrap(~Metric)+
 
 #the fish have such a huge difference it's hard to see everything else.
 ggplot(DrIm2, 
-       aes(x = Metric, y = Index, fill = Index)) + facet_wrap(~Season)+
+       aes(x = Metric, y = Index, fill = GoodBad)) + facet_wrap(~Season)+
   geom_col()+
   scale_fill_gradient2(low = "red", high = "blue", mid = "grey") + theme_bw()
 
@@ -101,6 +101,43 @@ ggplot(DrIm2b, aes(x=Category, group = Metric)) +
             position = position_dodge2(width = 1, preserve = "single"))+
    theme_bw()+
   scale_y_continuous( name = NULL) + facet_grid(.~Season, space = "free")
+
+
+#Color code by good versus bad
+ggplot(DrIm2b, aes(x=Category, group = Metric)) +
+  geom_col(aes(fill = GoodBad, y = Index, alpha = Index2), 
+           position =position_dodge2(width = 1, preserve = "single"))+
+  #geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
+  scale_fill_manual(values = c("red", "blue"), labels = c("Stressor", "Good Thing"),
+                    name = "Direction of \n Drought Impact")+
+  geom_text(aes(x = Category, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
+            position = position_dodge2(width = 1, preserve = "single"))+
+  theme_bw()+
+  scale_y_continuous( name = NULL) + facet_grid(.~Season, space = "free")
+
+
+#create an annual index
+AnnIm = group_by(DrIm2b, GoodBad, Metric, Category) %>%
+  summarize(Index = mean(Index), Index2 = mean(Index2)) %>%
+  mutate(colr = case_when(
+    GoodBad == "Bad Things" & Index >0 ~ "red",
+    GoodBad == "Bad Things" & Index <0 ~ "blue",
+    GoodBad == "Good Things" & Index >0 ~ "blue",
+    GoodBad == "Good Things" & Index <0 ~ "red",
+  ))
+
+#Color code by good versus bad
+ggplot(AnnIm, aes(x=Metric, group = Metric)) +
+  geom_col(aes(fill = colr, y = Index, alpha = Index2), 
+           position =position_dodge2(width = 1, preserve = "single"))+
+  scale_fill_manual(values = c("blue", "red"), guide = NULL)+
+  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
+            position = position_dodge2(width = 1, preserve = "single"))+
+  theme_bw()+
+  scale_y_continuous( name = "Drought Impact Level") + facet_grid(.~GoodBad, scales = "free_x") +
+  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
+  scale_alpha(guide = NULL)
+
 
 ########################################################
 #compare zooplankton data from Status and Trends to what Arthur put together
