@@ -5,28 +5,25 @@ library(viridis)
 
 #check out the integrated data set so far
 Integrated_data_set <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
-  filter(Year >1974) %>%
-  dplyr::select(-Secchi) %>%
   mutate(Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall")))
 
-#add more water quality variables
-WQ = read.csv("data/WQdatabigger.csv")
-Integrated = left_join(Integrated_data_set, WQ)
+yrs = dplyr::select(Integrated_data_set, Year, Season, Drought, Index, Yr_type)
 
-
-
-Int = mutate(Integrated, logChla = log(Chla), logzoopB = log(Zoop_BPUE_mg), 
+#log-transform zooplankton and clorophyll
+Int = mutate(Integrated_data_set, logChla = log(Chla), logzoopB = log(Zoop_BPUE_mg), 
              logzooC = log(Zoop_CPUE)) %>%
   dplyr::select(-Chla, -Zoop_BPUE_mg, -Zoop_CPUE) 
 
 
-
+#transition the data set from wide to long. 
 IntLong = pivot_longer(Int, cols = `Delta Outflow`:logzooC, 
                        names_to = "Metric", values_to = "Value")
 
+#look at it without the "not drought or wet" years
 ggplot(filter(IntLong, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot() +
   facet_grid(Metric~Season, scales = "free_y")
 
+#Huh. Chlorophyll goes up
 Chla = filter(IntLong, Metric == "logChla", Drought != "N")
 ggplot(Chla, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season)
 
@@ -40,7 +37,7 @@ DroughtImpact = group_by(IntLong, Season, Metric, Drought) %>%
 
   
 
-
+#Now let's try scaling all the variables first and then creating a drought index
 DrIm2 = Int %>%
   mutate(across(X2:logzooC, scale)) %>%
   pivot_longer(cols = X2:logzooC, names_to = "Metric", values_to = "Value") %>%
@@ -57,7 +54,7 @@ ggplot(DrIm2, aes(x = Season, y = Index)) + facet_wrap(~Metric)+
 
 #the fish have such a huge difference it's hard to see everything else.
 ggplot(DrIm2, 
-       aes(x = Metric, y = Index, fill = GoodBad)) + facet_wrap(~Season)+
+       aes(x = Metric, y = Index, fill = Index)) + facet_wrap(~Season)+
   geom_col()+
   scale_fill_gradient2(low = "red", high = "blue", mid = "grey") + theme_bw()
 
@@ -138,6 +135,20 @@ ggplot(AnnIm, aes(x=Metric, group = Metric)) +
   scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
   scale_alpha(guide = NULL)
 
+#try a different way
+
+#Color code by good versus bad
+ggplot(AnnIm, aes(x=Metric, group = Metric)) +
+  geom_col(aes(fill = GoodBad, y = Index, alpha = Index2), 
+           position =position_dodge2(width = 1, preserve = "single"))+
+  scale_fill_manual(values = c("red", "blue"))+
+  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
+            position = position_dodge2(width = 1, preserve = "single"))+
+  theme_bw()+
+  scale_y_continuous( name = "Drought Impact Level") + 
+  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
+  scale_alpha(guide = NULL)
+
 
 ########################################################
 #compare zooplankton data from Status and Trends to what Arthur put together
@@ -188,4 +199,36 @@ Suisun = filter(SNTzoop, region == "ss", qyear >1974) %>%
 
 ggplot(filter(Suisun, Drought != "N"), aes(x= Drought, y = logzoopB2)) + facet_wrap(~Season) + geom_boxplot()
 #So zooplankton are lower in summer and fall in suisun, but just summer and fall.
+
+dist = read_excel("data/distribution_matrix.xlsx", na = "NA")
+dist_long = pivot_longer(dist, cols = 3:ncol(dist), names_to = "taxa", 
+                         values_to= "distance") %>%
+rename(Year = water_year)%>%
+  left_join(yrs)
+
+
+DistDI = group_by(dist_long, Season, taxa, Drought) %>%
+  summarize(distance = mean(distance, na.rm = T)) %>% 
+  pivot_wider(names_from = Drought, values_from = distance) %>%
+  mutate(Index = (D-W)/mean(c(D,N, W), na.rm = T)) %>%
+  mutate(colr = case_when(
+    Index >0 ~ "red",
+   Index <0 ~ "blue",
+    Index >0 ~ "blue",
+    Index <0 ~ "red",
+  ))
+
+
+
+ggplot(DistDI, aes(x=taxa)) +
+  geom_col(aes(fill = colr, y = Index, alpha = Index), 
+           position =position_dodge2(width = 1, preserve = "single"))+
+  #geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
+  scale_fill_manual(values = c("blue", "red"), labels = c("Westward", "Eastward"),
+                    name = "Change in center \nof distribution")+
+  geom_text(aes(x = taxa, y = 0, label = taxa), hjust = 0, angle = 90,
+            position = position_dodge2(width = 1, preserve = "single"))+
+  theme_bw()+ facet_grid(.~Season, space = "free") + scale_alpha(guide = NULL) +
+  ylab("Drought shift (Km)")+ theme(axis.text.x = element_blank())
+
 
