@@ -6,21 +6,25 @@ library(viridis)
 #check out the integrated data set so far
 Integrated_data_set <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
   mutate(Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-  filter(Year < 2020)
+  filter(Year < 2020) %>%
+  select(-szn_CPUE, -BPUE_ug)
 
 yrs = dplyr::select(Integrated_data_set, Year, Season, Drought, Index, Yr_type)
 
-#grab zooplankton data from Arthur's github
-zoops = read_csv("https://raw.githubusercontent.com/arthurbarros-CDFW/metrics_calculations/master/Outputs/Drought_taxa_BPUEmatrix.csv")
+#grab zooplankton data from Arthur
+zoopsBPUE_seasonal = read_csv("data/zoop_drought_lt_seasonal.csv") %>%
+  mutate(Year = water_year)
+zoopsBPUE_regional = read_csv("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/metrics_calculations/Outputs/zoop_drought_lt_REGbpue.csv")
+Integrated_data_set = left_join(Integrated_data_set, zoopsBPUE_seasonal)
 
+  
 #log-transform zooplankton and clorophyll
-Int = mutate(Integrated_data_set, logChla = log(Chla), logzoopB = log(BPUE_ug), 
-             logzooC = log(szn_CPUE)) %>%
-  dplyr::select(-Chla, -BPUE_ug, -szn_CPUE) 
+Int = mutate(Integrated_data_set, logChla = log(Chla), logzoopB = log(szn_BPUE)) %>%
+  dplyr::select(-Chla, -szn_BPUE) 
 
 
 #transition the data set from wide to long. 
-IntLong = pivot_longer(Int, cols = `Delta Outflow`:logzooC, 
+IntLong = pivot_longer(Int, cols = `Delta Outflow`:logzoopB, 
                        names_to = "Metric", values_to = "Value")
 
 #look at it without the "not drought or wet" years
@@ -451,4 +455,36 @@ ggplot(DistDI, aes(x=taxa)) +
   theme_bw()+ facet_grid(.~Season, space = "free") + scale_alpha(guide = NULL) +
   ylab("Drought shift (Km)")+ theme(axis.text.x = element_blank())
 
+#####################################################################
+#Look at zoops annually by region
+yrs2 = select(yrs, Year, Drought, Index, Yr_type) %>%
+  distinct()
+zoopReg = zoopsBPUE_regional %>%
+  rename(Year = water_year) %>%
+  left_join( yrs2) %>%
+  filter(Drought %in% c("D", "W"), Region != "North")
+ggplot(zoopReg, aes(x = Drought, y = log(BPUE_ug), fill = Drought)) + geom_boxplot() + facet_grid(.~Region) + 
+  theme_bw() + scale_x_discrete(labels = c("Multi-Year \nDrought", "Multi-Year \nWet"))+
+  ylab("Log Zooplankton Biomass Per Unit Volume")
 
+z1 = lm(log(BPUE_ug)~ Drought*Region, data = zoopReg)
+summary(z1)
+library(emmeans)
+emmeans(z1, pairwise ~ Drought:Region)
+
+zoops = zoopsBPUE_seasonal %>%
+  left_join( yrs2) %>%
+  filter(Drought %in% c("D", "W"), Season != "Winter")
+ggplot(zoops, aes(x = Drought, y = log(szn_BPUE), fill = Drought)) + geom_boxplot() + 
+  facet_grid(.~Season) + 
+  theme_bw() + scale_x_discrete(labels = c("Multi-Year \nDrought", "Multi-Year \nWet"))+
+  ylab("Log Zooplankton Biomass Per Unit Volume")
+
+#Now look at it by taxa, season, region, etc.
+load("data/Taxon_drought.RData")
+taxa_AR = rename(taxa_annual_reg, Year = water_year) %>%
+  left_join(yrs2) %>%
+  filter(Drought %in% c("W", "D"), Region != "North") 
+  
+ggplot(taxa_AR, aes(x = Drought, y = log(BPUE_ug + 1), fill = Taxlifestage)) +
+  geom_boxplot()+ facet_grid(Taxlifestage~Region, scales = "free_y")
