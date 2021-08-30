@@ -1,0 +1,122 @@
+```{r}
+# Title: Process SF WQ Data
+# Purpose: process and clean SF wq data for drought synthesis
+# Author: Sarah Perry
+# Contact: sarah.perry@water.ca.gov
+```
+
+```{r}
+library(tidyverse)
+library(deltamapr)
+library(lubridate)
+library(sf)
+library(sp)
+source('Water_Quality/wq_funcs.R')
+```
+
+```{r}
+# define fps
+fp_abs_wq_all <- 'raw_data/SF_wq_data/'
+fp_abs_wq_old <- paste0(fp_abs_wq_all,'SanFranciscoBayWaterQualityData1969-2015v3.csv')
+fp_abs_meta <- 'raw_data/metadata_wq_files/'
+
+# import data
+df_wq_old <- read_csv(drought_abs_path(fp_abs_wq_old), col_types = cols(Date = 'c', .default = 'd'))
+
+df_wq_recent <- list.files(path=drought_abs_path(fp_abs_wq_all), pattern = glob2rx('wqdata_*.csv'), full.names = TRUE) %>% 
+  lapply(read_csv) %>% 
+  bind_rows 
+
+df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
+df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_coords.csv')))
+```
+
+```{r}
+#import delta sf
+sf_delta <- R_EDSM_Subregions_Mahardja_FLOAT
+
+# combine & clean up wq datasets
+df_wq_old <- df_wq_old %>% rename(Station = Station_Number,
+                            `Depth (m)` = Depth,
+                            `Discrete Chlorophyll-a (micrograms/L)` = Discrete_Chlorophyll,
+                            `Calculated Chlorophyll-a (micrograms/L)` = Calculated_Chlorophyll,
+                            `Discrete Oxygen (mg/L)` = Discrete_Oxygen,
+                            `Oxygen (mg/L)` = Calculated_Oxygen,
+                            `Discrete SPM (mg/L)` = Discrete_SPM,
+                            `Calculated SPM (mg/L)` = Calculated_SPM,
+                            `Extinction Coefficient` = Extinction_Coefficient,
+                            `Temperature (Degrees Celsius)` = Temperature,
+                            `NO2 (Micromolar)` = Nitrite,
+                            `NO32 (Micromolar)` = `Nitrate_+_Nitrite`,
+                            `NH4 (Micromolar)` = Ammonium,
+                            `PO4 (Micromolar)` = Phosphate,
+                            `Si (Micromolar)` = Silicate)
+
+df_wq_old$Date <- as.Date(df_wq_old$Date, '%m/%d/%y')
+
+wq <- bind_rows(df_wq_old, df_wq_recent)
+rm(df_wq_old, df_wq_recent)
+
+wq_coords <- left_join(df_coords, wq, by = c('Station'))
+
+wq_coords <- wq_coords %>%
+  mutate(
+    Season =
+      case_when(
+        month(Date) %in% c(12,1,2) ~ 'Winter',
+        month(Date) %in% c(3,4,5) ~ 'Spring',
+        month(Date) %in% c(6,7,8) ~ 'Summer',
+        month(Date) %in% c(9,10,11) ~ 'Fall'
+      )
+  )
+
+wq_coords <- wq_coords %>% rename(Region = Location)
+```
+
+```{r}
+# convert wq to spdf
+coords <- wq_coords[,c('Longitude', 'Latitude')]
+data   <- wq_coords[,c(1,2,5:length(wq_coords))]
+crs    <- CRS('+init=epsg:4326 +proj=longlat')
+spdf_wq <- SpatialPointsDataFrame(coords = coords,
+                               data = data, 
+                               proj4string = crs)
+
+# convert delta to spdf
+spdf_delta <- as(sf_delta, 'Spatial')
+spdf_delta <- spTransform(spdf_delta, CRS('+proj=longlat +datum=WGS84 +no_defs'))
+
+# add subregion col to wq df
+col_sr <- sp::over(spdf_wq, spdf_delta[,'SubRegion'])
+spdf_wq$SubRegion <- col_sr$SubRegion
+
+# convert to shapefile
+sf_wq <- st_as_sf(spdf_wq)
+sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
+
+# add longterm col
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','SubRegion')], by = 'SubRegion')
+
+# check data
+ggplot() + 
+  geom_sf(data = sf_delta) + 
+  #geom_sf_text(data = sf_delta, aes(label = SubRegion)) +
+  geom_sf(data = sf_wq_lt, aes(color = Long_term))
+```
+
+```{r}
+# check extra regions in original wq df (ie. not in sf_wq_lt)
+unique(sf_wq$SubRegion)[!(unique(sf_wq$SubRegion) %in% unique(df_regions$SubRegion))]
+```
+
+```{r}
+# add lat/lon cols and export
+sf_wq_lt$Longitude <- apply(st_coordinates(sf_wq_lt), 1, function(x) x[1])
+sf_wq_lt$Latitude <- apply(st_coordinates(sf_wq_lt), 1, function(x) x[2])
+df_wq_lt <- as_tibble(sf_wq_lt)
+
+df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
+
+write_csv(df_wq_lt, drought_abs_path('processed_data/SFBayWQData1969-2021.csv'))
+```
+
