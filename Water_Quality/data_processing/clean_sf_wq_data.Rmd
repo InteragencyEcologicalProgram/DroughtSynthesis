@@ -57,17 +57,17 @@ df_wq_old$Date <- as.Date(df_wq_old$Date, '%m/%d/%y')
 wq <- bind_rows(df_wq_old, df_wq_recent)
 rm(df_wq_old, df_wq_recent)
 
-wq_coords <- left_join(df_coords, wq, by = c('Station'))
+df_wq_coords <- left_join(df_coords, wq, by = c('Station'))
 
-wq_coords <- add_season_col(wq_coords)
+df_wq_coords <- add_season_col(df_wq_coords)
 
-wq_coords <- wq_coords %>% rename(Region = Location)
+df_wq_coords <- df_wq_coords %>% rename(Region = Location)
 ```
 
 ```{r}
 # convert wq to spdf
-coords <- wq_coords[,c('Longitude', 'Latitude')]
-data   <- wq_coords[,c(1,2,5:length(wq_coords))]
+coords <- df_wq_coords[,c('Longitude', 'Latitude')]
+data   <- df_wq_coords[,c(1,2,5:length(df_wq_coords))]
 crs    <- CRS('+init=epsg:4326 +proj=longlat')
 spdf_wq <- SpatialPointsDataFrame(coords = coords,
                                data = data, 
@@ -75,7 +75,7 @@ spdf_wq <- SpatialPointsDataFrame(coords = coords,
 
 # convert delta to spdf
 spdf_delta <- as(sf_delta, 'Spatial')
-spdf_delta <- spTransform(spdf_delta, CRS('+proj=longlat +datum=WGS84 +no_defs'))
+spdf_delta <- spTransform(spdf_delta, CRS('+init=epsg:4326 +proj=longlat'))
 
 # add subregion col to wq df
 col_sr <- sp::over(spdf_wq, spdf_delta[,'SubRegion'])
@@ -86,7 +86,7 @@ sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
 
 # add longterm col
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('SubRegion', 'Season'))
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion'))
 
 # check data
 ggplot() + 
