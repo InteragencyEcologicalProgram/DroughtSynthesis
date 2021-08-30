@@ -18,9 +18,7 @@ source('Water_Quality/wq_funcs.R')
 # import data
 fp_abs_wq <- 'WQ_Team/raw_data/EMP_delta_water_quality_1975_2020.csv'
 fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
-```
 
-```{r}
 df_wq <- read_csv(drought_abs_path(fp_abs_wq))
 
 df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
