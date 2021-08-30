@@ -59,16 +59,7 @@ rm(df_wq_old, df_wq_recent)
 
 wq_coords <- left_join(df_coords, wq, by = c('Station'))
 
-wq_coords <- wq_coords %>%
-  mutate(
-    Season =
-      case_when(
-        month(Date) %in% c(12,1,2) ~ 'Winter',
-        month(Date) %in% c(3,4,5) ~ 'Spring',
-        month(Date) %in% c(6,7,8) ~ 'Summer',
-        month(Date) %in% c(9,10,11) ~ 'Fall'
-      )
-  )
+wq_coords <- add_season_col(wq_coords)
 
 wq_coords <- wq_coords %>% rename(Region = Location)
 ```
