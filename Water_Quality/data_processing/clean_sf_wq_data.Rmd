@@ -16,7 +16,7 @@ source('Water_Quality/wq_funcs.R')
 
 ```{r}
 # define fps
-fp_abs_wq_all <- 'Data/Component data sets/SF_water_quality/'
+fp_abs_wq_all <- 'WQ_Team/raw_data/SF_water_quality/'
 fp_abs_wq_old <- paste0(fp_abs_wq_all,'SanFranciscoBayWaterQualityData1969-2015v3.csv')
 fp_abs_meta <- 'WQ_Team/metadata_wq_files/'
 
