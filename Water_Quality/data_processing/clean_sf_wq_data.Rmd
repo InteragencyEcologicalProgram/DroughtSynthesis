@@ -28,7 +28,7 @@ df_wq_recent <- list.files(path=drought_abs_path(fp_abs_wq_all), pattern = glob2
   bind_rows 
 
 df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
-df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_coords.csv')))
+df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'SF_wq_coords.csv')))
 ```
 
 ```{r}
@@ -86,7 +86,7 @@ sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
 
 # add longterm col
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','SubRegion')], by = 'SubRegion')
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('SubRegion', 'Season'))
 
 # check data
 ggplot() + 
@@ -108,6 +108,6 @@ df_wq_lt <- as_tibble(sf_wq_lt)
 
 df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
 
-write_csv(df_wq_lt, drought_abs_path('processed_data/SFBayWQData1969-2021.csv'))
+write_csv(df_wq_lt, drought_abs_path('WQ_Team/processed_data/SFBayWQData1969-2021.csv'))
 ```
 
