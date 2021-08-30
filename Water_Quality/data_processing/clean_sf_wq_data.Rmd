@@ -18,7 +18,7 @@ source('Water_Quality/wq_funcs.R')
 # define fps
 fp_abs_wq_all <- 'WQ_Team/raw_data/SF_water_quality/'
 fp_abs_wq_old <- paste0(fp_abs_wq_all,'SanFranciscoBayWaterQualityData1969-2015v3.csv')
-fp_abs_meta <- 'WQ_Team/metadata_wq_files/'
+fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
 
 # import data
 df_wq_old <- read_csv(drought_abs_path(fp_abs_wq_old), col_types = cols(Date = 'c', .default = 'd'))
