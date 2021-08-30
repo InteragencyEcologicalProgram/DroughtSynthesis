@@ -16,6 +16,7 @@ drought_abs_path <- function(fp_rel = NULL) {
   return(fp_abs)
 }
 
+# add season col
 add_season_col <- function(df) {
   assertthat::assert_that(
     assertthat::is.date(df$Date),
