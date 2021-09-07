@@ -1,6 +1,4 @@
-#check out zooplankton from around the barrier in 2015
-# I downloaded all the EMP, STN, and FMWT zooplantkon data from near
-#the barrier from 2012-2019 from the ZoopSynth shiny app.
+#various ways of dealing with data from around the barrier. 
 
 
 library(tidyverse)
@@ -12,8 +10,11 @@ library(emmeans)
 library(visreg)
 library(cder)
 
-
-#load data set
+##############################################################################333
+#ZOOPLANKTON
+#load data set#check out zooplankton from around the barrier in 2015
+# I downloaded all the EMP, STN, and FMWT zooplantkon data from near
+#the barrier from 2012-2019 from the ZoopSynth shiny app.
 zoops = read_csv("RosiesDraftAnalyses/barrierzoops2015.csv", guess_max = 21000)
 
 #get rid of unersampled taxa and the one really strange 20mm survey with zero catch
@@ -130,7 +131,7 @@ ggplot(filter(cdecH, SensorType == "DIS OXY", Value > 1, Value < 20), aes(x = Ye
   facet_wrap(~StationID) + ylab("Dissolved Oxygen mg/L") + xlab("Year") + theme_bw() + scale_color_discrete(name = NULL)
 
 ###############################################################################
-
+#SALINITY
 #Compare salinity intrusion from 2015 versus 2021
 
 cdec2015 = cdec_query(c("EMM", "MAL", "FAL", "FCT", "MOK", "ANH", "SJJ"), 
@@ -161,3 +162,6 @@ ggplot(cdecave, aes(x = day, y = Cond, color = Year)) + geom_line() + geom_point
   facet_wrap(~StationID) + ylab("Specific Conductance uS/cm")
 
 test = filter(cdecave, StationID == "SJJ", Cond > 5000)  
+
+
+

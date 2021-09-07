@@ -13,7 +13,7 @@ Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
 
 DF1997_2020 =  Dayflow$`Dayflow Results 1997 - 2020` %>%
   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  select(Date, OUT, X2, EXPORTS)
+  select(Date, OUT, X2, EXPORTS, SAC, SJR, SWP, CVP)
 
 DF1997_2020 = mutate(DF1997_2020, Month = month(Date), Julian = yday(Date))
 
@@ -21,13 +21,13 @@ DF1997_2020 = mutate(DF1997_2020, Month = month(Date), Julian = yday(Date))
 
 DF1970_1983 =  Dayflow$`Dayflow Results 1970 - 1983` %>%
   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  select(Date, OUT, EXPORT) %>%
+  select(Date, OUT, EXPORT, SAC, SJR, SWP, CVP) %>%
 mutate(Month = month(Date), Julian = yday(Date)) %>%
   rename(EXPORTS = EXPORT)
 
 DF1984_1996 = Dayflow$`Dayflow Results 1984 - 1996` %>%
   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  select(Date, OUT, EXPORT) %>%
+  select(Date, OUT, EXPORT, SAC, SJR, SWP, CVP) %>%
   mutate(Month = month(Date), Julian = yday(Date)) %>%
   rename(EXPORTS = EXPORT)
 
@@ -39,8 +39,28 @@ Season=case_when(Month%in%3:5 ~ "Spring", # Create seasonal variables
                  Month%in%c(12, 1, 2) ~ "Winter",
                  TRUE ~ NA_character_))
 
-DFsum = group_by(Dflow, Year, Season) %>%
-  summarize(X2 = mean(X2), OUT = mean(OUT), EXPORTS = mean(EXPORTS))
+DFsum = group_by(Dflow, Year) %>%
+  summarize(X2 = mean(X2), OUT = mean(OUT), EXPORTS = mean(EXPORTS),
+            SAC = mean(SAC), SJR = mean(SJR), SWP = mean(SWP), CVP = mean(CVP))
+
+
+ggplot(DFsum, aes(x = Year, y = SAC)) +
+  geom_line()
+
+ggplot(DFsum, aes(x = Year, y = SJR)) +
+  geom_line()
+
+ggplot(DFsum, aes(x = Year, y = EXPORTS)) +
+  geom_line()
+
+ggplot(filter(Dflow, Year >2015), aes(x = Date, y = EXPORTS)) +
+  geom_line()
+
+ggplot(DFsum, aes(x = Year, y = OUT)) +
+  geom_line()
+
+ggplot(DFsum, aes(x = Year, y = CVP)) +
+  geom_line()
 
 yeartypes <- read_csv("~/Drought/FLOATDrought/yeartypes.csv")
 DFsum2 = left_join(DFsum, yeartypes) %>%
