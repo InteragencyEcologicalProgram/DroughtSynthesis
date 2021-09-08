@@ -10,7 +10,7 @@ library(deltamapr)
 
 #first let's get the satilite data from NOAA
 #data from here: https://fhab.sfei.org/
-SatData1 = read_stars("C:/Users/rhartman/Desktop/OLCI_202105_Mosaic_CIcyano/sentinel-3a.2021121.0501.L3.CA_mosaic.v950V20193_1_2.CIcyano.tif")
+SatData1 = read_stars("C:/Users/rhartman/Desktop/OLCI_202107_Mosaic_CIcyano/sentinel-3a.2021211.0730.L3.CA_mosaic.v950V20193_1_2.CIcyano.tif")
 estuary = extent(WW_Delta)
 Delta = st_transform(WW_Delta, crs = st_crs(SatData1))
 #for unknown reasons, they have coded "NA" with numbers. Very dub.
@@ -23,4 +23,16 @@ SatData1[SatData1 == "252"] = NA
 SatData1[SatData1 == "251"] = NA
 SatDatacrop = st_crop(SatData1, Delta)
 
-ggplot() + geom_stars(data = SatDatacrop)
+SatDattest = SatDatacrop
+SatDattest= mutate(SatDattest, across(everything(), as.numeric)) %>%
+  mutate(CyanoHABs = sentinel.3a.2021211.0730.L3.CA_mosaic.v950V20193_1_2.CIcyano.tif,
+         sentinel.3a.2021211.0730.L3.CA_mosaic.v950V20193_1_2.CIcyano.tif = NULL) %>%
+  st_transform(st_crs(4326))
+
+Delta = st_transform(Delta, st_crs(4326))
+
+ggplot() +
+  geom_stars(data = SatDattest)+
+  scale_fill_viridis_b()+ 
+  geom_sf(data = Delta, alpha = 0, size = 0.1)+
+  coord_sf(xlim = c(-121.8, -121.3), ylim = c(37.8, 38.2))
