@@ -13,15 +13,20 @@ library(deltamapr)
 SatData1 = read_stars("C:/Users/rhartman/Desktop/OLCI_202107_Mosaic_CIcyano/sentinel-3a.2021211.0730.L3.CA_mosaic.v950V20193_1_2.CIcyano.tif")
 estuary = extent(WW_Delta)
 Delta = st_transform(WW_Delta, crs = st_crs(SatData1))
-#for unknown reasons, they have coded "NA" with numbers. Very dub.
+#for unknown reasons, they have coded "NA" with numbers. Very dumb.
 
 str(SatData1)
+#255 is "No Data"
 SatData1[SatData1 == "255"] = NA
+#254 is "No Data (invalid)"
 SatData1[SatData1 == "254"] = NA
+#253 is "No Data (Cloud)"
 SatData1[SatData1 == "253"] = NA
+#252 is "No Data (Land)
 SatData1[SatData1 == "252"] = NA
+#251 is "No Data (Adjacency)"
 SatData1[SatData1 == "251"] = NA
-SatDatacrop = st_crop(SatData1, Delta)
+SatDatacrop = st_crop(SatData1, st_bbox(Delta))
 
 SatDattest = SatDatacrop
 SatDattest= mutate(SatDattest, across(everything(), as.numeric)) %>%
