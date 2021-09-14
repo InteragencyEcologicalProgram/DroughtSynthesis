@@ -26,6 +26,8 @@ SatData1[SatData1 == "253"] = NA
 SatData1[SatData1 == "252"] = NA
 #251 is "No Data (Adjacency)"
 SatData1[SatData1 == "251"] = NA
+
+#
 SatDatacrop = st_crop(SatData1, st_bbox(Delta))
 
 SatDattest = SatDatacrop
