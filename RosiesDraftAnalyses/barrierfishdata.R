@@ -48,7 +48,7 @@ stas1 = st_join(stas, regions, join=st_intersects)%>% # Add subregions
 rename(Station = StationCode) %>%
   select(Station, Regions)
   
-TNS2 = left_join(stas1, Townet)
+TNS2 = left_join(stas1, Townet) 
 
 #Now just data from 2012 to present. From wide to long
 

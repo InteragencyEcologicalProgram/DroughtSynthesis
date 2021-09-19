@@ -27,7 +27,7 @@ ggplot() + geom_sf(data = regions) + geom_sf(data = BarHABs)
 
 BH =   st_join(BarHABs, regions) %>%
   st_drop_geometry() %>%
-  filter(!is.na(Regions), Month >4 & Month <11) %>%
+  filter(!is.na(Regions), Month >4) %>%
   mutate(Yearf = as.factor(Year))
 
 BHm = filter(BH, !is.na(Microcystis))
@@ -51,8 +51,8 @@ BH2018 = filter(BHm, Year == 2018)
 
 
 ggplot(BH2015.2014, aes(x = Month, fill = as.factor(Microcystis))) +geom_bar(position = "fill")+ facet_wrap(~Regions)  +
-  scale_fill_manual(values = c("white", "tan2", "yellow", "red"), 
-                    labels = c("absent", "low", "medium", "high"),
+  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
+                    labels = c("absent", "low", "medium", "high", "veryhigh"),
                     name = "Microcystis")
 
 ggplot(BH2015.2014, aes(x = as.factor(Microcystis), y = Temperature)) + geom_boxplot()+ facet_wrap(~Year)
