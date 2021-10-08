@@ -61,6 +61,8 @@ df_wq_coords <- left_join(df_coords, wq, by = c('Station'))
 
 df_wq_coords <- add_season_col(df_wq_coords)
 
+df_wq_coords <- add_wy_col(df_wq_coords)
+
 df_wq_coords <- df_wq_coords %>% rename(Region = Location)
 ```
 

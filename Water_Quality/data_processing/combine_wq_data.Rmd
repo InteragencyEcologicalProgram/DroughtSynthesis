@@ -6,6 +6,68 @@
 ```
 
 ```{r}
+library(tidyverse)
+library(deltamapr)
+library(lubridate)
+library(sf)
+library(sp)
+source('Water_Quality/wq_funcs.R')
+```
 
+```{r}
+# import data
+fp_abs_emp <- 'WQ_Team/processed_data/EMPWQData1975-2020.csv'
+fp_abs_sf <- 'WQ_Team/processed_data/SFBayWQData1969-2021.csv'
+
+df_emp <- read_csv(drought_abs_path(fp_abs_emp))
+df_sf <- read_csv(drought_abs_path(fp_abs_sf))
+```
+
+```{r}
+# sort(colnames(df_emp))
+```
+
+```{r}
+# sort(colnames(df_sf))
+```
+
+```{r}
+#TODO: figure out how to convert nitrate/nitrite
+
+# combine & clean up wq datasets
+df_sf <- df_sf %>% rename(DissAmmonia = `NH4 (Micromolar)`,
+                          DON = `NO2 (Micromolar)`,
+                          DissNitrateNitrite = `NO32 (Micromolar)`,
+                          TotPhos = `PO4 (Micromolar)`,
+                          DissSilica = `Si (Micromolar)`)
+
+
+# convert units
+df_sf$DON <- sapply(df_sf$DON, function(x) x*(1/46.005580)) # molar mass of NO2
+df_sf$TotPhos <- sapply(df_sf$TotPhos, function(x) x*(1/94.971482)) # molar mass of PO4
+df_sf$DissAmmonia <- sapply(df_sf$DissAmmonia, function(x) x*(1/18.038508)) # molar mass of NH4
+df_sf$DissSilica <- sapply(df_sf$DissSilica, function(x) x*(1/28.085530)) # molar mass of Si
+
+df_sf$Station <- as.character(df_sf$Station)
+df_emp$DON <- as.numeric(df_emp$DON)
+df_sf$DS <- 'SF'
+df_emp$DS <- 'EMP'
+
+# subset dfs
+df_sf <- subset(df_sf, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DON', 'DissNitrateNitrite', 'TotPhos', 'DissSilica', 'DS'))
+df_emp <- subset(df_emp, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DON', 'DissNitrateNitrite', 'TotPhos', 'DissSilica', 'DS'))
+```
+
+```{r}
+df_wq <- bind_rows(df_emp, df_sf)
+
+# writing a temp file
+write_csv(df_wq, 'Water_Quality/temp_wq_file.csv')
+```
+
+
+```{r}
+ggplot(df_wq, aes(Date, TotPhos, color = DS)) +
+  geom_point()
 ```
 

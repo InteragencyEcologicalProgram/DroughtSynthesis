@@ -14,7 +14,7 @@ library(sp)
 source('Water_Quality/wq_funcs.R')
 ```
 
-```{r}
+```{r message = FALSE}
 # import data
 fp_abs_wq <- 'WQ_Team/raw_data/EMP_delta_water_quality_1975_2020.csv'
 fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
@@ -34,6 +34,8 @@ df_wq$Date <- as.Date(df_wq$Date, '%m/%d/%Y', tz = 'UTC')
 df_wq <- subset(df_wq, !(Station %in% c('EZ2','EZ2-SJR','EZ6','EZ6-SJR')))
 
 df_wq_coords <- add_season_col(df_wq)
+
+df_wq_coords <- add_wy_col(df_wq_coords)
 
 df_wq_coords <- left_join(df_wq_coords, df_coords[,c('Station','Longitude','Latitude')], by = c('Station'))
 ```
