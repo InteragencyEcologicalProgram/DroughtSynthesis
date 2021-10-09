@@ -36,7 +36,7 @@ indecies = filter(indecies,  location == "Sacramento Valley") %>%
 
 indecies$num <- sequence(rle(indecies$DY)$lengths)
 
-droughts = read.csv("WYs_1906-2020.csv")
+droughts = read.csv("data/WYs_1906-2020.csv")
 lm1 = glm(Drought ~WY, data = droughts, family = "binomial")
 summary(lm1)
 library(visreg)
@@ -78,3 +78,21 @@ ggplot(pdsi_annualSJ, aes(x = Year, y = pdsi) ) + geom_bar(stat = "identity") + 
 lm3SJ = lm(pdsi~Year, data = pdsi_annualSJ)
 summary(lm3SJ)
 
+###########################################3333
+#Quick plot of drought/wet years
+
+DW = read_excel("data/Integrated data set.xlsx", sheet = "yearassignments")
+ggplot(DW, aes(x = Year, y = Index, fill = Drought)) + geom_col() + 
+  scale_fill_manual(values = c("red", "grey", "blue"), 
+                    labels = c("Drought", "Neutral", "Wet Period"))
+
+#recent years
+DWrecent = data.frame(Year = 2011:2021, DW = c("Wet", "Neutral", "Neutral", 
+                                               "Dry", "Dry + Barrier", "Neutral",
+                                               "Wet", "Neutral",  "Wet",
+                                               "Dry", "Dry + Barrier"), 
+                      Index = c(filter(DW, Year >2010)$Index, 4))
+
+ggplot(DWrecent, aes(x = Year, y = Index, fill = DW)) + geom_col() + 
+  scale_fill_manual(values = c("orange", "red", "grey", "blue"), name = NULL)+
+  scale_x_continuous(breaks = c(2011, 2014, 2015, 2017, 2019, 2020, 2021))
