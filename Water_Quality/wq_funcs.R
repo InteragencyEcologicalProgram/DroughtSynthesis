@@ -35,6 +35,19 @@ add_season_col <- function(df) {
     )
 }
 
+season_to_num <- function(df) {
+  df <- df %>%
+    mutate(
+      Season =
+        case_when(
+          Season == 'Spring' ~ 3,
+          Season == 'Summer' ~ 6,
+          Season == 'Fall' ~ 9,
+          Season == 'Winter' ~ 12
+        )
+    )
+}
+
 add_wy_col <- function(df) {
   assertthat::assert_that(
     assertthat::is.date(df$Date),
