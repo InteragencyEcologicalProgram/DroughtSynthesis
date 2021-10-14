@@ -14,16 +14,14 @@ library(sp)
 source('Water_Quality/wq_funcs.R')
 ```
 
-```{r}
+```{r message = FALSE}
 # import data
 fp_abs_wq <- 'WQ_Team/raw_data/EMP_delta_water_quality_1975_2020.csv'
 fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
-```
 
-```{r}
 df_wq <- read_csv(drought_abs_path(fp_abs_wq))
 
-df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
+df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv'))) # change the fp of this one
 df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'EMP_wq_coords.csv')))
 ```
 
@@ -32,10 +30,12 @@ df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'EMP_wq_coords.csv')))
 sf_delta <- R_EDSM_Subregions_Mahardja_FLOAT
 
 # clean wq file
-df_wq$Date <- as.Date(df_wq$Date, '%m/%d/%y')
+df_wq$Date <- as.Date(df_wq$Date, '%m/%d/%Y', tz = 'UTC')
 df_wq <- subset(df_wq, !(Station %in% c('EZ2','EZ2-SJR','EZ6','EZ6-SJR')))
 
 df_wq_coords <- add_season_col(df_wq)
+
+df_wq_coords <- add_wy_col(df_wq_coords)
 
 df_wq_coords <- left_join(df_wq_coords, df_coords[,c('Station','Longitude','Latitude')], by = c('Station'))
 ```
@@ -61,8 +61,8 @@ spdf_wq$SubRegion <- col_sr$SubRegion
 sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
 
-# add longterm col
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion'))
+# add longterm col 
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion')) # add the region col as well
 
 # check data
 ggplot() + 
@@ -73,7 +73,7 @@ ggplot() +
 
 ```{r}
 # check extra regions in original wq df (ie. not in sf_wq_lt)
-unique(sf_wq$SubRegion)[!(unique(sf_wq$SubRegion) %in% unique(df_regions$SubRegion))]
+unique(sf_wq$SubRegion)[!(unique(sf_wq$SubRegion) %in% unique(df_regions$SubRegion))] # double check the regions
 ```
 
 ```{r}
@@ -85,4 +85,6 @@ df_wq_lt <- as_tibble(sf_wq_lt)
 df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
 
 write_csv(df_wq_lt, drought_abs_path('WQ_Team/processed_data/EMPWQData1975-2020.csv'))
+
+# add in the regions from rosie's file
 ```
