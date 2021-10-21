@@ -104,3 +104,22 @@ ggplot(Centr, aes(x = Regions, y = Catch)) +
   geom_boxplot() + facet_wrap(~Year)
 #soo, no. Maybe use the DJFMP beach seines instead?
 
+
+############################################################
+STN = read_csv("data/HABs/STNCatchPerStation2021.csv")
+STN = mutate(STN, Date = mdy(SampDate)) %>%
+  pivot_longer(cols = "<>":"Yellowfin Goby", names_to = "Species", values_to = "Catch") %>%
+  filter(!is.na(Catch)) %>%
+  mutate(Survey2 = factor(Survey, labels = c("June 1", "June 15", "Jul 1", "Jul 15", "Aug 1", "Aug 15")),
+         Species2 = case_when(Species %in% c("Bay Goby", "Chameleon Goby", "Cheekspot Goby", 
+                                              "Gobies (Unid)", "Jacksmelt", "Largemouth Bass",
+                                              "Lepomis (UNID)", "Pacific Lamprey", "Prickly Sculpin",
+                                              "Staghorn Sculpin", "Starry Flounder", "Tule Perch") ~ "Other",
+                               TRUE ~ Species))
+  
+  
+ggplot(STN, aes(x = Survey2, y = Catch)) + geom_col(aes(fill = Species2)) + 
+  facet_wrap(~Species2, scales = "free_y")+
+  scale_x_discrete(name = NULL) +
+  scale_fill_discrete(guide = NULL)+
+  theme(axis.text.x = element_text(angle = 90))

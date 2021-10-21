@@ -4,19 +4,17 @@ library(waterYearType)
 library(tidyverse)
 library(smonitr)
 
-indecies = water_year_indices
-i1820 = data.frame(WY = c(2018,2019,2020, 2018,2019,2020), Index = c(7.14, 10.34, 6.0, 3.03, 4.94, 2.1), 
-                   Yr_type = c("Below Normal", "Wet", "Dry", "Below Normal", "Wet", 
-                              "Critical"), location = c(rep("Sacramento Valley", 3), rep("San Joaquin Valley", 3)))
+indecies = filter(water_year_indices, location != "San Joaquin Valley")
+i1820 = data.frame(WY = c(2018,2019,2020,2021), Index = c(7.14, 10.34, 6.0, 4.0), 
+                   Yr_type = c("Below Normal", "Wet", "Dry", "Critical"), location = c(rep("Sacramento Valley", 4)))
 indecies = bind_rows(indecies, i1820)
 
 ggplot(filter(indecies, location != "San Joaquin Valley"), aes(x = WY, y = Index))+
   geom_bar(stat = "identity", aes(fill = Yr_type))+  
   scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))+
-  geom_smooth(method = "lm") +
-
+  #geom_smooth(method = "lm") +
   #facet_grid(location~., scales = "free_y")+
-  coord_cartesian(xlim = c(1900, 2020))+
+  coord_cartesian(xlim = c(1905, 2021))+
   theme(legend.position = "bottom")
 
 
@@ -96,3 +94,7 @@ DWrecent = data.frame(Year = 2011:2021, DW = c("Wet", "Neutral", "Neutral",
 ggplot(DWrecent, aes(x = Year, y = Index, fill = DW)) + geom_col() + 
   scale_fill_manual(values = c("orange", "red", "grey", "blue"), name = NULL)+
   scale_x_continuous(breaks = c(2011, 2014, 2015, 2017, 2019, 2020, 2021))
+
+
+ggplot(DW, aes(x = Year, y = Index, fill = Yr_type)) + geom_col() +  
+  scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))

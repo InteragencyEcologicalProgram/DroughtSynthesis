@@ -66,3 +66,23 @@ ggplot()+
   theme_bw()+
   theme(legend.position="none")+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.6, 38.6))
+
+################################################################
+#region assignments
+
+stations = read_csv("data/AllIEPstations_20200220.csv") %>%
+  filter(!is.na(Latitude))
+stas = st_as_sf(stations, coords = c("Longitude", "Latitude"), crs = 4326) %>%
+  st_transform(crs = st_crs(R_EDSM_Subregions_Mahardja_FLOAT))
+
+join = st_join(stas, R_EDSM_Subregions_Mahardja_FLOAT) %>%
+  mutate(Region = NULL) %>%
+  st_drop_geometry()
+
+Regs = read_csv("RosiesDraftAnalyses/Rosies_regions2.csv") %>%
+  select(Region, SubRegion) %>%
+  unique()
+
+staswregs = left_join(join, Regs) %>%
+  left_join(stations)
+write.csv(staswregs, "AllIEP_wRegions.csv")
