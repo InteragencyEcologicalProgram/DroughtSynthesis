@@ -112,7 +112,7 @@ df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
 
 # standardize units
 # convert units
-df_wq_lt$`NO2 (Micromolar)` <- sapply(df_wq_lt$`NO2 (Micromolar)`, function(x) x*(46.0055/(10^3))) # molar mass of NO2
+df_wq_lt$`NO2 (Micromolar)` <- sapply(df_wq_lt$`NO2 (Micromolar)`, function(x) x*(14.0067/(10^3))) # molar mass of N
 df_wq_lt$`PO4 (Micromolar)` <- sapply(df_wq_lt$`PO4 (Micromolar)`, function(x) x*(30.97/(10^3))) # molar mass of P
 df_wq_lt$`NH4 (Micromolar)` <- sapply(df_wq_lt$`NH4 (Micromolar)`, function(x) x*(14.0067/(10^3))) # molar mass of N
 df_wq_lt$`Si (Micromolar)` <- sapply(df_wq_lt$`Si (Micromolar)`, function(x) x*(60.08/(10^3))) # molar mass of SiO2

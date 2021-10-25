@@ -33,24 +33,23 @@ df_sf$DS <- 'SF'
 df_emp$DS <- 'EMP'
 
 # subset dfs
-df_sf <- subset(df_sf, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DON', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
-df_emp <- subset(df_emp, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DON', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
+df_sf <- subset(df_sf, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
+df_emp <- subset(df_emp, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
 ```
 
 ```{r}
+# combine
 df_wq <- bind_rows(df_emp, df_sf)
 
 # write file
-write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/EMPWQData1975-2020.csv'))
-
-
+write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv'))
 ```
 
 
 ```{r}
 # checks
 df_wq_sub <- subset(df_wq, SubRegion == 'Lower Sacramento River')
-ggplot(df_wq, aes(Date, DissOrthophos, color = DS)) +
+ggplot(df_wq_sub, aes(Date, DissOrthophos, color = DS)) +
   geom_point()
 ```
 
