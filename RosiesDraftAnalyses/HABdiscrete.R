@@ -8,6 +8,9 @@ library(lubridate)
 library(ggmap)
 library(readxl)
 
+#I had Jeff Galef add teh 2021 , summer townet, and FMWT data to the 
+#water quality data set that Sam put together. He did it in python
+#and I don't have the code
 
 HABs = read_csv("data/HABs/WQ_data_integrated4.csv")
 str(HABs)
@@ -22,11 +25,17 @@ HABs = mutate(HABs,  Datex = as.Date(Date2, origin = "1899-12-30"),
 NCRO <- read_excel("data/HABs/WQES HAB Observations and Field Readings.xlsx", 
                    col_types = c("text", "date", "numeric", 
                                  "numeric", "text", "numeric"))
+
+#For once the data is in "long" format and we want it in "wide" format
 NCRO2 = pivot_wider(NCRO, id_cols = c(StationCode, Date, `Secchi (m)`, `Microcystis`), 
                     names_from = Parameter, values_from = `Field Sonde Value`, values_fn = first)
+
+#read in GPS and attach it
 stas = read_excel("data/HABs/Station_Metadata_Coords.xlsx") %>%
   select(`WQES Code`, `Latitude (WGS84)`, `Longitude (WGS84)`) %>%
   rename(StationCode = `WQES Code`, Latitude = `Latitude (WGS84)`, Longitude = `Longitude (WGS84)`)
+
+#join with GPS and rename columns so they are the same as the integrated data set
 NCRO3 = left_join(NCRO2, stas) %>%
   mutate(Source = "NCRO") %>%
   rename(Chlorophyll = `Chlorophyll_ug/L`, Temperature = Temp_C, 
@@ -37,10 +46,13 @@ NCRO3 = left_join(NCRO2, stas) %>%
 names(NCRO3)
 names(HABs)
 
+#add to the rest of the data
 HABs1 = bind_rows(HABs, NCRO3)
 ###########################################################################
 #Now get the DOP data in there
 DOP = read_excel("data/HABs/DOP water quality 2019-2021.xlsx", na = "NA")
+
+#remove the "deep" samples (with no seperate HAB score) and rename columns
 DOP = filter(DOP, !is.na(hab_score)) %>%
   mutate(Source = "DOP", Month = month(date), Year = year(date),
          ) %>%
@@ -368,3 +380,25 @@ library(visreg)
 #Keith mentioned multinomial models
 #sound include a random effect for program. 
 #random effects for station
+
+#regions for drought report
+
+Regions<-read_csv("RosiesDraftAnalyses/Rosies_regions2.csv")
+
+## Load Delta Shapefile from Brian
+Delta<-deltamapr::R_EDSM_Subregions_Mahardja_FLOAT%>%
+  filter(SubRegion%in%unique(Regions$SubRegion))%>%  #Filter to regions of interest
+  dplyr::select(SubRegion)
+
+Regs = unique(Regions[,c(1,5)])
+Delta = merge(Delta, Regs) %>%
+  st_transform(crs = 4326)
+
+
+
+Habs2 =   st_join(HABssf, Delta) %>%
+  st_drop_geometry() %>%
+  filter(!is.na(Region), !is.na(Microcystis)) %>% 
+  mutate(Yearf = as.factor(Year),
+         Month2 = factor(Month, levels = c(6,7,8,9,10),
+                         labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    

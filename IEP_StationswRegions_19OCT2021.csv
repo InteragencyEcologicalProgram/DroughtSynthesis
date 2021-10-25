@@ -1,0 +1,482 @@
+"","StationCode","Survey","SubRegion","SQM","Region"
+"1","323","20mm","San Pablo Bay",110952522.98,NA
+"2","328","20mm","San Pablo Bay",110952522.98,NA
+"3","329","20mm","San Pablo Bay",110952522.98,NA
+"4","334","20mm","San Pablo Bay",110952522.98,NA
+"5","335","20mm","San Pablo Bay",110952522.98,NA
+"6","336","20mm","San Pablo Bay",110952522.98,NA
+"7","340","20mm","Lower Napa River",35732380.6852,NA
+"8","342","20mm","Lower Napa River",35732380.6852,NA
+"9","343","20mm","Lower Napa River",35732380.6852,NA
+"10","344","20mm","Upper Napa River",21496635.9763,NA
+"11","345","20mm","Upper Napa River",21496635.9763,NA
+"12","346","20mm","Upper Napa River",21496635.9763,NA
+"13","405","20mm","Carquinez Strait",48215634.4313,NA
+"14","411","20mm","West Suisun Bay",72782660.1103,"Suisun Bay"
+"15","418","20mm","West Suisun Bay",72782660.1103,"Suisun Bay"
+"16","501","20mm","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"17","504","20mm","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"18","508","20mm","Confluence",39171737.8896,"Confluence"
+"19","513","20mm","Confluence",39171737.8896,"Confluence"
+"20","519","20mm","Honker Bay",26902815.8548,"Suisun Bay"
+"21","520","20mm","Confluence",39171737.8896,"Confluence"
+"22","602","20mm","Grizzly Bay",33367570.2238,"Suisun Bay"
+"23","606","20mm","Suisun Marsh",345614762.305,"Suisun Marsh"
+"24","609","20mm","Suisun Marsh",345614762.305,"Suisun Marsh"
+"25","610","20mm","Suisun Marsh",345614762.305,"Suisun Marsh"
+"26","703","20mm","Lower Sacramento River",62543303.8104,"Confluence"
+"27","704","20mm","Lower Sacramento River",62543303.8104,"Confluence"
+"28","705","20mm","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"29","706","20mm","Lower Sacramento River",62543303.8104,"Confluence"
+"30","707","20mm","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"31","711","20mm","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"32","716","20mm","Liberty Island",471689277.763,"North"
+"33","718","20mm","Cache Slough and Lindsey Slough",471689277.763,"North"
+"34","719","20mm","Lower Sacramento River Ship Channel",43530612.3389,"North"
+"35","720","20mm","Cache Slough and Lindsey Slough",471689277.763,"North"
+"36","723","20mm","Lower Cache Slough",26634131.9919,"North"
+"37","724","20mm","Steamboat and Miner Slough",332493048.87,"North"
+"38","726","20mm","Steamboat and Miner Slough",332493048.87,"North"
+"39","801","20mm","Confluence",39171737.8896,"Confluence"
+"40","804","20mm","Lower San Joaquin River",46190041.3284,"Confluence"
+"41","809","20mm","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"42","812","20mm","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"43","815","20mm","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"44","901","20mm","Franks Tract",94761329.0714,"SouthCentral"
+"45","902","20mm","Holland Cut",28298743.1694,"SouthCentral"
+"46","906","20mm","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"47","910","20mm","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"48","912","20mm","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"49","914","20mm","Mildred Island",73617420.2724,"SouthCentral"
+"50","915","20mm","Old River",30414521.6339,"SouthCentral"
+"51","918","20mm","Victoria Canal",43252269.9663,"SouthCentral"
+"52","919","20mm","Lower Mokelumne River",213170012.36,"SouthCentral"
+"53","AM001S","DJFMP","Upper Sacramento River",332493048.87,NA
+"54","DS002S","DJFMP","Disappointment Slough",182085788.697,"SouthCentral"
+"55","GS010E","DJFMP","Sacramento River near Ryde",184440250.0998,"North"
+"56","LI001E","DJFMP","Liberty Island",471689277.763,"North"
+"57","LI001W","DJFMP","Liberty Island",471689277.763,"North"
+"58","LI002E","DJFMP","Liberty Island",471689277.763,"North"
+"59","LI002W","DJFMP","Liberty Island",471689277.763,"North"
+"60","LI003E","DJFMP","Liberty Island",471689277.763,"North"
+"61","LI003W","DJFMP","Liberty Island",471689277.763,"North"
+"62","LI004E","DJFMP","Liberty Island",471689277.763,"North"
+"63","LI004W","DJFMP","Liberty Island",471689277.763,"North"
+"64","LI005E","DJFMP","Liberty Island",471689277.763,"North"
+"65","LI005W","DJFMP","Liberty Island",471689277.763,"North"
+"66","LI006E","DJFMP","Liberty Island",471689277.763,"North"
+"67","LI006W","DJFMP","Liberty Island",471689277.763,"North"
+"68","LI007E","DJFMP","Liberty Island",471689277.763,"North"
+"69","LI007W","DJFMP","Liberty Island",471689277.763,"North"
+"70","LI008E","DJFMP","Liberty Island",471689277.763,"North"
+"71","LI008W","DJFMP","Liberty Island",471689277.763,"North"
+"72","LI009E","DJFMP","Liberty Island",471689277.763,"North"
+"73","LI009W","DJFMP","Liberty Island",471689277.763,"North"
+"74","LI010E","DJFMP","Liberty Island",471689277.763,"North"
+"75","LI010W","DJFMP","Liberty Island",471689277.763,"North"
+"76","LI011E","DJFMP","Liberty Island",471689277.763,"North"
+"77","LP003E","DJFMP","Lower Mokelumne River",213170012.36,"SouthCentral"
+"78","MK004W","DJFMP","Lower Mokelumne River",213170012.36,"SouthCentral"
+"79","MR010W","DJFMP","Middle River",71508060.1596,"SouthCentral"
+"80","MS001N","DJFMP","Lower Sacramento River",62543303.8104,"Confluence"
+"81","OR003W","DJFMP","Holland Cut",28298743.1694,"SouthCentral"
+"82","OR014W","DJFMP","Old River",30414521.6339,"SouthCentral"
+"83","OR019E","DJFMP","Victoria Canal",43252269.9663,"SouthCentral"
+"84","OR023E","DJFMP","Victoria Canal",43252269.9663,"SouthCentral"
+"85","SA001M","DJFMP","San Francisco Bay",0,NA
+"86","SA004W","DJFMP","San Francisco Bay",0,NA
+"87","SA007E","DJFMP","San Francisco Bay",0,NA
+"88","SA008W","DJFMP","San Francisco Bay",0,NA
+"89","SA009E","DJFMP","San Francisco Bay",0,NA
+"90","SA010W","DJFMP","San Francisco Bay",0,NA
+"91","SB001M","DJFMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"92","SB001N","DJFMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"93","SB001S","DJFMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"94","SB001X","DJFMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"95","SB018M","DJFMP","Confluence",39171737.8896,"Confluence"
+"96","SB018N","DJFMP","Confluence",39171737.8896,"Confluence"
+"97","SB018S","DJFMP","Confluence",39171737.8896,"Confluence"
+"98","SB018X","DJFMP","Confluence",39171737.8896,"Confluence"
+"99","SF014E","DJFMP","Upper Mokelumne River",213170012.36,"SouthCentral"
+"100","SJ001S","DJFMP","Lower San Joaquin River",46190041.3284,"Confluence"
+"101","SJ005N","DJFMP","Lower San Joaquin River",46190041.3284,"Confluence"
+"102","SJ026S","DJFMP","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"103","SJ032S","DJFMP","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"104","SJ041N","DJFMP","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"105","SJ051E","DJFMP","Upper San Joaquin River",36515129.8834,"SouthCentral"
+"106","SJ054M","DJFMP","Upper San Joaquin River",36515129.8834,"SouthCentral"
+"107","SJ056E","DJFMP","Upper San Joaquin River",36515129.8834,"SouthCentral"
+"108","SJ058E","DJFMP",NA,NA,NA
+"109","SJ058W","DJFMP",NA,NA,NA
+"110","SJ063W","DJFMP",NA,NA,NA
+"111","SJ065W","DJFMP",NA,NA,NA
+"112","SJ068W","DJFMP",NA,NA,NA
+"113","SJ070N","DJFMP",NA,NA,NA
+"114","SJ074A","DJFMP",NA,NA,NA
+"115","SJ074W","DJFMP",NA,NA,NA
+"116","SJ076W","DJFMP",NA,NA,NA
+"117","SJ077E","DJFMP",NA,NA,NA
+"118","SJ079E","DJFMP",NA,NA,NA
+"119","SJ083W","DJFMP",NA,NA,NA
+"120","SJ087W","DJFMP",NA,NA,NA
+"121","SP000W","DJFMP","San Pablo Bay",110952522.98,NA
+"122","SP001W","DJFMP","San Pablo Bay",110952522.98,NA
+"123","SP003E","DJFMP","San Pablo Bay",110952522.98,NA
+"124","SR012E","DJFMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"125","SR012W","DJFMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"126","SR014W","DJFMP","Lower Cache Slough",26634131.9919,"North"
+"127","SR017E","DJFMP","Sacramento River near Ryde",184440250.0998,"North"
+"128","SR024E","DJFMP","Sacramento River near Ryde",184440250.0998,"North"
+"129","SR036E","DJFMP","Middle Sacramento River",332493048.87,"North"
+"130","SR036M","DJFMP","Middle Sacramento River",332493048.87,"North"
+"131","SR036W","DJFMP","Middle Sacramento River",332493048.87,"North"
+"132","SR037E","DJFMP","Middle Sacramento River",332493048.87,"North"
+"133","SR037M","DJFMP","Middle Sacramento River",332493048.87,"North"
+"134","SR037W","DJFMP","Middle Sacramento River",332493048.87,"North"
+"135","SR038E","DJFMP","Middle Sacramento River",332493048.87,"North"
+"136","SR038M","DJFMP","Middle Sacramento River",332493048.87,"North"
+"137","SR038W","DJFMP","Middle Sacramento River",332493048.87,"North"
+"138","SR043M","DJFMP","Middle Sacramento River",332493048.87,"North"
+"139","SR043W","DJFMP","Middle Sacramento River",332493048.87,"North"
+"140","SR049E","DJFMP","Upper Sacramento River",332493048.87,NA
+"141","SR055E","DJFMP","Upper Sacramento River",332493048.87,NA
+"142","SR055M","DJFMP","Upper Sacramento River",332493048.87,NA
+"143","SR055W","DJFMP","Upper Sacramento River",332493048.87,NA
+"144","SR055X","DJFMP","Upper Sacramento River",332493048.87,NA
+"145","SR057E","DJFMP","Upper Sacramento River",332493048.87,NA
+"146","SR060E","DJFMP","Upper Sacramento River",332493048.87,NA
+"147","SR062E","DJFMP",NA,NA,NA
+"148","SR071E","DJFMP",NA,NA,NA
+"149","SR080E","DJFMP",NA,NA,NA
+"150","SR090W","DJFMP",NA,NA,NA
+"151","SR094E","DJFMP",NA,NA,NA
+"152","SR119E","DJFMP",NA,NA,NA
+"153","SR130E","DJFMP",NA,NA,NA
+"154","SR138E","DJFMP",NA,NA,NA
+"155","SR144W","DJFMP",NA,NA,NA
+"156","SS011N","DJFMP","Middle Sacramento River",332493048.87,"North"
+"157","TM001N","DJFMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"158","WD002W","DJFMP","Rock Slough and Discovery Bay",61462064.9065,NA
+"159","XC001N","DJFMP","Upper Mokelumne River",213170012.36,"SouthCentral"
+"160","C10","EMP",NA,NA,NA
+"161","C10A","EMP",NA,NA,NA
+"162","C3","EMP","Middle Sacramento River",332493048.87,"North"
+"163","C3A","EMP","Middle Sacramento River",332493048.87,"North"
+"164","C7","EMP","Upper San Joaquin River",36515129.8834,"SouthCentral"
+"165","C9","EMP","Victoria Canal",43252269.9663,"SouthCentral"
+"166","D10","EMP","Confluence",39171737.8896,"Confluence"
+"167","D11","EMP","Lower Sacramento River",62543303.8104,"Confluence"
+"168","D12","EMP","Lower San Joaquin River",46190041.3284,"Confluence"
+"169","D14A","EMP","Lower San Joaquin River",46190041.3284,"Confluence"
+"170","D15","EMP","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"171","D16","EMP","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"172","D19","EMP","Franks Tract",94761329.0714,"SouthCentral"
+"173","D2","EMP","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"174","D22","EMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"175","D24","EMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"176","D26","EMP","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"177","D28A","EMP","Old River",30414521.6339,"SouthCentral"
+"178","D4","EMP","Lower Sacramento River",62543303.8104,"Confluence"
+"179","D41","EMP","San Pablo Bay",110952522.98,NA
+"180","D41A","EMP","San Pablo Bay",110952522.98,NA
+"181","D42","EMP","San Pablo Bay",110952522.98,NA
+"182","D6","EMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"183","D7","EMP","Grizzly Bay",33367570.2238,"Suisun Bay"
+"184","D8","EMP","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"185","D9","EMP","Honker Bay",26902815.8548,"Suisun Bay"
+"186","MD10","EMP","Disappointment Slough",182085788.697,"SouthCentral"
+"187","MD10A","EMP","Disappointment Slough",182085788.697,"SouthCentral"
+"188","MD6","EMP","Lower Mokelumne River",213170012.36,"SouthCentral"
+"189","MD7","EMP","Lower Mokelumne River",213170012.36,"SouthCentral"
+"190","MD7A","EMP","Lower Mokelumne River",213170012.36,"SouthCentral"
+"191","NZ002","EMP","Carquinez Strait",48215634.4313,NA
+"192","NZ004","EMP","Carquinez Strait",48215634.4313,NA
+"193","NZ028","EMP","Grizzly Bay",33367570.2238,"Suisun Bay"
+"194","NZ032","EMP","Suisun Marsh",345614762.305,"Suisun Marsh"
+"195","NZ048","EMP","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"196","NZ054","EMP","Confluence",39171737.8896,"Confluence"
+"197","NZ060","EMP","Lower Sacramento River",62543303.8104,"Confluence"
+"198","NZ064","EMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"199","NZ068","EMP","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"200","NZ074","EMP","Lower San Joaquin River",46190041.3284,"Confluence"
+"201","NZ086","EMP","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"202","NZ092","EMP","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"203","NZ325","EMP","San Pablo Bay",110952522.98,NA
+"204","NZ41A","EMP","San Pablo Bay",110952522.98,NA
+"205","NZD06","EMP","West Suisun Bay",72782660.1103,"Suisun Bay"
+"206","NZD16","EMP","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"207","NZD19","EMP","Franks Tract",94761329.0714,"SouthCentral"
+"208","NZD28","EMP","Holland Cut",28298743.1694,"SouthCentral"
+"209","NZD41","EMP","San Pablo Bay",110952522.98,NA
+"210","NZM10","EMP","Disappointment Slough",182085788.697,"SouthCentral"
+"211","NZS42","EMP","Suisun Marsh",345614762.305,"Suisun Marsh"
+"212","P10","EMP","Middle River",71508060.1596,"SouthCentral"
+"213","P10A","EMP","Middle River",71508060.1596,"SouthCentral"
+"214","P12","EMP","Grant Line Canal and Old River",237261246.029,NA
+"215","P12A","EMP","Grant Line Canal and Old River",237261246.029,NA
+"216","P2","EMP",NA,NA,NA
+"217","P8","EMP","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"218","S42","EMP","Suisun Marsh",345614762.305,"Suisun Marsh"
+"219","72","FMWT","Sacramento River near Ryde",184440250.0998,"North"
+"220","73","FMWT","Middle Sacramento River",332493048.87,"North"
+"221","305","FMWT","San Pablo Bay",110952522.98,NA
+"222","306","FMWT","San Pablo Bay",110952522.98,NA
+"223","307","FMWT","San Pablo Bay",110952522.98,NA
+"224","308","FMWT","San Pablo Bay",110952522.98,NA
+"225","309","FMWT","San Pablo Bay",110952522.98,NA
+"226","310","FMWT","San Pablo Bay",110952522.98,NA
+"227","311","FMWT","San Pablo Bay",110952522.98,NA
+"228","314","FMWT","San Pablo Bay",110952522.98,NA
+"229","315","FMWT","San Pablo Bay",110952522.98,NA
+"230","321","FMWT","San Pablo Bay",110952522.98,NA
+"231","322","FMWT","San Pablo Bay",110952522.98,NA
+"232","323","FMWT","San Pablo Bay",110952522.98,NA
+"233","325","FMWT","San Pablo Bay",110952522.98,NA
+"234","326","FMWT","San Pablo Bay",110952522.98,NA
+"235","327","FMWT","San Pablo Bay",110952522.98,NA
+"236","328","FMWT","San Pablo Bay",110952522.98,NA
+"237","329","FMWT","San Pablo Bay",110952522.98,NA
+"238","334","FMWT","San Pablo Bay",110952522.98,NA
+"239","335","FMWT","San Pablo Bay",110952522.98,NA
+"240","336","FMWT","San Pablo Bay",110952522.98,NA
+"241","337","FMWT","San Pablo Bay",110952522.98,NA
+"242","338","FMWT","Carquinez Strait",48215634.4313,NA
+"243","339","FMWT","Carquinez Strait",48215634.4313,NA
+"244","340","FMWT","Lower Napa River",35732380.6852,NA
+"245","341","FMWT","Lower Napa River",35732380.6852,NA
+"246","401","FMWT","Carquinez Strait",48215634.4313,NA
+"247","403","FMWT","Carquinez Strait",48215634.4313,NA
+"248","404","FMWT","Carquinez Strait",48215634.4313,NA
+"249","405","FMWT","Carquinez Strait",48215634.4313,NA
+"250","406","FMWT","Carquinez Strait",48215634.4313,NA
+"251","407","FMWT","Carquinez Strait",48215634.4313,NA
+"252","408","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"253","409","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"254","410","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"255","411","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"256","412","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"257","413","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"258","414","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"259","415","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"260","416","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"261","417","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"262","418","FMWT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"263","501","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"264","502","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"265","503","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"266","504","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"267","505","FMWT","Honker Bay",26902815.8548,"Suisun Bay"
+"268","507","FMWT","Honker Bay",26902815.8548,"Suisun Bay"
+"269","508","FMWT","Confluence",39171737.8896,"Confluence"
+"270","509","FMWT","Confluence",39171737.8896,"Confluence"
+"271","510","FMWT","Confluence",39171737.8896,"Confluence"
+"272","511","FMWT","Confluence",39171737.8896,"Confluence"
+"273","512","FMWT","Confluence",39171737.8896,"Confluence"
+"274","513","FMWT","Confluence",39171737.8896,"Confluence"
+"275","515","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"276","516","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"277","517","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"278","518","FMWT","Honker Bay",26902815.8548,"Suisun Bay"
+"279","519","FMWT","Honker Bay",26902815.8548,"Suisun Bay"
+"280","601","FMWT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"281","602","FMWT","Grizzly Bay",33367570.2238,"Suisun Bay"
+"282","603","FMWT","Grizzly Bay",33367570.2238,"Suisun Bay"
+"283","604","FMWT","Grizzly Bay",33367570.2238,"Suisun Bay"
+"284","605","FMWT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"285","606","FMWT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"286","608","FMWT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"287","701","FMWT","Lower Sacramento River",62543303.8104,"Confluence"
+"288","703","FMWT","Lower Sacramento River",62543303.8104,"Confluence"
+"289","704","FMWT","Lower Sacramento River",62543303.8104,"Confluence"
+"290","705","FMWT","Lower Sacramento River",62543303.8104,"Confluence"
+"291","706","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"292","707","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"293","708","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"294","709","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"295","710","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"296","711","FMWT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"297","712","FMWT","Steamboat and Miner Slough",332493048.87,"North"
+"298","713","FMWT","Lower Cache Slough",26634131.9919,"North"
+"299","715","FMWT","Lower Cache Slough",26634131.9919,"North"
+"300","716","FMWT","Liberty Island",471689277.763,"North"
+"301","717","FMWT","Sacramento River near Ryde",184440250.0998,"North"
+"302","719","FMWT","Lower Sacramento River Ship Channel",43530612.3389,"North"
+"303","721","FMWT","Cache Slough and Lindsey Slough",471689277.763,"North"
+"304","723","FMWT","Lower Cache Slough",26634131.9919,"North"
+"305","724","FMWT","Sacramento River near Ryde",184440250.0998,"North"
+"306","735","FMWT","Middle Sacramento River",332493048.87,"North"
+"307","736","FMWT","Middle Sacramento River",332493048.87,"North"
+"308","795","FMWT","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"309","796","FMWT","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"310","797","FMWT","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"311","802","FMWT","Confluence",39171737.8896,"Confluence"
+"312","804","FMWT","Lower San Joaquin River",46190041.3284,"Confluence"
+"313","806","FMWT","Lower San Joaquin River",46190041.3284,"Confluence"
+"314","807","FMWT","Lower San Joaquin River",46190041.3284,"Confluence"
+"315","808","FMWT","Lower San Joaquin River",46190041.3284,"Confluence"
+"316","809","FMWT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"317","810","FMWT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"318","811","FMWT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"319","812","FMWT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"320","813","FMWT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"321","814","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"322","815","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"323","902","FMWT","Holland Cut",28298743.1694,"SouthCentral"
+"324","903","FMWT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"325","904","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"326","905","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"327","906","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"328","908","FMWT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"329","909","FMWT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"330","910","FMWT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"331","911","FMWT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"332","912","FMWT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"333","913","FMWT","Mildred Island",73617420.2724,"SouthCentral"
+"334","914","FMWT","Middle River",71508060.1596,"SouthCentral"
+"335","915","FMWT","Old River",30414521.6339,"SouthCentral"
+"336","919","FMWT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"337","920","FMWT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"338","921","FMWT","Upper Mokelumne River",213170012.36,"SouthCentral"
+"339","922","FMWT","Upper Mokelumne River",213170012.36,"SouthCentral"
+"340","923","FMWT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"341","340","SKT","Lower Napa River",35732380.6852,NA
+"342","405","SKT","Carquinez Strait",48215634.4313,NA
+"343","411","SKT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"344","418","SKT","West Suisun Bay",72782660.1103,"Suisun Bay"
+"345","501","SKT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"346","504","SKT","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"347","508","SKT","Confluence",39171737.8896,"Confluence"
+"348","513","SKT","Confluence",39171737.8896,"Confluence"
+"349","519","SKT","Honker Bay",26902815.8548,"Suisun Bay"
+"350","520","SKT","Confluence",39171737.8896,"Confluence"
+"351","602","SKT","Grizzly Bay",33367570.2238,"Suisun Bay"
+"352","606","SKT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"353","609","SKT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"354","610","SKT","Suisun Marsh",345614762.305,"Suisun Marsh"
+"355","704","SKT","Lower Sacramento River",62543303.8104,"Confluence"
+"356","706","SKT","Lower Sacramento River",62543303.8104,"Confluence"
+"357","707","SKT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"358","711","SKT","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"359","712","SKT","Steamboat and Miner Slough",332493048.87,"North"
+"360","713","SKT","Lower Cache Slough",26634131.9919,"North"
+"361","715","SKT","Lower Cache Slough",26634131.9919,"North"
+"362","716","SKT","Liberty Island",471689277.763,"North"
+"363","719","SKT","Lower Sacramento River Ship Channel",43530612.3389,"North"
+"364","724","SKT","Sacramento River near Ryde",184440250.0998,"North"
+"365","801","SKT","Confluence",39171737.8896,"Confluence"
+"366","804","SKT","Lower San Joaquin River",46190041.3284,"Confluence"
+"367","809","SKT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"368","812","SKT","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"369","815","SKT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"370","902","SKT","Holland Cut",28298743.1694,"SouthCentral"
+"371","906","SKT","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"372","910","SKT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"373","912","SKT","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"374","914","SKT","Mildred Island",73617420.2724,"SouthCentral"
+"375","915","SKT","Old River",30414521.6339,"SouthCentral"
+"376","919","SKT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"377","920","SKT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"378","921","SKT","Upper Mokelumne River",213170012.36,"SouthCentral"
+"379","922","SKT","Upper Mokelumne River",213170012.36,"SouthCentral"
+"380","923","SKT","Lower Mokelumne River",213170012.36,"SouthCentral"
+"381","323","TNS","San Pablo Bay",110952522.98,NA
+"382","340","TNS","Lower Napa River",35732380.6852,NA
+"383","405","TNS","Carquinez Strait",48215634.4313,NA
+"384","411","TNS","West Suisun Bay",72782660.1103,"Suisun Bay"
+"385","418","TNS","West Suisun Bay",72782660.1103,"Suisun Bay"
+"386","501","TNS","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"387","504","TNS","Mid Suisun Bay",51881565.8622,"Suisun Bay"
+"388","508","TNS","Confluence",39171737.8896,"Confluence"
+"389","513","TNS","Confluence",39171737.8896,"Confluence"
+"390","519","TNS","Honker Bay",26902815.8548,"Suisun Bay"
+"391","520","TNS","Confluence",39171737.8896,"Confluence"
+"392","602","TNS","Grizzly Bay",33367570.2238,"Suisun Bay"
+"393","606","TNS","Suisun Marsh",345614762.305,"Suisun Marsh"
+"394","609","TNS","Suisun Marsh",345614762.305,"Suisun Marsh"
+"395","610","TNS","Suisun Marsh",345614762.305,"Suisun Marsh"
+"396","704","TNS","Lower Sacramento River",62543303.8104,"Confluence"
+"397","706","TNS","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"398","707","TNS","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"399","711","TNS","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"400","713","TNS","Lower Cache Slough",26634131.9919,"North"
+"401","716","TNS","Liberty Island",471689277.763,"North"
+"402","719","TNS","Lower Sacramento River Ship Channel",43530612.3389,"North"
+"403","721","TNS","Cache Slough and Lindsey Slough",471689277.763,"North"
+"404","723","TNS","Lower Cache Slough",26634131.9919,"North"
+"405","795","TNS","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"406","796","TNS","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"407","797","TNS","Upper Sacramento River Ship Channel",43530612.3389,"North"
+"408","801","TNS","Confluence",39171737.8896,"Confluence"
+"409","804","TNS","Lower San Joaquin River",46190041.3284,"Confluence"
+"410","809","TNS","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"411","812","TNS","San Joaquin River at Twitchell Island",41103027.9845,"SouthCentral"
+"412","815","TNS","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"413","902","TNS","Holland Cut",28298743.1694,"SouthCentral"
+"414","906","TNS","San Joaquin River at Prisoners Pt",31760556.5752,"SouthCentral"
+"415","910","TNS","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"416","912","TNS","San Joaquin River near Stockton",60038703.4436,"SouthCentral"
+"417","914","TNS","Mildred Island",73617420.2724,"SouthCentral"
+"418","915","TNS","Old River",30414521.6339,"SouthCentral"
+"419","918","TNS","Victoria Canal",43252269.9663,"SouthCentral"
+"420","919","TNS","Lower Mokelumne River",213170012.36,"SouthCentral"
+"421","AL1","Yolo","Upper Yolo Bypass",471689277.763,NA
+"422","AL2","Yolo","Upper Yolo Bypass",471689277.763,NA
+"423","AL3","Yolo","Upper Yolo Bypass",471689277.763,NA
+"424","AL4","Yolo","Upper Yolo Bypass",471689277.763,NA
+"425","Alt_Fyke","Yolo","Upper Yolo Bypass",471689277.763,NA
+"426","BL1","Yolo","Upper Yolo Bypass",471689277.763,NA
+"427","BL2","Yolo","Upper Yolo Bypass",471689277.763,NA
+"428","BL3","Yolo","Upper Yolo Bypass",471689277.763,NA
+"429","BL4","Yolo","Upper Yolo Bypass",471689277.763,NA
+"430","BL5","Yolo","Liberty Island",471689277.763,"North"
+"431","BL6","Yolo","Liberty Island",471689277.763,"North"
+"432","CCS7","Yolo",NA,NA,NA
+"433","FW1","Yolo",NA,NA,NA
+"434","LI","Yolo","Upper Yolo Bypass",471689277.763,NA
+"435","LIHF","Yolo","Upper Yolo Bypass",471689277.763,NA
+"436","LIHFS","Yolo","Upper Yolo Bypass",471689277.763,NA
+"437","PCS","Yolo","Upper Yolo Bypass",471689277.763,NA
+"438","RD22","Yolo",NA,NA,NA
+"439","SB","Yolo",NA,NA,NA
+"440","SB1","Yolo",NA,NA,NA
+"441","SB2","Yolo",NA,NA,NA
+"442","STTD","Yolo","Upper Yolo Bypass",471689277.763,NA
+"443","YB","Yolo","Upper Yolo Bypass",471689277.763,NA
+"444","YBI80","Yolo","Upper Yolo Bypass",471689277.763,NA
+"445","MIR","NCRO","Steamboat and Miner Slough",332493048.87,"North"
+"446","SXS","NCRO","Steamboat and Miner Slough",332493048.87,"North"
+"447","SOI","NCRO","Sacramento River near Ryde",184440250.0998,"North"
+"448","FCT","NCRO","Franks Tract",94761329.0714,"SouthCentral"
+"449","TSL","NCRO","Sacramento River near Rio Vista",44594324.2529,"Confluence"
+"450","MOK","NCRO","Lower Mokelumne River",213170012.36,"SouthCentral"
+"451","OBI","NCRO","Old River",30414521.6339,"SouthCentral"
+"452","BET","NCRO","Franks Tract",94761329.0714,"SouthCentral"
+"453","FAL","NCRO","Franks Tract",94761329.0714,"SouthCentral"
+"454","HOL","NCRO","Holland Cut",28298743.1694,"SouthCentral"
+"455","HLT","NCRO","Mildred Island",73617420.2724,"SouthCentral"
+"456","ORQ","NCRO","Holland Cut",28298743.1694,"SouthCentral"
+"457","OSJ","NCRO","Holland Cut",28298743.1694,"SouthCentral"
+"458","BLP","NCRO","Lower San Joaquin River",46190041.3284,"Confluence"
+"459","TRN","NCRO","Mildred Island",73617420.2724,"SouthCentral"
+"460","WDC","NCRO","Rock Slough and Discovery Bay",61462064.9065,NA
+"461","HCHM","NCRO","Old River",30414521.6339,"SouthCentral"
+"462","RSCC","NCRO","Rock Slough and Discovery Bay",61462064.9065,NA
+"463","DRB","NCRO","Rock Slough and Discovery Bay",61462064.9065,NA
+"464","PDUP","NCRO",NA,NA,NA
+"465","PDC","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"466","SGA","NCRO",NA,NA,NA
+"467","ORX","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"468","SJD","NCRO","Upper San Joaquin River",36515129.8834,"SouthCentral"
+"469","VCU","NCRO","Victoria Canal",43252269.9663,"SouthCentral"
+"470","GLC","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"471","GLE","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"472","MRX","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"473","MHO","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"474","MRU","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"475","ODM","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"476","ORM","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"477","TWA","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"478","OH1","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"479","TPI","NCRO",NA,NA,NA
+"480","ORI","NCRO","Grant Line Canal and Old River",237261246.029,NA
+"481","WCI","NCRO","Victoria Canal",43252269.9663,"SouthCentral"

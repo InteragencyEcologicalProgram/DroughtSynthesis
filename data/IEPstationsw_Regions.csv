@@ -1,0 +1,287 @@
+Source,Station,Latitude,Longitude,StationID,SubRegion,Region
+20mm,723,38.23725,-121.6730833,20mm 723,Lower Cache Slough,North
+20mm,724,38.25625,-121.6520833,20mm 724,Steamboat and Miner Slough,North
+20mm,726,38.28305556,-121.6438333,20mm 726,Steamboat and Miner Slough,North
+20mm,809,38.05377778,-121.6930278,20mm 809,San Joaquin River at Twitchell Island,SouthCentral
+20mm,901,38.04625,-121.6185,20mm 901,Franks Tract,SouthCentral
+20mm,902,38.02038889,-121.5826667,20mm 902,Holland Cut,SouthCentral
+20mm,910,38.005,-121.4530278,20mm 910,San Joaquin River near Stockton,SouthCentral
+20mm,912,37.96641667,-121.3685556,20mm 912,San Joaquin River near Stockton,SouthCentral
+20mm,914,37.9715,-121.52,20mm 914,Mildred Island,SouthCentral
+20mm,915,37.94427778,-121.5678889,20mm 915,Old River,SouthCentral
+20mm,918,37.859,-121.5671389,20mm 918,Victoria Canal,SouthCentral
+20mm,501,38.07333333,-122.0263333,20mm 501,Mid Suisun Bay,Suisun Bay
+20mm,504,38.05194444,-121.9860833,20mm 504,Mid Suisun Bay,Suisun Bay
+20mm,519,38.07475,-121.9580833,20mm 519,Honker Bay,Suisun Bay
+20mm,602,38.11555556,-122.0423917,20mm 602,Grizzly Bay,Suisun Bay
+20mm,606,38.17058333,-122.0279167,20mm 606,Suisun Marsh,Suisun Marsh
+20mm,609,38.16708333,-121.9378333,20mm 609,Suisun Marsh,Suisun Marsh
+20mm,610,38.12219444,-121.8891111,20mm 610,Suisun Marsh,Suisun Marsh
+20mm,705,38.09761111,-121.70875,20mm 705,Sacramento River near Rio Vista,Confluence
+20mm,706,38.08608333,-121.7504444,20mm 706,Lower Sacramento River,Confluence
+20mm,707,38.11469444,-121.7078611,20mm 707,Sacramento River near Rio Vista,Confluence
+20mm,812,38.08991667,-121.6399167,20mm 812,San Joaquin River at Twitchell Island,SouthCentral
+20mm,815,38.08713889,-121.5711389,20mm 815,San Joaquin River at Prisoners Pt,SouthCentral
+20mm,906,38.05002778,-121.5064722,20mm 906,San Joaquin River at Prisoners Pt,SouthCentral
+20mm,919,38.10519444,-121.4945833,20mm 919,Lower Mokelumne River,SouthCentral
+20mm,508,38.04716667,-121.9172222,20mm 508,Confluence,Confluence
+20mm,513,38.05886111,-121.86775,20mm 513,Confluence,Confluence
+20mm,520,38.03216667,-121.8631111,20mm 520,Confluence,Confluence
+20mm,703,38.04861111,-121.7973889,20mm 703,Lower Sacramento River,Confluence
+20mm,704,38.06658333,-121.7903111,20mm 704,Lower Sacramento River,Confluence
+20mm,801,38.04369444,-121.844,20mm 801,Confluence,Confluence
+20mm,804,38.01644444,-121.7913056,20mm 804,Lower San Joaquin River,Confluence
+20mm,411,38.05022222,-122.0765278,20mm 411,West Suisun Bay,Suisun Bay
+20mm,418,38.0675,-122.0955556,20mm 418,West Suisun Bay,Suisun Bay
+20mm,711,38.17741667,-121.66225,20mm 711,Sacramento River near Rio Vista,Confluence
+20mm,716,38.23855556,-121.6839167,20mm 716,Liberty Island,North
+20mm,718,38.25755556,-121.7290278,20mm 718,Cache Slough and Lindsey Slough,North
+20mm,719,38.3335,-121.6475,20mm 719,Lower Sacramento River Ship Channel,North
+20mm,720,38.26263889,-121.7792778,20mm 720,Cache Slough and Lindsey Slough,North
+Baystudy,428,38.062,-122.1053,Baystudy 428,West Suisun Bay,Suisun Bay
+Baystudy,429,38.08583333,-122.0768333,Baystudy 429,West Suisun Bay,Suisun Bay
+Baystudy,430,38.1082,-122.055,Baystudy 430,Grizzly Bay,Suisun Bay
+Baystudy,431,38.1052,-122.028,Baystudy 431,Grizzly Bay,Suisun Bay
+Baystudy,432,38.0425,-122.108,Baystudy 432,West Suisun Bay,Suisun Bay
+Baystudy,433,38.06011667,-121.9828167,Baystudy 433,Mid Suisun Bay,Suisun Bay
+Baystudy,534,38.07145,-121.9562,Baystudy 534,Honker Bay,Suisun Bay
+Baystudy,535,38.04731667,-121.9176667,Baystudy 535,Confluence,Confluence
+Baystudy,736,38.06033333,-121.8043333,Baystudy 736,Lower Sacramento River,Confluence
+Baystudy,750,38.08466667,-121.75,Baystudy 750,Lower Sacramento River,Confluence
+Baystudy,751,38.1055,-121.717,Baystudy 751,Sacramento River near Rio Vista,Confluence
+Baystudy,752,38.1042,-121.7125,Baystudy 752,Sacramento River near Rio Vista,Confluence
+Baystudy,760,38.15233333,-121.6848333,Baystudy 760,Sacramento River near Rio Vista,Confluence
+Baystudy,761,38.16783333,-121.6771667,Baystudy 761,Sacramento River near Rio Vista,Confluence
+Baystudy,762,38.175,-121.657,Baystudy 762,Sacramento River near Ryde,North
+Baystudy,837,38.0245,-121.76,Baystudy 837,Lower San Joaquin River,Confluence
+Baystudy,853,38.0285,-121.737,Baystudy 853,Lower San Joaquin River,Confluence
+Baystudy,863,38.09145,-121.6511,Baystudy 863,San Joaquin River at Twitchell Island,SouthCentral
+Baystudy,864,38.10116667,-121.598,Baystudy 864,San Joaquin River at Prisoners Pt,SouthCentral
+Baystudy,865,38.08666667,-121.5763333,Baystudy 865,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,72,38.18775,-121.58057,FMWT 072,Sacramento River near Ryde,North
+FMWT,73,38.27433,-121.53937,FMWT 073,Middle Sacramento River,North
+FMWT,415,38.05678,-122.10772,FMWT 415,West Suisun Bay,Suisun Bay
+FMWT,408,38.03513,-122.12897,FMWT 408,West Suisun Bay,Suisun Bay
+FMWT,409,38.04455,-122.10637,FMWT 409,West Suisun Bay,Suisun Bay
+FMWT,410,38.04883,-122.09647,FMWT 410,West Suisun Bay,Suisun Bay
+FMWT,411,38.06117,-122.06828,FMWT 411,West Suisun Bay,Suisun Bay
+FMWT,412,38.06462,-122.06007,FMWT 412,West Suisun Bay,Suisun Bay
+FMWT,413,38.06595,-122.0473,FMWT 413,Mid Suisun Bay,Suisun Bay
+FMWT,414,38.05213,-122.11128,FMWT 414,West Suisun Bay,Suisun Bay
+FMWT,703,38.06087,-121.79692,FMWT 703,Lower Sacramento River,Confluence
+FMWT,416,38.0702,-122.09415,FMWT 416,West Suisun Bay,Suisun Bay
+FMWT,417,38.08075,-122.083,FMWT 417,West Suisun Bay,Suisun Bay
+FMWT,418,38.09383,-122.06973,FMWT 418,West Suisun Bay,Suisun Bay
+FMWT,501,38.06167,-122.01955,FMWT 501,Mid Suisun Bay,Suisun Bay
+FMWT,502,38.05997,-122.00397,FMWT 502,Mid Suisun Bay,Suisun Bay
+FMWT,503,38.06022,-121.9832,FMWT 503,Mid Suisun Bay,Suisun Bay
+FMWT,504,38.05945,-121.9767,FMWT 504,Mid Suisun Bay,Suisun Bay
+FMWT,505,38.05713,-121.95597,FMWT 505,Honker Bay,Suisun Bay
+FMWT,507,38.05228,-121.939,FMWT 507,Honker Bay,Suisun Bay
+FMWT,602,38.11783,-122.04183,FMWT 602,Grizzly Bay,Suisun Bay
+FMWT,707,38.11397,-121.70797,FMWT 707,Sacramento River near Rio Vista,Confluence
+FMWT,508,38.04813,-121.91492,FMWT 508,Confluence,Confluence
+FMWT,509,38.04547,-121.90412,FMWT 509,Confluence,Confluence
+FMWT,510,38.04888,-121.88783,FMWT 510,Confluence,Confluence
+FMWT,511,38.0513,-121.88,FMWT 511,Confluence,Confluence
+FMWT,512,38.05638,-121.87722,FMWT 512,Confluence,Confluence
+FMWT,513,38.0592,-121.86842,FMWT 513,Confluence,Confluence
+FMWT,515,38.092,-122.01472,FMWT 515,Mid Suisun Bay,Suisun Bay
+FMWT,516,38.07867,-121.99408,FMWT 516,Mid Suisun Bay,Suisun Bay
+FMWT,517,38.07022,-121.97938,FMWT 517,Mid Suisun Bay,Suisun Bay
+FMWT,518,38.06875,-121.96802,FMWT 518,Honker Bay,Suisun Bay
+FMWT,519,38.07378,-121.94725,FMWT 519,Honker Bay,Suisun Bay
+FMWT,601,38.1031,-122.0356,FMWT 601,Mid Suisun Bay,Suisun Bay
+FMWT,603,38.11552,-122.04805,FMWT 603,Grizzly Bay,Suisun Bay
+FMWT,604,38.12163,-122.05717,FMWT 604,Grizzly Bay,Suisun Bay
+FMWT,605,38.14853,-122.05738,FMWT 605,Suisun Marsh,Suisun Marsh
+FMWT,606,38.1698,-122.02177,FMWT 606,Suisun Marsh,Suisun Marsh
+FMWT,608,38.0887,-121.88332,FMWT 608,Suisun Marsh,Suisun Marsh
+FMWT,701,38.06505,-121.83475,FMWT 701,Lower Sacramento River,Confluence
+FMWT,704,38.07087,-121.77892,FMWT 704,Lower Sacramento River,Confluence
+FMWT,705,38.07925,-121.7618,FMWT 705,Lower Sacramento River,Confluence
+FMWT,706,38.0903,-121.74,FMWT 706,Sacramento River near Rio Vista,Confluence
+FMWT,708,38.12608,-121.6967,FMWT 708,Sacramento River near Rio Vista,Confluence
+FMWT,709,38.14787,-121.69048,FMWT 709,Sacramento River near Rio Vista,Confluence
+FMWT,802,38.03528,-121.83875,FMWT 802,Confluence,Confluence
+FMWT,710,38.162,-121.68228,FMWT 710,Sacramento River near Rio Vista,Confluence
+FMWT,711,38.17595,-121.67028,FMWT 711,Sacramento River near Rio Vista,Confluence
+FMWT,712,38.19042,-121.64095,FMWT 712,Steamboat and Miner Slough,North
+FMWT,713,38.20712,-121.66008,FMWT 713,Lower Cache Slough,North
+FMWT,715,38.22295,-121.67362,FMWT 715,Lower Cache Slough,North
+FMWT,716,38.23787,-121.68438,FMWT 716,Liberty Island,North
+FMWT,717,38.17017,-121.63138,FMWT 717,Sacramento River near Ryde,North
+FMWT,719,38.33428,-121.64733,FMWT 719,Lower Sacramento River Ship Channel,North
+FMWT,721,38.26815,-121.70277,FMWT 721,Cache Slough and Lindsey Slough,North
+FMWT,723,38.23615,-121.67348,FMWT 723,Lower Cache Slough,North
+FMWT,724,38.23578,-121.55878,FMWT 724,Sacramento River near Ryde,North
+FMWT,806,38.02872,-121.7617,FMWT 806,Lower San Joaquin River,Confluence
+FMWT,807,38.02995,-121.73203,FMWT 807,Lower San Joaquin River,Confluence
+FMWT,808,38.03337,-121.71942,FMWT 808,Lower San Joaquin River,Confluence
+FMWT,809,38.0512,-121.69305,FMWT 809,San Joaquin River at Twitchell Island,SouthCentral
+FMWT,902,38.0205,-121.58255,FMWT 902,Holland Cut,SouthCentral
+FMWT,915,37.949,-121.55908,FMWT 915,Old River,SouthCentral
+FMWT,914,37.94662,-121.53475,FMWT 914,Middle River,SouthCentral
+FMWT,913,37.97012,-121.53705,FMWT 913,Mildred Island,SouthCentral
+FMWT,910,38.00228,-121.45037,FMWT 910,San Joaquin River near Stockton,SouthCentral
+FMWT,911,37.99247,-121.40875,FMWT 911,San Joaquin River near Stockton,SouthCentral
+FMWT,912,37.96883,-121.37172,FMWT 912,San Joaquin River near Stockton,SouthCentral
+FMWT,909,38.02442,-121.46705,FMWT 909,San Joaquin River near Stockton,SouthCentral
+FMWT,906,38.05412,-121.51653,FMWT 906,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,908,38.04308,-121.5298,FMWT 908,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,735,38.33343,-121.56968,FMWT 735,Middle Sacramento River,North
+FMWT,736,38.36737,-121.5214,FMWT 736,Middle Sacramento River,North
+FMWT,795,38.5377,-121.58468,FMWT 795,Upper Sacramento River Ship Channel,North
+FMWT,796,38.47387,-121.5844,FMWT 796,Upper Sacramento River Ship Channel,North
+FMWT,797,38.40462,-121.6156,FMWT 797,Upper Sacramento River Ship Channel,North
+FMWT,804,38.02308,-121.79868,FMWT 804,Lower San Joaquin River,Confluence
+FMWT,810,38.07083,-121.67622,FMWT 810,San Joaquin River at Twitchell Island,SouthCentral
+FMWT,811,38.09742,-121.66487,FMWT 811,San Joaquin River at Twitchell Island,SouthCentral
+FMWT,812,38.08792,-121.64883,FMWT 812,San Joaquin River at Twitchell Island,SouthCentral
+FMWT,813,38.09978,-121.62767,FMWT 813,San Joaquin River at Twitchell Island,SouthCentral
+FMWT,814,38.10128,-121.6022,FMWT 814,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,815,38.0913,-121.57587,FMWT 815,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,903,38.10628,-121.56747,FMWT 903,Lower Mokelumne River,SouthCentral
+FMWT,904,38.07828,-121.56847,FMWT 904,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,905,38.05953,-121.55573,FMWT 905,San Joaquin River at Prisoners Pt,SouthCentral
+FMWT,919,38.10572,-121.49525,FMWT 919,Lower Mokelumne River,SouthCentral
+FMWT,920,38.14138,-121.50475,FMWT 920,Lower Mokelumne River,SouthCentral
+FMWT,921,38.16513,-121.49303,FMWT 921,Upper Mokelumne River,SouthCentral
+FMWT,922,38.20438,-121.4789,FMWT 922,Upper Mokelumne River,SouthCentral
+FMWT,923,38.13445,-121.56625,FMWT 923,Lower Mokelumne River,SouthCentral
+SKT,520,38.03216667,-121.8631111,SKT 520,Confluence,Confluence
+SKT,508,38.04716667,-121.9172222,SKT 508,Confluence,Confluence
+SKT,519,38.07475,-121.9580833,SKT 519,Honker Bay,Suisun Bay
+SKT,513,38.05886111,-121.86775,SKT 513,Confluence,Confluence
+SKT,801,38.04369444,-121.844,SKT 801,Confluence,Confluence
+SKT,804,38.01644444,-121.7913056,SKT 804,Lower San Joaquin River,Confluence
+SKT,923,38.13569444,-121.5628056,SKT 923,Lower Mokelumne River,SouthCentral
+SKT,922,38.20469444,-121.4790556,SKT 922,Upper Mokelumne River,SouthCentral
+SKT,921,38.1655,-121.4930278,SKT 921,Upper Mokelumne River,SouthCentral
+SKT,920,38.14177778,-121.5040556,SKT 920,Lower Mokelumne River,SouthCentral
+SKT,809,38.05377778,-121.6930278,SKT 809,San Joaquin River at Twitchell Island,SouthCentral
+SKT,812,38.08991667,-121.6399167,SKT 812,San Joaquin River at Twitchell Island,SouthCentral
+SKT,815,38.08713889,-121.5711389,SKT 815,San Joaquin River at Prisoners Pt,SouthCentral
+SKT,902,38.02038889,-121.5826667,SKT 902,Holland Cut,SouthCentral
+SKT,915,37.94427778,-121.5678889,SKT 915,Old River,SouthCentral
+SKT,914,37.9715,-121.52,SKT 914,Mildred Island,SouthCentral
+SKT,906,38.05002778,-121.5064722,SKT 906,San Joaquin River at Prisoners Pt,SouthCentral
+SKT,910,38.005,-121.4530278,SKT 910,San Joaquin River near Stockton,SouthCentral
+SKT,912,37.96641667,-121.3685556,SKT 912,San Joaquin River near Stockton,SouthCentral
+SKT,919,38.10519444,-121.4945833,SKT 919,Lower Mokelumne River,SouthCentral
+SKT,712,38.19147222,-121.6392222,SKT 712,Steamboat and Miner Slough,North
+SKT,724,38.23697222,-121.5587778,SKT 724,Sacramento River near Ryde,North
+SKT,716,38.25769444,-121.6919167,SKT 716,Liberty Island,North
+SKT,715,38.22577778,-121.6750278,SKT 715,Lower Cache Slough,North
+SKT,719,38.3335,-121.6475,SKT 719,Lower Sacramento River Ship Channel,North
+SKT,711,38.17741667,-121.66225,SKT 711,Sacramento River near Rio Vista,Confluence
+SKT,704,38.06658333,-121.7903111,SKT 704,Lower Sacramento River,Confluence
+SKT,707,38.11469444,-121.7078611,SKT 707,Sacramento River near Rio Vista,Confluence
+SKT,706,38.08608333,-121.7504444,SKT 706,Lower Sacramento River,Confluence
+SKT,713,38.20647222,-121.6610556,SKT 713,Lower Cache Slough,North
+SKT,418,38.0675,-122.0955556,SKT 418,West Suisun Bay,Suisun Bay
+SKT,411,38.05022222,-122.0765278,SKT 411,West Suisun Bay,Suisun Bay
+SKT,606,38.17058333,-122.0279167,SKT 606,Suisun Marsh,Suisun Marsh
+SKT,610,38.12219444,-121.8891111,SKT 610,Suisun Marsh,Suisun Marsh
+SKT,609,38.16708333,-121.9378333,SKT 609,Suisun Marsh,Suisun Marsh
+SKT,501,38.07333333,-122.0263333,SKT 501,Mid Suisun Bay,Suisun Bay
+SKT,504,38.05194444,-121.9860833,SKT 504,Mid Suisun Bay,Suisun Bay
+SKT,602,38.11555556,-122.0423917,SKT 602,Grizzly Bay,Suisun Bay
+SKT,799,38.09236111,-121.7393611,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09180556,-121.7399167,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09308333,-121.7376667,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09277778,-121.7382222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09255556,-121.7383611,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09413889,-121.7371111,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09133333,-121.7410278,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09244444,-121.7397222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09336111,-121.7382222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09438889,-121.7368889,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09372222,-121.7379167,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09391667,-121.7377222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.08952778,-121.7364722,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09236111,-121.7396944,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09258333,-121.7393889,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09294444,-121.7385556,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09263889,-121.7391111,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09344444,-121.7374722,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09338889,-121.7380278,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09305556,-121.7382222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09433333,-121.7371667,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09175,-121.7405556,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09077778,-121.7419444,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09236111,-121.7397222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09222222,-121.7399167,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09197222,-121.7405556,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09241667,-121.7398889,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09313889,-121.7388333,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09352778,-121.7383611,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.08938889,-121.7377222,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.09283333,-121.7388333,SKT 799,Sacramento River near Rio Vista,Confluence
+SKT,799,38.36722222,-121.6328333,SKT 799,Lower Sacramento River Ship Channel,North
+SKT,799,38.37858333,-121.6272778,SKT 799,Lower Sacramento River Ship Channel,North
+SKT,799,38.33894444,-121.6463056,SKT 799,Lower Sacramento River Ship Channel,North
+SKT,703,38.06313889,-121.7960833,SKT 703,Lower Sacramento River,Confluence
+SKT,705,38.07961111,-121.7614722,SKT 705,Lower Sacramento River,Confluence
+SKT,708,38.12525,-121.6979722,SKT 708,Sacramento River near Rio Vista,Confluence
+SKT,709,38.14713889,-121.6889722,SKT 709,Sacramento River near Rio Vista,Confluence
+SKT,710,38.16319444,-121.6816111,SKT 710,Sacramento River near Rio Vista,Confluence
+SKT,507,38.0525,-121.9355,SKT 507,Honker Bay,Suisun Bay
+SKT,510,38.04802778,-121.8896111,SKT 510,Confluence,Confluence
+SKT,511,38.05191667,-121.88025,SKT 511,Confluence,Confluence
+SKT,512,38.05563889,-121.8770278,SKT 512,Confluence,Confluence
+SKT,515,38.09188889,-122.016,SKT 515,Mid Suisun Bay,Suisun Bay
+SKT,516,38.07683333,-121.9958056,SKT 516,Mid Suisun Bay,Suisun Bay
+SKT,517,38.07047222,-121.9831111,SKT 517,Mid Suisun Bay,Suisun Bay
+SKT,518,38.07091667,-121.9656944,SKT 518,Honker Bay,Suisun Bay
+SKT,608,38.0895,-121.8840278,SKT 608,Suisun Marsh,Suisun Marsh
+SKT,701,38.06563889,-121.8346944,SKT 701,Lower Sacramento River,Confluence
+SKT,807,38.02841667,-121.7326111,SKT 807,Lower San Joaquin River,Confluence
+SKT,808,38.03294444,-121.7189167,SKT 808,Lower San Joaquin River,Confluence
+SKT,908,38.03963889,-121.5256389,SKT 908,Mildred Island,SouthCentral
+SKT,909,38.02547222,-121.4686667,SKT 909,San Joaquin River near Stockton,SouthCentral
+SKT,911,37.99313889,-121.4103889,SKT 911,San Joaquin River near Stockton,SouthCentral
+SKT,913,37.97330556,-121.5378056,SKT 913,Mildred Island,SouthCentral
+SKT,999,37.88663889,-121.5755556,SKT 999,Victoria Canal,SouthCentral
+SKT,999,37.88125,-121.5750556,SKT 999,Victoria Canal,SouthCentral
+SKT,999,37.87694444,-121.5776389,SKT 999,Victoria Canal,SouthCentral
+SKT,999,37.87355556,-121.5790556,SKT 999,Victoria Canal,SouthCentral
+SKT,999,37.87097222,-121.5796944,SKT 999,Victoria Canal,SouthCentral
+SKT,999,37.87175,-121.5797778,SKT 999,Victoria Canal,SouthCentral
+STN,809,38.0525,-121.6891944,STN 809,San Joaquin River at Twitchell Island,SouthCentral
+STN,902,38.01919444,-121.5821944,STN 902,Holland Cut,SouthCentral
+STN,910,38.00180556,-121.4486944,STN 910,San Joaquin River near Stockton,SouthCentral
+STN,912,37.966,-121.3673056,STN 912,San Joaquin River near Stockton,SouthCentral
+STN,914,37.9715,-121.52,STN 914,Mildred Island,SouthCentral
+STN,915,37.9425,-121.5635,STN 915,Old River,SouthCentral
+STN,918,37.85930556,-121.5688056,STN 918,Victoria Canal,SouthCentral
+STN,711,38.17880556,-121.6653056,STN 711,Sacramento River near Rio Vista,Confluence
+STN,812,38.09030556,-121.6405,STN 812,San Joaquin River at Twitchell Island,SouthCentral
+STN,815,38.08,-121.5698056,STN 815,San Joaquin River at Prisoners Pt,SouthCentral
+STN,906,38.05169444,-121.509,STN 906,San Joaquin River at Prisoners Pt,SouthCentral
+STN,919,38.10480556,-121.492,STN 919,Lower Mokelumne River,SouthCentral
+STN,501,38.0725,-122.0251944,STN 501,Mid Suisun Bay,Suisun Bay
+STN,519,38.07230556,-121.9596944,STN 519,Honker Bay,Suisun Bay
+STN,704,38.06916667,-121.7752778,STN 704,Lower Sacramento River,Confluence
+STN,706,38.08519444,-121.7506944,STN 706,Lower Sacramento River,Confluence
+STN,707,38.1135,-121.7075,STN 707,Sacramento River near Rio Vista,Confluence
+STN,804,38.01819444,-121.797,STN 804,Lower San Joaquin River,Confluence
+STN,418,38.06480556,-122.0978056,STN 418,West Suisun Bay,Suisun Bay
+STN,513,38.05830556,-121.868,STN 513,Confluence,Confluence
+STN,602,38.114,-122.0461944,STN 602,Grizzly Bay,Suisun Bay
+STN,606,38.16947222,-122.0256667,STN 606,Suisun Marsh,Suisun Marsh
+STN,609,38.16719444,-121.938,STN 609,Suisun Marsh,Suisun Marsh
+STN,610,38.11880556,-121.8891944,STN 610,Suisun Marsh,Suisun Marsh
+STN,801,38.04369444,-121.844,STN 801,Confluence,Confluence
+STN,411,38.05130556,-122.0833056,STN 411,West Suisun Bay,Suisun Bay
+STN,504,38.0545,-121.9895,STN 504,Mid Suisun Bay,Suisun Bay
+STN,508,38.0455,-121.9188056,STN 508,Confluence,Confluence
+STN,520,38.03280556,-121.8693056,STN 520,Confluence,Confluence
+STN,713,38.20633333,-121.6600833,STN 713,Lower Cache Slough,North
+STN,716,38.23847222,-121.6847778,STN 716,Liberty Island,North
+STN,719,38.33338889,-121.6475278,STN 719,Lower Sacramento River Ship Channel,North
+STN,721,38.26844444,-121.7030833,STN 721,Cache Slough and Lindsey Slough,North
+STN,723,38.23722222,-121.6730556,STN 723,Lower Cache Slough,North
+STN,795,38.53758333,-121.5846389,STN 795,Upper Sacramento River Ship Channel,North
+STN,796,38.47355556,-121.5844444,STN 796,Upper Sacramento River Ship Channel,North
+STN,797,38.40472222,-121.6156111,STN 797,Upper Sacramento River Ship Channel,North
