@@ -110,6 +110,21 @@ df_wq_lt <- as_tibble(sf_wq_lt)
 
 df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
 
+# standardize units
+# convert units
+df_wq_lt$`NO2 (Micromolar)` <- sapply(df_wq_lt$`NO2 (Micromolar)`, function(x) x*(46.0055/(10^3))) # molar mass of NO2
+df_wq_lt$`PO4 (Micromolar)` <- sapply(df_wq_lt$`PO4 (Micromolar)`, function(x) x*(94.971/(10^3))) # molar mass of PO4
+df_wq_lt$`NH4 (Micromolar)` <- sapply(df_wq_lt$`NH4 (Micromolar)`, function(x) x*(14.0067/(10^3))) # molar mass of N
+df_wq_lt$`Si (Micromolar)` <- sapply(df_wq_lt$`Si (Micromolar)`, function(x) x*(60.08/(10^3))) # molar mass of SiO2
+df_wq_lt$`NO32 (Micromolar)`<- sapply(df_wq_lt$`NO32 (Micromolar)`, function(x) x*(14/(10^3))) # molar mass of N
+
+# combine & clean up wq datasets
+df_wq_lt <- df_wq_lt %>% rename(DissAmmonia = `NH4 (Micromolar)`,
+                          DON = `NO2 (Micromolar)`,
+                          DissNitrateNitrite = `NO32 (Micromolar)`,
+                          TotPhos = `PO4 (Micromolar)`,
+                          DissSilica = `Si (Micromolar)`)
+
 write_csv(df_wq_lt, drought_abs_path('WQ_Team/processed_data/SFBayWQData1969-2021.csv'))
 ```
 
