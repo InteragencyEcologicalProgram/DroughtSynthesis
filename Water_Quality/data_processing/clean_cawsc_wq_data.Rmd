@@ -55,7 +55,7 @@ df_wq <- add_wy_col(df_wq)
 ```{r}
 # convert wq to spdf
 coords <- df_wq[,c('Longitude', 'Latitude')]
-data   <- df_wq[,c(1,2,5:length(df_wq))]
+data   <- df_wq
 crs    <- CRS('+init=epsg:4326 +proj=longlat')
 spdf_wq <- SpatialPointsDataFrame(coords = coords,
                                data = data, 
