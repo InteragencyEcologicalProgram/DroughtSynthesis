@@ -18,9 +18,11 @@ source('Water_Quality/wq_funcs.R')
 # import data
 fp_abs_emp <- 'WQ_Team/processed_data/EMPWQData1975-2020.csv'
 fp_abs_sf <- 'WQ_Team/processed_data/SFBayWQData1969-2021.csv'
+fp_abs_wsc <- 'WQ_Team/processed_data/USGS_CAWSC_1971-2021.csv'
 
 df_emp <- read_csv(drought_abs_path(fp_abs_emp))
 df_sf <- read_csv(drought_abs_path(fp_abs_sf))
+df_wsc <- read_csv(drought_abs_path(fp_abs_wsc))
 ```
 
 ```{r}
@@ -31,15 +33,17 @@ df_emp$DissAmmonia <- as.numeric(df_emp$DissAmmonia)
 df_emp$DissOrthophos <- as.numeric(df_emp$DissOrthophos)
 df_sf$DS <- 'SF'
 df_emp$DS <- 'EMP'
+df_wsc$DS <- 'WSC'
 
 # subset dfs
 df_sf <- subset(df_sf, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
 df_emp <- subset(df_emp, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
+df_wsc <- subset(df_wsc, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DS'))
 ```
 
 ```{r}
 # combine
-df_wq <- bind_rows(df_emp, df_sf)
+df_wq <- bind_rows(df_emp, df_sf, df_wsc)
 
 # write file
 write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv'))
@@ -49,7 +53,7 @@ write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv')
 ```{r}
 # checks
 df_wq_sub <- subset(df_wq, SubRegion == 'Lower Sacramento River')
-ggplot(df_wq_sub, aes(Date, DissOrthophos, color = DS)) +
+ggplot(df_wq_sub, aes(Date, DissNitrateNitrite, color = DS)) +
   geom_point()
 ```
 
