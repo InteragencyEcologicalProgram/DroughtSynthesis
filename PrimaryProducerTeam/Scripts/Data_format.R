@@ -38,7 +38,7 @@ idb <- idb_raw %>%
   filter(!(is.na(Chlorophyll) & is.na(Microcystis))) %>% # remove rows with NA for both chla and mc_rating
   select(Source, Station, Latitude, Longitude, Field_coords, Date, Datetime, Depth, Microcystis, Chlorophyll) %>%
   rename(chla= Chlorophyll, mc_rating= Microcystis) %>%
-  mutate(Source= ifelse(Source == "USGS", "USGS-MP", Source)) %>%
+  mutate(Source= ifelse(Source == "USGS", "USGS-SFBRMP", Source)) %>% #USGS San Francisco Bay Research and Monitoring Project, https://www.usgs.gov/mission-areas/water-resources/science/water-quality-san-francisco-bay-research-and-monitoring?qt-science_center_objects=0#qt-science_center_objects
   filter(str_detect(Station, "EZ") == FALSE) # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
 
 idb_stations <- select(idb, Source, Station, Latitude, Longitude) %>%
@@ -62,7 +62,7 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
   rename(Station= LongStationName, chla= Result, Datetime= CollectionDate, Latitude= `Latitude (WGS84)`, Longitude = `Longitude (WGS84)`) %>%
   mutate(Datetime= mdy_hm(Datetime),
          Date= ymd(str_c(year(Datetime), month(Datetime), day(Datetime), sep="-")),
-         Source= "DWR_Sdelta") %>%
+         Source= "DWR S. Delta") %>%
   left_join(., dwr_Sdelta_mc) %>%
   select(LongStationName, ShortStationName, HABstation, Date, Datetime, Source, chla, SampleType, mc_rating, Latitude, Longitude) %>%
   mutate(chla= as.numeric(ifelse(str_detect(chla, "N\\.S\\.|<|D1"), -88, chla))) # transform below detects to -88 and make column numeric

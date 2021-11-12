@@ -95,7 +95,7 @@ ggplot(mc_data_filt, aes(x= ds_year_type)) +
                     name= "Rating",
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_grid(.~Region) +
-  theme_ppt +
+  theme_doc +
   theme(legend.position = "top")
 ggsave(last_plot(), filename= "MCrating_Region.png", width= 12, height= 6, dpi= 300,
        path= "Figures")
@@ -362,18 +362,57 @@ fit_cumu2b <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-summary(fit_cumu2b)
-
-save(fit_cumu2b, file= "Data/fit_cumu2b.Rdata")
+#save(fit_cumu2b, file= "Data/fit_cumu2b.Rdata")
 load("Data/fit_cumu2b.Rdata")
 
-conditional_effects(fit_cumu2b, effect= "ds_water_type", conditions= data.frame(Season= "Summer", Region= "Confluence"), categorical= TRUE)
+summary(fit_cumu2b)
 plot(fit_cumu2b)
 
-conditional_effects(fit_cumu2b, effect= "ds_year_type", categorical= TRUE)
+year_effect <- conditional_effects(fit_cumu2b, effect= "ds_year_type", categorical= TRUE)
+year_effect_gg <- plot(year_effect, plot = FALSE)[[1]]
+
+region_effect <- conditional_effects(fit_cumu2b, effect= "Region", categorical= TRUE)
+
+
+year_effect_gg +
+  theme_doc
+
+#hypothesis(fit_cumu2b, "ds_year_type.L[1]  > ds_year_type.L[2]", scope= "standard", group= "Station")
+
+
+#ggsave(year_effect, filename= "mc_rating_BRMS_yearEffect.png", width= 10, height= 10, dpi= 600,
+#       path= "Figures")
+
+
 term_yt <- conditional_effects(fit_cumu2b, categorical= TRUE)$`ds_year_type`
+term_r <- conditional_effects(fit_cumu2b, categorical= TRUE)$`Region`
+
 term_yt2 <- conditional_effects(fit_cumu2b, effect= "ds_year_type", categorical= TRUE)
 dterm_all <- conditional_effects(fit_cumu2b, categorical= TRUE)
+
+ggplot(term_yt, aes(x= cats__, y= estimate__, group= ds_year_type)) +
+  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
+  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
+  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
+  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+  labs(x= "", y= "Probability of rating value") +
+  scale_y_continuous(expand= c(0, 0)) +
+  scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
+  theme_doc
+ggsave(last_plot(), filename= "MCrating_probs.png", width= 6.5, height= 4, dpi= 300,
+       path= "Figures")
+
+
+ggplot(term_yt, aes(x= ds_year_type, y= estimate__, group= cats__)) +
+  geom_errorbar(aes(ymin= lower__, ymax= upper__), position= "jitter") +
+  geom_point(aes(color= cats__), position= "jitter") +
+  
+  
+  theme_doc
+
+               
+
 
 dterm_all[["ds_year_type"]]
 loo(fit_ac1, fit_ac2, fit_srat1)

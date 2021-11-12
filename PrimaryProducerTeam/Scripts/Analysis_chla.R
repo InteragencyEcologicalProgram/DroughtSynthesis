@@ -43,9 +43,9 @@ load("Data/DS_dataframes.Rdata")
 # Seasons to include in the analysis
 # Minimum result threshold
 DS_data_filt <- filter_chla_data(DS_data,
-                                 min_samps_yr = 12,
-                                 excluded_regions = c("Far West", "Suisun Marsh"),
-                                 seasons= c("Summer", "Fall"),
+                                 min_samps_yr = 6,
+                                 excluded_regions = c("Far West"),
+                                 seasons= c("Summer", "Fall", "Spring", "Winter"),
                                  min_result = 0)
 
 ## Get data frame of unique stations in the filtered data set
@@ -71,7 +71,7 @@ DS_data_stats <- DS_data_filt %>%
 source_summary <- DS_data_stats %>%
   group_by(Source) %>%
   count(Source)
-
+sum(source_summary$n)
 
 SubRegion_month_summary <- DS_data_stats %>%
   group_by(Source, ds_year, month, Region, Season) %>%
@@ -80,11 +80,27 @@ SubRegion_month_summary <- DS_data_stats %>%
 Station_month_summary <- DS_data_stats %>%
   group_by(Source, ds_year, month, Region, SubRegion, Season) %>%
   count(Station)
+sum(Station_month_summary$n)
 
 year_summary <- DS_data_stats %>%
   group_by(Source, ds_year, Region) %>%
   count(Region)
 
+sum(year_summary$n)
+
+Station_count <- DS_data_stats %>%
+  select(Source, Station) %>% 
+  distinct(.) %>% 
+  group_by(Source) %>%
+  count(Source)
+sum(Station_count$n)
+
+Station_Region_count <- DS_data_stats %>%
+  select(Source, Region, Station) %>% 
+  distinct(.) %>% 
+  group_by(Region) %>%
+  count(Region)
+sum(Station_count$n)
 
 Year_type_summary <- DS_data_stats %>%
   group_by(Source, month, Region, SubRegion) %>%
@@ -104,6 +120,7 @@ ggsave(last_plot(), filename= "year_sample_summary.png", width= 8, height= 6, dp
 
 
 ## Boxplots of data
+season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 
 
 ggplot(DS_data_stats, aes(x= ds_year_type, y= chla_log10)) +
@@ -112,12 +129,16 @@ ggplot(DS_data_stats, aes(x= ds_year_type, y= chla_log10)) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                 labels= c("0.01", "0.1", "1", "10", "100")) +
   scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_fill_manual(values= season.colors) +
   annotation_logticks(side= "l") +
-  facet_rep_wrap(~ Region, ncol= 4) +
+  facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
   theme_doc +
-  theme(legend.position = "top")
-ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 10, height= 6, dpi= 300,
+  theme(legend.position = c(0.77, 0.15), 
+        legend.direction = "vertical")
+ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
+
+  ?facet_rep_wrap
 
 
 
@@ -140,7 +161,8 @@ ggsave(last_plot(), filename= "chla_Month_log10.png", width= 10, height= 8, dpi=
 
 ## Station map
 ggplot() +
-  geom_sf(data= filter(DS_regions, Region != "Suisun Marsh"), aes(fill= Region), alpha= 0.5) +
+  #geom_sf(data= filter(DS_regions, Region != "Suisun Marsh"), aes(fill= Region), alpha= 0.5) +
+  geom_sf(data= DS_regions, aes(fill= Region), alpha= 0.5) +
   #geom_sf(data= DS_regions, aes(color= Region), fill= "transparent", size= 3) +
   geom_sf(data= DS_waterways, fill= "skyblue3", color= "black") +
   geom_sf(data= chla_stations_filt.sf, fill= "white", color= "black", shape= 21, size= 4) +
@@ -162,11 +184,11 @@ summary(fit_log10.1)
 plot(fit_log10.1)
 anova(fit_log10.1)
 
-emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = 3448)
+emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = 6620)
 pairs(emm_year)
-emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = 3448)
+emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = 6620)
 pairs(emm_Region)
-emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = 3448)
+emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = 6620)
 pairs(emm_season)
 
 
