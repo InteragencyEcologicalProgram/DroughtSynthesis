@@ -27,8 +27,8 @@ DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
 
 ## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
 #devtools::install_github("sbashevkin/discretewq")
-library(discretewq)
-idb_raw <- wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",
+#library(discretewq)
+idb_raw <- discretewq::wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",
                        "SDO", "SKT", "SLS", "20mm", "Suisun",
                        "Baystudy", "USBR", "USGS", "YBFMP"))
 
