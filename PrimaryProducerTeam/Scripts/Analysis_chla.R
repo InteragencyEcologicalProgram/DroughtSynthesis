@@ -48,6 +48,8 @@ DS_data_filt <- filter_chla_data(DS_data,
                                  seasons= c("Summer", "Fall", "Spring", "Winter"),
                                  min_result = 0)
 
+
+
 ## Get data frame of unique stations in the filtered data set
 chla_stations_filt.sf <- chla_stations.sf %>%
   filter(Station %in% unique(DS_data_filt$Station)) %>% # Remove Suisun Marsh because only have 2-3 EMP stations in that Region
@@ -113,8 +115,8 @@ ggplot(year_summary, aes(x= ds_year, y= n)) +
   geom_col(aes(fill= Source)) +
   facet_rep_wrap(~Region, ncol= 1) +
   labs(x= "Station-months per year", y= "Count") +
-  scale_y_continuous(expand= c(0, 0)) +
-  theme_ppt
+  scale_y_continuous(expand= c(0, 0), breaks= seq(0, 600, by= 100), labels= c("0", "", "200", "", "400", "", "600")) +
+  theme_doc
 ggsave(last_plot(), filename= "year_sample_summary.png", width= 8, height= 6, dpi= 300,
        path= "Figures")
 
@@ -138,7 +140,6 @@ ggplot(DS_data_stats, aes(x= ds_year_type, y= chla_log10)) +
 ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
-  ?facet_rep_wrap
 
 
 
@@ -184,11 +185,11 @@ summary(fit_log10.1)
 plot(fit_log10.1)
 anova(fit_log10.1)
 
-emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = 6620)
+emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = 8679)
 pairs(emm_year)
-emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = 6620)
+emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = 8679)
 pairs(emm_Region)
-emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = 6620)
+emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = 8679)
 pairs(emm_season)
 
 
