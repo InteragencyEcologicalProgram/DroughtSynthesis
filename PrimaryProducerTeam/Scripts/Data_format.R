@@ -75,12 +75,12 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
 
 usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
 
-
+names(usgs_chla)
 usgs_chla <- usgs_chla_raw %>%
-  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (Âµg/L)`, `M Chla (Âµg/L)`) %>%
+  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (µg/L)`, `M Chla (µg/L)`) %>%
   #filter(`M Chla (Âµg/L)` != "00050") %>% # Remove all the 5 micron chla values
- # select(-`M Chla (Âµg/L)`) %>%
-  rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, Datetime= sample_strt_dt, chla= `Chla (Âµg/L)`) %>%
+  select(-`M Chla (µg/L)`) %>%
+  rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, Datetime= sample_strt_dt, chla= `Chla (µg/L)`) %>%
   filter(!is.na(chla)) %>%
   mutate(Date= ymd(Date),
          Datetime= ymd_hm(Datetime),
@@ -111,8 +111,8 @@ usgs_chla <- usgs_chla_raw %>%
 
 
 habs_add <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
-  select(Source, Station, Date, Microcystis, Chlorophyll) %>%
-  rename(mc_rating= Microcystis) %>%
+  select(Source, Station, Date, Microcystis, Chlorophyll, Latitude, Longitude) %>%
+  rename(mc_rating= Microcystis, chla= Chlorophyll) %>%
   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
          Date= mdy(Date)) %>%
   left_join(., idb_stations) #%>%
@@ -145,7 +145,13 @@ DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
                         ifelse(month >= 3 & month <= 5, "Spring",
                                ifelse(month >= 6 & month <= 8, "Summer",
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
-         Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall")))# %>%
+         Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
+  select(-Depth, -LongStationName, -ShortStationName, -HABstation, -SampleType, -Field_coords) %>% 
+  distinct(.)
+
+names(DS_data_noRegions)
+
+
 
 #unique(DS_data_noRegions$Source)
 #unique(habs_add$Source)
@@ -181,13 +187,12 @@ chla_stations.sf <- st_as_sf(chla_stations, coords= c("Longitude", "Latitude"), 
 ## Add Region and Subregion and water year type to data frame
 DS_data <- left_join(DS_data_noRegions, st_drop_geometry(chla_stations.sf)) %>%
   left_join(read_tsv('Data/water_year_type.txt')) %>%
+  distinct(.) %>% 
   mutate(ds_year= as.character(ds_year),
          ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
 save(chla_stations.sf, chla_stations, DS_data, DS_regions, DS_waterways,
      file= "Data/DS_dataframes.Rdata")
-
-
 
 #write_tsv(DS_data, "Data/DS_Chla_DataCombined_Rexport.tsv")
 
