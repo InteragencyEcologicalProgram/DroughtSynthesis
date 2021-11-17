@@ -75,7 +75,7 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
 
 usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
 
-names(usgs_chla)
+
 usgs_chla <- usgs_chla_raw %>%
   select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (µg/L)`, `M Chla (µg/L)`) %>%
   #filter(`M Chla (Âµg/L)` != "00050") %>% # Remove all the 5 micron chla values
@@ -115,6 +115,7 @@ habs_add <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
   rename(mc_rating= Microcystis, chla= Chlorophyll) %>%
   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
          Date= mdy(Date)) %>%
+  filter(str_detect(Station, "EZ") == FALSE) %>% # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
   left_join(., idb_stations) #%>%
   #left_join(., DOP_stations)
 
