@@ -66,9 +66,20 @@ source_counts <- mc_station_summary %>%
     mutate(mc_factor= factor(mc_mod, ordered= TRUE, levels= c("a_none", "b_low", "c_high"))) %>%
     distinct(.)
     #filter(chla > min_result) %>%
-mc_data_filt %>%
-  count(Region, SubRegion)
+  names(data)
 
+  
+  ## WRITE CSV FILES
+  # data %>% 
+  #   select(-chla,-Depth, -SampleType, -`M Chla (µg/L)`, -Field_coords, -LongStationName, -ShortStationName, -HABstation) %>% 
+  #   write_csv(., "Data/mcRating_data.csv")
+
+  # mc_data_filt %>% 
+  #   select(-mc_factor, -chla,-Depth, -SampleType, -`M Chla (µg/L)`, -Field_coords, -LongStationName, -ShortStationName, -HABstation) %>% 
+  #   write_csv(., "Data/mcRating_data_filtered.csv")
+  # 
+  
+  
 
 
 year_summary <- mc_data_filt %>%
@@ -171,88 +182,6 @@ ggplot() +
 
 
 #### STATISTICS ####
-unique(mc_data$Region)
-
-library(mclogit)
-#library(memisc)
-fit.all <- mblogit(mc_factor ~ ds_year_type + Season + Region, random= ~1|Station,
-                     data= mc_data_filt)
-
-summary(fit.all)
-
-
-fit.stn.1 <- mblogit(mc_factor ~ ds_year_type + Region, random= ~1|Station,
-                     data= mc_stn, method= "MQL")
-summary(fit.stn.1)
-
-
-fit.fmwt.1 <- mblogit(mc_factor ~ ds_year_type + Region, random= ~1|Station,
-                     data= mc_fmwt)
-
-unlist(mclogit.control(maxit= 50))
-summary(fit.fmwt.1)
-
-control$trace.inner
-
-args(mblogit)
-
-mclogit.control()[["maxit"]]
-class(mclogit.control()[[1]])
-
-mclogit.control(maxit= 50)
-
-
-my_ellipsis_function <- function(x, ...) {
-  print(paste("Class of regular-argument:", class(x)))
-  print(paste("Number of ellipsis-arguments:", length(list(...))))
-}
-
-
-my_ellipsis_function(x = "Hello World", mtcars, c(1:10), list("Abc", 123))
-
-
-
-### BRMS ####
-library(brms)
-
-# 12 minutes to run, model converged
-fit_ac1 <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + (1|Station),
-  data = mc_data_filt,
-  family = acat("probit"),
-  chains= 2,
-  iter= 1000,
-  warmup= 500,
-  cores= 4
-)
-746/60
-
-#save(fit_ac1, file= "Data/fit_ac1.Rdata")
-load("Data/fit_ac1.Rdata")
-getwd()
-summary(fit_ac1)
-marginal_effects(fit_ac1, "ds_year_type", categorical= TRUE)
-?marginal_effects
-
-
-fit_ac2 <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + (1|Station) + (1|Source),
-  data = mc_data_filt,
-  family = acat("probit"),
-  chains= 3,
-  iter= 1000,
-  warmup= 500,
-  cores= 6
-)
-
-summary(fit_ac2)
-marginal_effects(fit_ac2, "ds_year_type", categorical= TRUE)
-
-save(fit_ac2, file= "Data/fit_ac2.Rdata")
-load("Data/fit_ac2.Rdata")
-
-summary(fit_ac2)
-
 
 
 fit_ac3 <- brm(
@@ -269,9 +198,53 @@ fit_ac3 <- brm(
 load("Data/fit_ac3.Rdata")
 summary(fit_ac3)
 plot(fit_ac3)
-term_yt2 <- conditional_effects(fit_ac3, "ds_year_type", condition= make_conditions(fit_ac3, "Region"), categorical= TRUE)$`ds_year_type`
+unique(mc_data_filt$Region)
+
+conditions.df <- make_conditions(fit_ac3, c("Region", "Season"))
+
+#conditional_effects(fit_ac3, "ds_year_type", condition= conditions.df, categorical= TRUE)
+term_yt2 <- conditional_effects(fit_ac3, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
 
 term_yt <- conditional_effects(fit_ac3, categorical= TRUE)$`ds_year_type`
+names(term_yt2)
+filter(term_yt2, Season == "Summer")
+
+ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
+  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
+  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
+  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
+  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+  labs(x= "", y= expression(paste("Probability of ", italic("Microcystis"), " detection"))) +
+  scale_y_continuous(expand= c(0, 0)) +
+  #scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
+  scale_x_discrete(limits= c("b_low", "c_high"), labels= c(expression(paste("Low ", italic("Microcystis"))),
+                                                           expression(paste("High ", italic("Microcystis"))))) +
+  #facet_rep_grid(Season ~ Region, nrow= 5, repeat.tick.labels = TRUE) +
+  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE) +
+  theme_doc +
+  theme(legend.position= "bottom")
+ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
+       path= "Figures")
+
+
+ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
+  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
+  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
+  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
+  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+  labs(x= "", y= expression(paste("Probability of ", italic("Microcystis"), " detection"))) +
+  scale_y_continuous(expand= c(0, 0)) +
+  #scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
+  scale_x_discrete(limits= c("b_low", "c_high"), labels= c(expression(paste("Low ", italic("Microcystis"))),
+                                                           expression(paste("High ", italic("Microcystis"))))) +
+  facet_rep_wrap(~ Region, nrow= 5) +
+  theme_doc +
+  theme(legend.position= c(0.76, 0.13))
+ggsave(last_plot(), filename= "MCrating_probs_LowHigh.png", width= 6.5, height= 6, dpi= 300,
+      path= "Figures")
+
 
 ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
@@ -282,155 +255,17 @@ ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   labs(x= "", y= "Probability of rating value") +
   scale_y_continuous(expand= c(0, 0)) +
   scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
-  facet_rep_wrap(~ cond__) +
-  theme_doc
-#ggsave(last_plot(), filename= "MCrating_probs.png", width= 6.5, height= 4, dpi= 300,
-  #     path= "Figures")
-
-
-summary(fit_srat1)
-marginal_effects(fit_srat1, "ds_year_type", categorical= TRUE)
-save(fit_srat1, file= "Data/fit_srat1.Rdata")
-load("Data/fit_srat1.Rdata")
-
-
-fit_srat2 <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + Season + Region + (1|Station) + (1|Source),
-  data = mc_data_filt,
-  family = sratio("probit"),
-  chains= 2,
-  iter= 2000,
-  warmup= 1000,
-  cores= 6
-)
-
-summary(fit_srat2)
-conditional_effects(fit_srat2, "ds_year_type", categorical= TRUE)
-conditional_effects(fit_srat2, "Region", categorical= TRUE)
-conditional_effects(fit_srat2, "Season", categorical= TRUE)
-save(fit_srat2, file= "Data/fit_srat2.Rdata")
-load("Data/fit_srat2.Rdata")
-?conditional_effects
+  #scale_x_discrete(limits= c("b_low", "c_high"), labels= c("Low\nMicrocystis", "High\nMicrocystis")) +
+  facet_rep_wrap(~ Region, nrow= 3) +
+  theme_doc +
+  theme(legend.position= c(0.76, 0.13))
+ggsave(last_plot(), filename= "MCrating_probs.png", width= 6.5, height= 6, dpi= 300,
+     path= "Figures")
 
 
 
-fit_cumu1b <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + (1|Station) + (1|Source),
-  data = mc_data_filt,
-  family = cumulative("probit"),
-  chains= 3,
-  iter= 2000,
-  warmup= 1000,
-  cores= 6,
-  control = list(adapt_delta = 0.95)
-)
-summary(fit_cumu1b)
-summary(fit_cumu1)
-save(fit_cumu1b, file= "Data/fit_cumu1b.Rdata")
-#load("Data/fit_cumu1.Rdat")
-#conditional_effects(fit_cumu1, "ds_year_type", categorical= TRUE)
-
-str(fit_cumu1b)
-cumu1b_df <- ggmcmc::ggs(fit_cumu1b)
-unique(cumu1b_df$Parameter)
-
-library(ggplot2)
-cumu1b_df %>%
-  filter(!str_detect(Parameter, "Source") & !str_detect(Parameter, "Station")) %>%
-ggplot(data= ., aes(x= Iteration, y= value)) +
-  geom_line(aes(color= as.factor(Chain))) +
-  facet_wrap(~ Parameter, scales = "free_y") +
-  theme_bw()
-
-# https://m-clark.github.io/posts/2021-02-28-practical-bayes-part-i/#divergent-transitions
-mcmc_plot(
-  fit_cumu1b,
-  #pars = c('b_b11', 'b_b21', 'b_x1'),
-  type = 'pairs',
-  diag_fun = 'dens',
-  off_diag_fun = 'hex',
-  fixed = TRUE
-)
-
-fit_cumu1c <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + Region + Season + (1|Station),
-  data = mc_data_filt,
-  family = cumulative("probit"),
-  chains= 3,
-  iter= 2000,
-  warmup= 1000,
-  cores= 6,
-  control = list(adapt_delta = 0.99)
-)
-summary(fit_cumu1c)
-save(fit_cumu1c, file= "Data/fit_cumu1c.Rdata")
-load("Data/fit_cumu1c.Rdata")
-
-marginal_effects(fit_cumu1c, "ds_year_type", categorical= TRUE)
 
 
-fit_cumu2b <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + Season + Region + (1|Station),
-  data = mc_data_filt,
-  family = cumulative("probit"),
-  chains= 4,
-  iter= 3000,
-  warmup= 1000,
-  cores= 8,
-  control = list(adapt_delta = 0.99)
-)
-
-hgnm
-#load("Data/fit_cumu2b.Rdata")
-
-summary(fit_cumu2c)
-plot(fit_cumu2b)
-
-year_effect <- conditional_effects(fit_cumu2c, effect= "ds_year_type", categorical= TRUE)
-year_effect_gg <- plot(year_effect, plot = FALSE)[[1]]
-
-region_effect <- conditional_effects(fit_cumu2b, effect= "Region", categorical= TRUE)
 
 
-year_effect_gg +
-  theme_doc
 
-#hypothesis(fit_cumu2b, "ds_year_type.L[1]  > ds_year_type.L[2]", scope= "standard", group= "Station")
-
-
-#ggsave(year_effect, filename= "mc_rating_BRMS_yearEffect.png", width= 10, height= 10, dpi= 600,
-#       path= "Figures")
-
-
-term_yt <- conditional_effects(fit_cumu2b, categorical= TRUE)$`ds_year_type`
-term_r <- conditional_effects(fit_cumu2b, categorical= TRUE)$`Region`
-
-term_yt2 <- conditional_effects(fit_cumu2b, effect= "ds_year_type", categorical= TRUE)
-dterm_all <- conditional_effects(fit_cumu2b, categorical= TRUE)
-
-ggplot(term_yt, aes(x= cats__, y= estimate__, group= ds_year_type)) +
-  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
-  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
-  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
-  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
-  labs(x= "", y= "Probability of rating value") +
-  scale_y_continuous(expand= c(0, 0)) +
-  scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
-  theme_doc
-ggsave(last_plot(), filename= "MCrating_probs.png", width= 6.5, height= 4, dpi= 300,
-       path= "Figures")
-
-
-ggplot(term_yt, aes(x= ds_year_type, y= estimate__, group= cats__)) +
-  geom_errorbar(aes(ymin= lower__, ymax= upper__), position= "jitter") +
-  geom_point(aes(color= cats__), position= "jitter") +
-  
-  
-  theme_doc
-
-               
-
-
-dterm_all[["ds_year_type"]]
-loo(fit_ac1, fit_ac2, fit_srat1)
