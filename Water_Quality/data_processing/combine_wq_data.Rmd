@@ -36,14 +36,22 @@ df_emp$DS <- 'EMP'
 df_wsc$DS <- 'WSC'
 
 # subset dfs
-df_sf <- subset(df_sf, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
-df_emp <- subset(df_emp, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
-df_wsc <- subset(df_wsc, select = c('Date', 'SubRegion', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DS'))
+df_sf <- subset(df_sf, select = c('Date', 'Month', 'Year', 'Region', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
+df_emp <- subset(df_emp, select = c('Date', 'Month', 'Year', 'Region', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DissSilica', 'DS'))
+# df_wsc <- subset(df_wsc, select = c('Date', 'Month', 'Year', 'Region', 'Station', 'Season', 'WY', 'Long_term', 'Latitude', 'Longitude', 'DissAmmonia', 'DissNitrateNitrite', 'DissOrthophos', 'DS'))
 ```
 
 ```{r}
-# combine
-df_wq <- bind_rows(df_emp, df_sf, df_wsc)
+# combine and format
+df_wq <- bind_rows(df_sf, df_emp)
+df_wq$Date <- format(as.Date(df_wq$Date, format = '%Y-%m-%d'), '%Y-%m')
+row.names(df_wq) <- NULL
+
+df_wq <- subset(df_wq, Date > '1975-01')
+
+df_wq <- df_wq %>%
+  group_by(Station, Region, Date, Season, WY, Long_term, DS) %>%
+  summarise(across(DissAmmonia:DissSilica, ~mean(., na.rm = TRUE)), .groups = 'drop')
 
 # write file
 write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv'))
@@ -52,8 +60,12 @@ write_csv(df_wq, drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv')
 
 ```{r}
 # checks
-df_wq_sub <- subset(df_wq, SubRegion == 'Lower Sacramento River')
-ggplot(df_wq_sub, aes(Date, DissNitrateNitrite, color = DS)) +
+# df_wq_sub <- subset(df_wq, SubRegion == 'Lower Sacramento River')
+df_wq_sub <- subset(df_wq, DS == 'SF')
+ggplot(df_wq, aes(Date, DissNitrateNitrite, color = DS)) +
   geom_point()
+```
+```{r}
+unique(df_wq$DS)
 ```
 

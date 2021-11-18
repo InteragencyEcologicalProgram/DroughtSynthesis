@@ -11,10 +11,11 @@ library(deltamapr)
 library(lubridate)
 library(sf)
 library(sp)
+# library(discretewq)
 source('Water_Quality/wq_funcs.R')
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, warning = FALSE}
 # define fps
 fp_abs_wq_all <- 'WQ_Team/raw_data/SF_water_quality/'
 fp_abs_wq_old <- paste0(fp_abs_wq_all,'SanFranciscoBayWaterQualityData1969-2015v3.csv')
@@ -53,6 +54,9 @@ df_wq_old <- df_wq_old %>% rename(Station = Station_Number,
                             `Si (Micromolar)` = Silicate)
 
 df_wq_old$Date <- as.Date(df_wq_old$Date, '%m/%d/%y')
+df_wq_old$Year <- year(df_wq_old$Date)
+df_wq_old$Month <- month(df_wq_old$Date)
+df_wq_old$Year <- with(df_wq_old, ifelse(month(Date) == 12, Year + 1, Year))
 
 wq <- bind_rows(df_wq_old, df_wq_recent)
 rm(df_wq_old, df_wq_recent)
@@ -82,13 +86,15 @@ spdf_delta <- spTransform(spdf_delta, CRS('+init=epsg:4326 +proj=longlat'))
 # add subregion col to wq df
 col_sr <- sp::over(spdf_wq, spdf_delta[,'SubRegion'])
 spdf_wq$SubRegion <- col_sr$SubRegion
+# spdf_wq$Region <- col_sr$Region
 
 # convert to shapefile
 sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
+sf_wq <- subset(sf_wq, select = -c(Region))
 
 # add longterm col
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion'))
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion','Region')], by = c('Season','SubRegion'))
 
 # check data
 ggplot() + 
@@ -100,6 +106,7 @@ ggplot() +
 ```{r}
 # check extra regions in original wq df (ie. not in sf_wq_lt)
 unique(sf_wq$SubRegion)[!(unique(sf_wq$SubRegion) %in% unique(df_regions$SubRegion))]
+unique(sf_wq$Region)[!(unique(sf_wq$Region) %in% unique(df_regions$Region))]
 ```
 
 ```{r}

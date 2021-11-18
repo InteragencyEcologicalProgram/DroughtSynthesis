@@ -17,29 +17,26 @@ source('Water_Quality/wq_funcs.R')
 
 # Read in Data
 ```{r message = FALSE}
-# will eventually be the combined dataset
-df_wq <- read_csv(drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv'))
+df_wq <- read_csv(drought_abs_path('WQ_Team/processed_data/combined_wq_data.csv'), col_types = c(Station='c'))
 
 # simplify to drought/wet
 df_wq$WY[df_wq$WY %in% c('not drought', 'in between')] <- 'wet'
 df_wq$WY[df_wq$WY %in% c('drought no barrier', 'drought with barrier')] <- 'drought'
 
-df_wq$Year <- format(df_wq$Date, '%Y')
+df_wq$Year <- unlist(lapply(df_wq$Date, function(x) strsplit(x, '-')[[1]][1]))
 ```
 
 ```{r}
 # Seasonal
 df_wq_seasonal <- df_wq %>%
-  group_by(Year, WY, Season) %>%
+  group_by(Year, WY, Season, Long_term) %>%
   summarise_at(c('DissNitrateNitrite', 'DissOrthophos', 'DissSilica'), mean, na.rm = TRUE)
 
 df_wq_seasonal$DissNitrateNitrite <- log10(df_wq_seasonal$DissNitrateNitrite)
 df_wq_seasonal$DissOrthophos <- log10(df_wq_seasonal$DissOrthophos)
+df_wq_seasonal$DissSilica <- log10(df_wq_seasonal$DissSilica)
 
-# df_wq_seasonal <- season_to_num(df_wq_seasonal)
-
-df_wq_seasonal$Year_Season <- paste0(df_wq_seasonal$Year,'/',df_wq_seasonal$Season)
-df_wq_seasonal$Year_Season <- ym(df_wq_seasonal$Year_Season)
+df_wq_seasonal$Year_Season <- paste0(df_wq_seasonal$Year,'-',df_wq_seasonal$Season)
 ```
 
 # Seasonal Averages for Entire Delta (DissNitrateNitrite)
@@ -57,7 +54,6 @@ print('')
 # failed tests, add lags based on pacf
 df_wq_seasonal$DissNitrateNitrite_onelag <- lag(df_wq_seasonal$DissNitrateNitrite, n = 1L)
 df_wq_seasonal$DissNitrateNitrite_twolag <- lag(df_wq_seasonal$DissNitrateNitrite, n = 2L)
-df_wq_seasonal$DissNitrateNitrite_threelag <- lag(df_wq_seasonal$DissNitrateNitrite, n = 3L)
 
 lm_seasonal <- lm(DissNitrateNitrite ~ WY + Season + DissNitrateNitrite_onelag + DissNitrateNitrite_twolag, data = df_wq_seasonal)
 
@@ -197,7 +193,10 @@ print('')
 print('END TEST THINGS')
 print('')
 
-lm_seasonal <- lm(DissSilica ~ WY + Season, data = df_wq_seasonal)
+# failed tests, add lags based on pacf
+df_wq_seasonal$DissSilica_onelag <- lag(df_wq_seasonal$DissSilica, n = 1L)
+
+lm_seasonal <- lm(DissSilica ~ WY + Season + DissSilica_onelag, data = df_wq_seasonal)
 
 pacf(residuals(lm_seasonal), na.action = na.pass)
 
@@ -229,18 +228,17 @@ print(test(emm_seas_WY)$contrasts)
 ```{r}
 # Regional
 df_wq_regional <- df_wq %>%
-  group_by(Year, SubRegion, WY) %>%
+  group_by(Year, Region, WY) %>%
   summarise_at(c('DissNitrateNitrite', 'DissOrthophos', 'DissSilica'), mean, na.rm = TRUE)
 
 df_wq_regional$DissNitrateNitrite <- log10(df_wq_regional$DissNitrateNitrite)
-# df_wq_regional$DON <- log10(df_wq_regional$DON)
 df_wq_regional$DissOrthophos <- log10(df_wq_regional$DissOrthophos)
 ```
 
 # Regional Averages per Year (DissNitrateNitrite)
 ```{r}
 print('TEST THINGS')
-lm_regional <- lm(DissNitrateNitrite ~ WY + SubRegion, data = df_wq_regional)
+lm_regional <- lm(DissNitrateNitrite ~ WY + Region, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -256,7 +254,7 @@ df_wq_regional$DissNitrateNitrite_twolag <- lag(df_wq_regional$DissNitrateNitrit
 df_wq_regional$DissNitrateNitrite_threelag <- lag(df_wq_regional$DissNitrateNitrite, n = 3L)
 df_wq_regional$DissNitrateNitrite_fourlag <- lag(df_wq_regional$DissNitrateNitrite, n = 4L)
 
-lm_regional <- lm(DissNitrateNitrite ~ WY + SubRegion + DissNitrateNitrite_onelag + DissNitrateNitrite_twolag + DissNitrateNitrite_threelag + DissNitrateNitrite_fourlag, data = df_wq_regional)
+lm_regional <- lm(DissNitrateNitrite ~ WY + Region + DissNitrateNitrite_onelag + DissNitrateNitrite_twolag + DissNitrateNitrite_threelag + DissNitrateNitrite_fourlag, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -274,7 +272,7 @@ print('')
 print('*-*-*-*-*-*-*')
 print('')
 
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ SubRegion:SubRegion, adjust = 'sidak')
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'sidak')
 print(test(emm_reg_reg)$contrasts)
 
 print('')
@@ -288,7 +286,7 @@ print(test(emm_reg_WY)$contrasts)
 # Regional Averages per Year (DON)
 ```{r}
 # print('TEST THINGS')
-# lm_regional <- lm(DON ~ WY + SubRegion, data = df_wq_regional)
+# lm_regional <- lm(DON ~ WY + Region, data = df_wq_regional)
 # 
 # pacf(residuals(lm_regional), na.action = na.pass)
 # 
@@ -304,7 +302,7 @@ print(test(emm_reg_WY)$contrasts)
 # df_wq_regional$DON_threelag <- lag(df_wq_regional$DON, n = 3L)
 # df_wq_regional$DON_fourlag <- lag(df_wq_regional$DON, n = 4L)
 # 
-# lm_regional <- lm(DON ~ WY + SubRegion + DON_onelag + DON_twolag + DON_threelag + DON_fourlag, data = df_wq_regional)
+# lm_regional <- lm(DON ~ WY + Region + DON_onelag + DON_twolag + DON_threelag + DON_fourlag, data = df_wq_regional)
 # 
 # pacf(residuals(lm_regional), na.action = na.pass)
 # 
@@ -322,7 +320,7 @@ print(test(emm_reg_WY)$contrasts)
 # print('*-*-*-*-*-*-*')
 # print('')
 # 
-# emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ SubRegion:SubRegion, adjust = 'sidak')
+# emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'sidak')
 # print(test(emm_reg_reg)$contrasts)
 # 
 # print('')
@@ -336,7 +334,7 @@ print(test(emm_reg_WY)$contrasts)
 # Regional Averages per Year (DissOrthophos)
 ```{r}
 print('TEST THINGS')
-lm_regional <- lm(DissOrthophos ~ WY + SubRegion, data = df_wq_regional)
+lm_regional <- lm(DissOrthophos ~ WY + Region, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -352,7 +350,7 @@ df_wq_regional$DissOrthophos_twolag <- lag(df_wq_regional$DissOrthophos, n = 2L)
 df_wq_regional$DissOrthophos_threelag <- lag(df_wq_regional$DissOrthophos, n = 3L)
 df_wq_regional$DissOrthophos_fourlag <- lag(df_wq_regional$DissOrthophos, n = 4L)
 
-lm_regional <- lm(DissOrthophos ~ WY + SubRegion  + DissOrthophos_onelag + DissOrthophos_twolag + DissOrthophos_threelag + DissOrthophos_fourlag, data = df_wq_regional)
+lm_regional <- lm(DissOrthophos ~ WY + Region  + DissOrthophos_onelag + DissOrthophos_twolag + DissOrthophos_threelag + DissOrthophos_fourlag, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -370,7 +368,7 @@ print('')
 print('*-*-*-*-*-*-*')
 print('')
 
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ SubRegion:SubRegion, adjust = 'sidak')
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'sidak')
 print(test(emm_reg_reg)$contrasts)
 
 print('')
@@ -385,7 +383,7 @@ print(test(emm_reg_WY)$contrasts)
 # Regional Averages per Year (DissSilica)
 ```{r}
 print('TEST THINGS')
-lm_regional <- lm(DissSilica ~ WY + SubRegion, data = df_wq_regional)
+lm_regional <- lm(DissSilica ~ WY + Region, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -401,7 +399,7 @@ df_wq_regional$DissSilica_twolag <- lag(df_wq_regional$DissSilica, n = 2L)
 df_wq_regional$DissSilica_threelag <- lag(df_wq_regional$DissSilica, n = 3L)
 df_wq_regional$DissSilica_fourlag <- lag(df_wq_regional$DissSilica, n = 4L)
 
-lm_regional <- lm(DissSilica ~ WY + SubRegion  + DissSilica_onelag + DissSilica_twolag + DissSilica_threelag + DissSilica_fourlag, data = df_wq_regional)
+lm_regional <- lm(DissSilica ~ WY + Region  + DissSilica_onelag + DissSilica_twolag + DissSilica_threelag + DissSilica_fourlag, data = df_wq_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -419,7 +417,7 @@ print('')
 print('*-*-*-*-*-*-*')
 print('')
 
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ SubRegion:SubRegion, adjust = 'sidak')
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'sidak')
 print(test(emm_reg_reg)$contrasts)
 
 print('')
