@@ -23,19 +23,23 @@ unique(habs$Species)
 
 habs2 = pivot_wider(habs, id_cols = c(Station, Date), names_from = Species, 
                        values_from = Concentration, values_fill = 0, values_fn = sum) %>%
-  select(!`none observed`) %>%
+  dplyr::select(!`none observed`) %>%
   pivot_longer(cols = "Aphanizomenon":"cf. Chrysosporum", names_to = "Species") %>%
   filter(!is.na(value))
 
 ggplot(habs2, aes(x = as.factor(Date), y = value, fill = Species)) + geom_bar(stat = "identity")
 
-habs2021 = filter(habs2, year(Date)==2021, Station %in% c("Banks PP", "Clifton Court Forebay"))
-ggplot(habs2021, aes(x = as.factor(Date), y = value, fill = Species)) + geom_col() +
-  facet_wrap(~Station)+ scale_fill_brewer(palette = "Set3") + theme_bw()+
-  theme(axis.text.x = element_text(vjust = 1, hjust = 1, angle = 90))+
-  ylab("units present")
-  
+habs2021 = filter(habs2, year(Date)==2021, Station %in% c("Banks PP", "Clifton Court Forebay"),
+                  value !=0) %>%
+  mutate(Day = date(Date))
 
+ggplot(habs2021, aes(x = as.factor(Date), y = value, fill = Species)) + geom_col() +
+  facet_wrap(~Station)+ scale_fill_manual(breaks = HABcol$Genus, values = HABcol$Color) + theme_bw()+
+  theme(axis.text.x = element_text(vjust = 1, hjust = 1, angle = 90))+
+  ylab("units present") +xlab(NULL)
+  
+HABcol = data.frame(Color = brewer.pal(8, "Dark2"),
+                    Genus = sort(unique(EMPHAB2$Genus)))
 
 
 hab_samples = mutate(hab_samples, Result = case_when(

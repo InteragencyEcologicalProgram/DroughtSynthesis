@@ -186,7 +186,7 @@ EMPphyto = read_csv("data/HABs/1975-2020_phyto.csv")
 #look for regions and attach
 regs = read.csv("IEP_StationswRegions_19OCT2021.csv")
 
-EMPphyto = left_join(EMPphyto, select(regs, StationCode, SubRegion, Region))
+EMPphyto = left_join(EMPphyto, dplyr::select(regs, StationCode, SubRegion, Region))
 
 EMPphyto2011_2020 = mutate(EMPphyto, Year = year(SampleDate), Month = month(SampleDate)) %>%
   filter(Year >2010) %>%
@@ -284,7 +284,7 @@ EMPphytoX = mutate(EMPphyto, Year = year(SampleDate), Month = month(SampleDate))
     AlgalType = NULL) %>%
   left_join(types)
 
-test = select(EMPphytoX, -N, -AlgalType)
+test = dplyr::select(EMPphytoX, -N, -AlgalType)
 
 
 EMPphyto2011_20202 =  pivot_wider(EMPphytoX, id_cols = c(StationCode, SampleDate, Month, Year), names_from = AlgalType,
@@ -325,3 +325,258 @@ ggplot(cyanosX, aes(x = StationCode, y = log(CellsperML+1), fill = Genus))+
 ggplot(filter(cyanosX, Genus != "Eucapsis"), aes(x = StationCode, y = CellsperML, fill = Genus))+ 
   geom_col()+facet_grid(Year~Month) 
 
+##############################################################################################
+#try and combine 2021 with older data
+
+OlderEMP = read_csv("EMP_1975_2020_phyto.csv") %>%
+  mutate(SampleTime = as_datetime(SampleTime))
+names(OlderEMP) 
+names(EMP2021)
+EMP2021 = rename(EMP2021, Organisms_per_mL = `Organisms per mL`, Group = `Colony/Filament/Individual Group Code`,
+                 Cells_per_Unit = `Number of cells per unit`)
+ EMP2021 =  mutate(EMP2021, SampleTime = as_datetime(SampleTime), Year = year(SampleDate), Month = month(SampleDate))
+EMPall = bind_rows(OlderEMP, EMP2021) %>%
+  dplyr::select(-c(Cells, `Full Code`, `GALD 1`, `GALD 2`, `GALD 3`), -starts_with("Biovolume"))
+
+write.csv(EMPall, "EMP_phyto_data.csv", row.names = F)
+EMPall = read.csv("EMP_phyto_data.csv") %>%
+  left_join(allreg)
+
+EMPallsum = group_by(EMPall, StationCode, Region, SampleDate, Month, Year, Algal.Type) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  group_by(Region, Month, Year, Algal.Type) %>%
+  summarize(OrgperML = mean(OrgperML)) %>%
+  filter(Year > 2013) %>%
+  mutate(Algal.Type = case_when(
+    Algal.Type %in% c("Ciliate", "Dinoflagelate", "Euglenoid", "Haptophyte", "Xanthophyte") ~ "Other",
+    TRUE ~ Algal.Type
+  ))
+
+ggplot(filter(EMPallsum, !is.na(Region)), aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+  facet_grid(Region~Year)
+
+ggplot(filter(EMPallsum, !is.na(Region), Algal.Type != "Cyanobacterium", Year > 2018), aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+  facet_grid(Region~Year)
+
+
+
+EMPallcy = group_by(EMPall, StationCode, Stratum, SampleDate, Month, Year, Algal.Type, Genus) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  filter(Algal.Type == "Cyanobacterium") %>%
+  group_by(Stratum, Month, Year, Genus) %>%
+  summarize(OrgperML = mean(OrgperML)) %>%
+  filter(Year > 2013, Stratum %in% c("Lower Sacramento", "Lower San Joaquin", "Southern Delta"),
+         Month %in% c(6,7,8,9))
+
+#Summer HABS near the barrier
+
+ggplot(EMPallcy,  aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
+  facet_grid(Stratum~Year)
+
+#harmful critters only
+EMPHAB = filter(EMPallcy,  Genus %in% c("Aphanizomenon", "Anabaena", "Dolichospermum", "Microcystis", "Oscillatoria"))
+
+
+ggplot(EMPHAB,  aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
+  facet_grid(Stratum~Year) +theme_bw() +theme(legend.position = "bottom") 
+
+
+EMPallNoc = group_by(EMPall, StationCode, Stratum, SampleDate, Month, Year, Algal.Type) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  filter(Algal.Type != "Cyanobacterium") %>%
+  group_by(Stratum, Month, Year, Algal.Type) %>%
+  summarize(OrgperML = mean(OrgperML)) %>%
+  filter(Year > 2013, Stratum %in% c("Lower Sacramento", "Lower San Joaquin", "Southern Delta"),
+         Month %in% c(6,7,8,9))
+
+ggplot(EMPallNoc,  aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+  facet_grid(Stratum~Year)
+
+
+#all genuses
+EMPallgenus = group_by(EMPall, StationCode, Region, SampleDate, Month, Year, Algal.Type, Genus) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  group_by(Region, Month, Year, Algal.Type, Genus) %>%
+  summarize(OrgperML = mean(OrgperML)) %>%
+  filter(Year > 2013, Region == "SouthCentral")%>%
+  mutate(Algal.Type = case_when(
+    Algal.Type %in% c("Ciliate", "Dinoflagellate", "Euglenoid", "Haptophyte", "Xanthophyte") ~ "Other",
+    TRUE ~ Algal.Type
+  ))
+
+
+ggplot(EMPallgenus, aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
+  facet_grid(Algal.Type~Year, scales = "free_y")+
+  scale_fill_discrete(guide = NULL)
+
+
+########################
+#just franks tract
+
+
+FRK = group_by(EMPall, StationCode, Stratum, SampleDate, Month, Year, Algal.Type) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  filter(StationCode == "D19", Year > 2013,
+         Month %in% c(6,7,8,9))
+
+ggplot(FRK, aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+  facet_grid(.~Year, scales = "free_y")
+
+ggplot(filter(FRK, Algal.Type != "Cyanobacterium"), aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+  facet_grid(.~Year, scales = "free_y")
+
+
+FRKc = group_by(EMPall, StationCode, Stratum, SampleDate, Month, Year, Algal.Type, Genus) %>%
+  
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  filter(Algal.Type == "Cyanobacterium") %>%
+  filter(StationCode == "D19", Year > 2013,
+         Month %in% c(6,7,8,9)) %>%
+  mutate(Genus = case_when(
+    Genus == "Chroococcus" ~ "Eucapsis",
+    TRUE ~ Genus
+  ))
+
+ggplot(FRKc, aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
+  facet_grid(.~Year, scales = "free_y") + scale_fill_brewer(palette = "Set3")
+
+
+ggplot(filter(FRKc, Genus != "Eucapsis"), aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
+  facet_grid(.~Year, scales = "free_y") + scale_fill_brewer(palette = "Set3")
+
+sort(unique(EMPallcy$Genus))
+
+###################################################
+#Do we see more harmful algae in barrier years?
+EMPallzeros = pivot_wider(EMPall, id_cols = c(SampleDate, SampleTime, StationCode, Year, Month, Region, Stratum),
+                          names_from = Genus, values_from = Organisms_per_mL, values_fn = sum, values_fill = 0) %>%
+  pivot_longer(cols = "Achnanthes":last_col(), names_to = "Genus", values_to = "Organisms_per_mL") %>%
+  left_join(types) %>%
+  rename(Algal.Type = `Algal Type`)
+
+EMPcy = group_by(EMPallzeros, StationCode, Stratum, SampleDate, Month, Year, Algal.Type, Genus) %>%
+  summarize(OrgperML = sum(Organisms_per_mL, na.rm = T)) %>%
+  filter(Algal.Type == "Cyanobacterium") %>%
+  filter(Year > 2013, Stratum %in% c("Lower Sacramento", "Lower San Joaquin", "Southern Delta"),
+         Month %in% c(6,7,8,9))
+
+#Summer HABS near the barrier
+
+
+#harmful critters only
+EMPHAB2 = filter(EMPcy,  Genus %in% c("Aphanizomenon", "Anabaena", "Dolichospermum", 
+                                      "Cylindrospermopsis",  "Anabaenopsis",
+                                      "Microcystis", "Oscillatoria", "Planktothrix"))
+
+hist(EMPHAB2$OrgperML)
+
+#mean per species of harmful cristters by year
+EMPHAB3s = group_by(EMPHAB2,  Stratum, SampleDate, Month, Year, Genus) %>%
+  summarize(OrgperML = mean(OrgperML))
+
+ggplot(EMPHAB3s, aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+ 
+  facet_grid(Stratum~Year) +
+  ylab("Organisms per mL of harmful algae") +
+  xlab("Month")+
+  theme_bw() + theme(legend.position = "bottom")+
+  scale_fill_brewer(palette = "Dark2")
+
+
+#sum of harmful critters per sample
+EMPHAB3 = group_by(EMPHAB2,  StationCode, Stratum, SampleDate, Month, Year) %>%
+  summarize(OrgperML = sum(OrgperML))
+
+hist(EMPHAB3$OrgperML)
+hist(log(EMPHAB3$OrgperML+1))
+#Of couse. Now we're zero inflated
+
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+EMPHAB3 = mutate(EMPHAB3, lnOrg = log(OrgperML + 1), rOrg = round(OrgperML),
+                 yearf = factor(Year, levels = c(2014,2015,2016,2017,2018,2019,2020,2021)))
+c1 = lmer(lnOrg ~ yearf+Stratum + (1|StationCode), data = EMPHAB3)
+summary(c1)
+emmeans(c1, pairwise~ yearf)
+visreg(c1)
+
+
+c2 = glmmTMB(rOrg ~ yearf+Stratum + (1|StationCode), zi = ~., family = "nbinom2", data = EMPHAB3)
+c2b = glmmTMB(rOrg ~ yearf*Stratum + (1|StationCode), zi = ~., family = "nbinom2", data = EMPHAB3)
+
+
+foo = as.data.frame(summary(c2)$coefficients$cond) %>%
+  mutate(type = "cond")
+foo2 = as.data.frame(summary(c2)$coefficients$cond) %>%
+  mutate(type = "zi")
+foo3 = bind_rows(foo, foo2)
+write.csv(foo3, "foo3.csv")
+visreg(c2)
+Anova(c2, component = "cond")
+Anova(c2, component = "zi")
+
+pairsY = emmeans(c2, "yearf", component = "cond")
+pairsYz = emmeans(c2, "yearf", component = "zi")
+foo = as.data.frame(pairs(pairsYz)) %>%
+  mutate(type = "zi")
+foo2 = as.data.frame(pairs(pairsY)) %>%
+  mutate(type = "count")
+foo3 = bind_rows(foo, foo2)
+
+pairsS = emmeans(c2, "Stratum", component = "cond")
+pairsSz = emmeans(c2, "Stratum", component = "zi")
+
+
+foo4 = as.data.frame(pairs(pairsS)) %>%
+  mutate(type = "count") %>%
+  bind_rows(as.data.frame(pairs(pairsSz)) %>%
+              mutate(type = "zi")) %>%
+  bind_rows(foo3)
+
+
+simresc2 = simulateResiduals(c2)
+plot(simresc2)
+performance(c2)
+
+
+EMPmean = group_by(EMPHAB3, Year, Stratum) %>%
+  summarize(Mean = mean(OrgperML, na.rm = T), SD = sd(OrgperML), SE = SD/n(), N = n())
+ggplot(EMPHAB3, aes(x = Stratum, y = lnOrg)) + geom_boxplot()+ facet_wrap(~Year)
+ggplot(EMPmean, aes(x = Stratum, y = Mean, fill = Stratum)) + geom_col()+ facet_wrap(~Year) +
+  geom_errorbar(aes(ymin = Mean-SE, ymax = Mean +SE))+
+  geom_text(aes(label = paste("N =", N), y =2500)) + ylab("Organisms per mL of harmful algae") +
+  xlab("Region")+
+  scale_x_discrete(label = c("Sacramento", "San Joaquin", "South Delta")) + theme_bw() +
+  scale_fill_brewer(palette = "Dark2", guide = NULL)
+
+
+#quick permanova
+library(vegan)
+HABmat = pivot_wider(EMPHAB2, id_cols = c(StationCode, Stratum, SampleDate, Month, Year), 
+                     names_from = "Genus", values_from = "OrgperML", values_fill = 0) %>%
+  mutate(yearf = as.factor(Year), total = sum(Aphanizomenon, Anabaena, Dolichospermum, 
+                                      Cylindrospermopsis,  Anabaenopsis,
+                                      Microcystis, Oscillatoria, Planktothrix)) %>%
+  ungroup() %>%
+  filter(total != 0)
+
+HABmatX = as.matrix(dplyr::select(HABmat, Anabaena:Oscillatoria))
+
+perm <- how(nperm = 999)
+setBlocks(perm) <- with(HABmat, Stratum)
+
+ad1=adonis(HABmatX ~ yearf + Stratum, data = HABmat, permutations = perm)
+HABnmds = metaMDS(HABmatX, trymax = 500)
+plot(HABnmds)
+
+with(HABmat, ordiellipse(HABnmds, groups = Stratum))
+with(HABmat, ordiellipse(HABnmds, groups = yearf))
+
+##################################################
+#what's with anabaena versus dolichospermum?
+
+AD = filter(EMPall, Genus %in% c("Anabaena", 
+                                "Dolichospermum"))
+AD2 = as.data.frame(table(AD$Year, AD$Genus))
+
+ggplot(AD2, aes(x = Var1, y = Freq, fill = Var2)) + geom_col()+ xlab("Year")
