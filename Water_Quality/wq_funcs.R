@@ -60,7 +60,7 @@ add_wy_col <- function(df) {
         case_when(
           lubridate::year(Date) %in% c(2011, 2017, 2019) ~ 'wet',
           lubridate::year(Date) %in% c(seq(1976,1977), seq(1987,1992), seq(2007,2009)) ~ 'drought',
-          lubridate::year(Date) %in% c(1975, seq(1978,1986), seq(1993,2006), 2010) ~ 'not drought',
+          lubridate::year(Date) %in% c(seq(1971,1975), seq(1978,1986), seq(1993,2006), 2010) ~ 'not drought',
           lubridate::year(Date) %in% c(2013, 2014, 2020) ~ 'drought no barrier',
           lubridate::year(Date) %in% c(2015, 2021) ~ 'drought with barrier',
           lubridate::year(Date) %in% c(2012, 2016, 2018) ~ 'in between')

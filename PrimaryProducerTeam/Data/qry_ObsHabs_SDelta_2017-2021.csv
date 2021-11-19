@@ -1,0 +1,415 @@
+﻿StationCode,FldObsWaterHabs,IndexScore,FldDate
+TWA,NA,,9/6/2017
+TWA,NA,,9/21/2017
+GLE,Not Visible,1,9/26/2017
+DGL,NA,,9/26/2017
+GLC,NA,,9/27/2017
+ODM,NA,,9/27/2017
+ORM,NA,,9/27/2017
+TWA,NA,,10/4/2017
+MRU,NA,,10/6/2017
+MHO,NA,,10/6/2017
+DGL,Absent,,10/10/2017
+GLE,Not Visible,1,10/10/2017
+TWA,Not Visible,1,10/17/2017
+VCU,Low,2,10/18/2017
+GLC,Not Visible,1,10/18/2017
+ODM,Not Visible,1,10/18/2017
+ORM,Not Visible,1,10/18/2017
+MRU,Not Visible,1,10/24/2017
+MRX,Not Visible,1,10/24/2017
+MHO,Not Visible,1,10/24/2017
+GLE,Not Visible,1,11/1/2017
+DGL,Not Visible,1,11/1/2017
+ODM,Not Visible,1,11/7/2017
+ORM,Not Visible,1,11/7/2017
+GLC,Not Visible,1,11/7/2017
+TWA,Not Visible,1,11/8/2017
+MRU,Not Visible,1,11/17/2017
+MRX,Not Visible,1,11/17/2017
+MHO,Not Visible,1,11/17/2017
+DGL,Not Visible,1,11/22/2017
+GLE,Not Visible,1,11/22/2017
+TWA,Not Visible,1,11/28/2017
+GLC,Not Visible,1,11/29/2017
+ODM,Not Visible,1,11/29/2017
+ORM,Not Visible,1,11/29/2017
+MHO,Not Visible,1,11/30/2017
+MRX,Not Visible,1,11/30/2017
+MRU,Not Visible,1,11/30/2017
+MRX,Not Visible,1,12/13/2017
+MHO,Not Visible,1,12/13/2017
+MRU,Not Visible,1,12/13/2017
+DGL,Not Visible,1,12/15/2017
+GLE,Not Visible,1,12/15/2017
+TWA,Not Visible,1,12/19/2017
+GLC,Not Visible,1,12/20/2017
+ODM,Not Visible,1,12/20/2017
+ORM,Not Visible,1,12/20/2017
+GLC,Not Visible,1,1/2/2018
+ORM,Not Visible,1,1/2/2018
+GLE,Not Visible,1,1/4/2018
+DGL,Not Visible,1,1/4/2018
+MRX,Not Visible,1,1/4/2018
+MHO,Not Visible,1,1/4/2018
+MRU,Not Visible,1,1/4/2018
+TWA,Not Visible,1,1/5/2018
+DGL,Not Visible,1,1/24/2018
+GLE,Not Visible,1,1/24/2018
+GLC,Not Visible,1,1/25/2018
+ODM,Not Visible,1,1/25/2018
+ORM,Not Visible,1,1/25/2018
+MRX,Not Visible,1,1/30/2018
+MHO,Not Visible,1,1/30/2018
+MRU,Not Visible,1,1/30/2018
+TWA,Not Visible,1,1/31/2018
+DGL,Not Visible,1,2/13/2018
+GLE,Not Visible,1,2/13/2018
+ORM,Not Visible,1,2/15/2018
+GLC,Not Visible,1,2/15/2018
+ODM,Not Visible,1,2/15/2018
+TWA,Not Visible,1,2/20/2018
+MHO,Not Visible,1,2/22/2018
+MRX,Not Visible,1,2/22/2018
+MRU,Not Visible,1,2/22/2018
+ORM,Not Visible,1,3/7/2018
+ODM,Not Visible,1,3/7/2018
+GLC,Not Visible,1,3/7/2018
+DGL,Not Visible,1,3/14/2018
+GLE,Not Visible,1,3/14/2018
+MRX,Not Visible,1,3/15/2018
+MRU,Not Visible,1,3/15/2018
+MHO,Not Visible,1,3/15/2018
+TWA,Not Visible,1,3/16/2018
+TWA,Not Visible,1,3/26/2018
+ODM,Not Visible,1,3/27/2018
+GLC,Not Visible,1,3/27/2018
+ORM,Not Visible,1,3/27/2018
+GLE,Not Visible,1,3/28/2018
+GLC,Not Visible,1,4/4/2018
+MHO,Not Visible,1,4/4/2018
+MRU,Not Visible,1,4/4/2018
+MRX,Not Visible,1,4/4/2018
+ORM,Not Visible,1,4/10/2018
+TWA,Not Visible,1,4/10/2018
+DGL,Not Visible,1,4/12/2018
+MHO,Not Visible,1,4/17/2018
+MRX,Not Visible,1,4/17/2018
+ODM,Not Visible,1,4/18/2018
+GLC,Not Visible,1,4/18/2018
+ORM,Not Visible,1,4/18/2018
+DGL,Not Visible,1,5/1/2018
+GLE,Not Visible,1,5/1/2018
+MRU,Not Visible,1,5/8/2018
+MRX,Not Visible,1,5/8/2018
+MHO,Not Visible,1,5/8/2018
+TWA,Not Visible,1,5/10/2018
+MRX,Not Visible,1,5/15/2018
+DGL,Not Visible,1,5/24/2018
+GLE,Not Visible,1,5/24/2018
+ODM,Not Visible,1,5/24/2018
+ORM,Not Visible,1,5/24/2018
+GLC,Not Visible,1,5/24/2018
+MRU,Not Visible,1,6/1/2018
+MHO,Not Visible,1,6/1/2018
+MRX,Not Visible,1,6/1/2018
+TWA,Not Visible,1,6/6/2018
+ORM,Low,2,6/13/2018
+ODM,Medium,3,6/13/2018
+GLC,Medium,3,6/13/2018
+DGL,Medium,3,6/20/2018
+GLE,Not Visible,1,6/20/2018
+GLE,Not Visible,1,6/27/2018
+MHO,Not Visible,1,6/28/2018
+MRU,Not Visible,1,6/28/2018
+TWA,Not Visible,1,7/2/2018
+MHO,Medium,3,7/9/2018
+ODM,Low,2,7/10/2018
+GLC,Medium,3,7/10/2018
+TWA,Low,2,7/11/2018
+ORM,Low,2,7/12/2018
+ORX,High,4,7/17/2018
+DGL,High,4,7/17/2018
+GLE,Medium,3,7/17/2018
+OH1,Medium,3,7/17/2018
+MRU,Low,2,7/18/2018
+TWA,Low,2,7/25/2018
+ODM,Low,2,7/31/2018
+GLC,Low,2,7/31/2018
+ORM,Low,2,7/31/2018
+ODM,Not Visible,1,8/3/2018
+GLE,High,4,8/7/2018
+ORX,High,4,8/7/2018
+OH1,Medium,3,8/7/2018
+TWA,Low,2,8/8/2018
+DGL,Medium,3,8/8/2018
+TWA,Low,2,8/9/2018
+MHO,Not Visible,1,8/14/2018
+MRU,Not Visible,1,8/14/2018
+ORM,Low,2,8/21/2018
+ODM,Low,2,8/21/2018
+GLC,Medium,3,8/21/2018
+GLE,Low,2,8/28/2018
+TWA,Not Visible,1,8/29/2018
+MHO,Not Visible,1,8/30/2018
+MRU,Not Visible,1,8/30/2018
+GLE,Not Visible,1,9/17/2018
+GLC,Low,2,9/18/2018
+ODM,Low,2,9/18/2018
+ORM,Not Visible,1,9/18/2018
+TWA,Not Visible,1,9/19/2018
+MRU,Not Visible,1,10/3/2018
+MRX,Not Visible,1,10/3/2018
+MHO,Not Visible,1,10/3/2018
+GLE,Low,2,10/9/2018
+TWA,Not Visible,1,10/10/2018
+ODM,Low,2,10/18/2018
+GLC,Medium,3,10/18/2018
+MRU,Not Visible,1,10/23/2018
+MRX,Not Visible,1,10/23/2018
+MHO,Not Visible,1,10/23/2018
+TWA,Not Visible,1,10/31/2018
+GLE,Not Visible,1,11/6/2018
+ODM,Not Visible,1,11/14/2018
+GLC,Not Visible,1,11/14/2018
+TWA,Not Visible,1,11/19/2018
+MHO,Not Visible,1,11/27/2018
+MRU,Not Visible,1,11/27/2018
+TWA,Not Visible,1,11/28/2018
+GLE,Not Visible,1,12/12/2018
+TWA,Not Visible,1,12/20/2018
+MRX,Not Visible,1,12/31/2018
+MRU,Not Visible,1,12/31/2018
+MHO,Not Visible,1,12/31/2018
+ODM,Not Visible,1,1/2/2019
+GLC,Not Visible,1,1/2/2019
+ORM,Not Visible,1,1/2/2019
+GLE,Not Visible,1,1/8/2019
+TWA,Not Visible,1,1/15/2019
+GLE,Not Visible,1,1/30/2019
+ODM,Not Visible,1,2/5/2019
+GLC,Not Visible,1,2/5/2019
+ORM,Not Visible,1,2/5/2019
+MHO,Not Visible,1,2/6/2019
+MRU,Not Visible,1,2/6/2019
+MRX,Not Visible,1,2/6/2019
+TWA,Not Visible,1,2/21/2019
+GLE,Not Visible,1,3/4/2019
+MHO,Not Visible,1,3/12/2019
+MRU,Not Visible,1,3/12/2019
+MRX,Not Visible,1,3/12/2019
+GLC,Not Visible,1,3/13/2019
+ORM,Not Visible,1,3/13/2019
+ODM,Not Visible,1,3/13/2019
+TWA,Not Visible,1,3/26/2019
+GLE,Not Visible,1,4/10/2019
+MHO,Not Visible,1,4/11/2019
+MRU,Not Visible,1,4/11/2019
+MRX,Not Visible,1,4/11/2019
+TWA,Not Visible,1,4/23/2019
+ODM,Not Visible,1,4/24/2019
+ORM,Not Visible,1,4/24/2019
+GLC,Not Visible,1,4/24/2019
+GLE,Not Visible,1,5/1/2019
+MRU,Not Visible,1,5/15/2019
+MHO,Not Visible,1,5/15/2019
+MRX,Not Visible,1,5/15/2019
+TWA,Not Visible,1,5/23/2019
+GLE,Not Visible,1,5/29/2019
+GLC,Not Visible,1,6/4/2019
+ODM,Not Visible,1,6/4/2019
+ORM,Not Visible,1,6/4/2019
+TWA,Not Visible,1,6/12/2019
+MRX,Not Visible,1,6/20/2019
+MRU,Not Visible,1,6/20/2019
+MHO,Not Visible,1,6/20/2019
+GLE,Not Visible,1,6/25/2019
+GLC,Not Visible,1,7/1/2019
+ODM,Not Visible,1,7/1/2019
+ORM,Not Visible,1,7/1/2019
+TWA,Not Visible,1,7/1/2019
+GLE,Not Visible,1,7/9/2019
+MRX,Not Visible,1,7/18/2019
+MRU,Not Visible,1,7/18/2019
+MHO,Not Visible,1,7/18/2019
+TWA,Not Visible,1,7/24/2019
+ODM,Low,2,7/31/2019
+GLC,Medium,3,7/31/2019
+ORM,Not Visible,1,7/31/2019
+GLE,Low,2,8/6/2019
+MRU,Not Visible,1,8/14/2019
+MHO,Not Visible,1,8/14/2019
+TWA,NA,,8/21/2019
+GLC,Low,2,8/27/2019
+ODM,Low,2,8/27/2019
+ORM,Not Visible,1,8/27/2019
+GLE,NA,,9/4/2019
+TWA,NA,,9/11/2019
+MHO,Not Visible,1,9/18/2019
+MRX,Not Visible,1,9/18/2019
+MRU,Not Visible,1,9/18/2019
+GLE,Not Visible,1,9/25/2019
+TWA,NA,,10/2/2019
+VCU,Low,2,10/14/2019
+ODM,Not Visible,1,10/14/2019
+ORM,Not Visible,1,10/14/2019
+GLC,Not Visible,1,10/14/2019
+MHO,Not Visible,1,10/16/2019
+MRU,Not Visible,1,10/16/2019
+MRX,Not Visible,1,10/16/2019
+TWA,Not Visible,1,10/29/2019
+GLE,Not Visible,1,11/6/2019
+VCU,Low,2,11/13/2019
+ODM,Low,2,11/13/2019
+ORM,Not Visible,1,11/13/2019
+GLC,Not Visible,1,11/13/2019
+MHO,Not Visible,1,11/19/2019
+MRU,Not Visible,1,11/19/2019
+MRX,Not Visible,1,11/19/2019
+TWA,Medium,3,11/21/2019
+GLE,Not Visible,1,12/4/2019
+MRU,Not Visible,1,12/10/2019
+GLE,Not Visible,1,1/2/2020
+ORM,Not Visible,1,1/7/2020
+ODM,Not Visible,1,1/7/2020
+GLC,Not Visible,1,1/7/2020
+MHO,Not Visible,1,1/9/2020
+MRU,Not Visible,1,1/9/2020
+MRX,Not Visible,1,1/9/2020
+TWA,Not Visible,1,1/9/2020
+TWA,Not Visible,1,2/4/2020
+ODM,Not Visible,1,2/7/2020
+ORM,Not Visible,1,2/7/2020
+GLC,Not Visible,1,2/7/2020
+MRX,Not Visible,1,2/13/2020
+MRU,Not Visible,1,2/13/2020
+MHO,Not Visible,1,2/13/2020
+GLE,Not Visible,1,2/19/2020
+ODM,Not Visible,1,2/26/2020
+TWA,Low,2,3/4/2020
+GLC,Not Visible,1,3/11/2020
+ORM,Not Visible,1,3/11/2020
+ODM,Not Visible,1,3/11/2020
+TWA,NA,,3/17/2020
+GLE,Not Visible,1,3/18/2020
+ODM,Not Visible,1,4/6/2020
+ORM,Not Visible,1,4/6/2020
+GLC,Not Visible,1,4/6/2020
+TWA,Not Visible,1,4/7/2020
+MRX,Not Visible,1,4/16/2020
+MHO,Not Visible,1,4/16/2020
+MRU,Not Visible,1,4/16/2020
+GLE,Not Visible,1,4/21/2020
+TWA,Not Visible,1,4/29/2020
+VCU,Low,2,5/5/2020
+GLC,Not Visible,1,5/5/2020
+ORM,Not Visible,1,5/5/2020
+ODM,Not Visible,1,5/5/2020
+GLE,Not Visible,1,5/12/2020
+MHO,Not Visible,1,5/13/2020
+MRU,Not Visible,1,5/13/2020
+TWA,Not Visible,1,5/18/2020
+ORM,Low,2,6/3/2020
+ODM,Low,2,6/3/2020
+GLC,Not Visible,1,6/3/2020
+MHO,Medium,3,6/11/2020
+MRU,Not Visible,1,6/11/2020
+GLE,Not Visible,1,6/16/2020
+TWA,Not Visible,1,6/17/2020
+ODM,High,4,7/1/2020
+GLC,Medium,3,7/1/2020
+ORM,Medium,3,7/1/2020
+GLE,Not Visible,1,7/7/2020
+MRU,Low,2,7/8/2020
+MHO,Medium,3,7/8/2020
+TWA,Not Visible,1,7/8/2020
+GLE,Low,2,7/28/2020
+TWA,Low,2,8/5/2020
+ODM,Medium,3,8/11/2020
+GLC,Medium,3,8/11/2020
+ORM,Medium,3,8/11/2020
+MRU,Low,2,8/19/2020
+MHO,Low,2,8/19/2020
+ORX,High,4,8/26/2020
+GLE,High,4,8/26/2020
+TWA,Low,2,9/2/2020
+GLE,Not Visible,1,9/16/2020
+GLC,Extreme,5,9/17/2020
+ODM,Extreme,5,9/17/2020
+ORM,Medium,3,9/17/2020
+TWA,Low,2,9/22/2020
+MRX,Not Visible,1,9/24/2020
+MRU,Not Visible,1,9/24/2020
+GLE,Not Visible,1,10/7/2020
+TWA,Not Visible,1,10/14/2020
+GLC,Low,2,10/21/2020
+ODM,Not Visible,1,10/21/2020
+MHO,Not Visible,1,10/27/2020
+MRU,Not Visible,1,10/27/2020
+TWA,Not Visible,1,10/27/2020
+MRX,Not Visible,1,10/27/2020
+GLE,Low,2,10/28/2020
+ODM,Not Visible,1,11/20/2020
+GLC,Not Visible,1,11/20/2020
+GLE,Not Visible,1,12/1/2020
+MHO,Not Visible,1,12/4/2020
+MRU,Not Visible,1,12/4/2020
+TWA,Not Visible,1,12/4/2020
+MRX,Not Visible,1,12/4/2020
+MHO,Not Visible,1,1/5/2021
+MRU,Not Visible,1,1/5/2021
+MRX,Not Visible,1,1/5/2021
+TWA,Not Visible,1,1/5/2021
+ORM,Not Visible,1,1/6/2021
+ODM,Not Visible,1,1/6/2021
+GLC,Not Visible,1,1/6/2021
+GLE,Not Visible,1,1/14/2021
+ORM,Not Visible,1,2/3/2021
+GLC,Not Visible,1,2/3/2021
+ODM,Not Visible,1,2/3/2021
+MHO,Not Visible,1,2/4/2021
+MRX,Not Visible,1,2/4/2021
+MRU,Not Visible,1,2/4/2021
+TWA,Not Visible,1,2/4/2021
+GLE,Not Visible,1,2/9/2021
+MHO,Not Visible,1,3/2/2021
+MRX,Not Visible,1,3/2/2021
+MRU,Not Visible,1,3/2/2021
+TWA,Not Visible,1,3/2/2021
+ORM,Not Visible,1,3/3/2021
+ODM,Not Visible,1,3/3/2021
+GLC,Not Visible,1,3/3/2021
+GLE,Not Visible,1,3/10/2021
+TWA,Not Visible,1,3/30/2021
+MHO,Not Visible,1,3/30/2021
+MRU,Not Visible,1,3/30/2021
+MRX,Not Visible,1,3/30/2021
+ORM,Not Visible,1,4/6/2021
+ODM,Not Visible,1,4/6/2021
+GLC,Not Visible,1,4/6/2021
+GLE,Not Visible,1,4/7/2021
+TWA,Not Visible,1,4/27/2021
+MHO,Not Visible,1,4/27/2021
+MRU,Not Visible,1,4/27/2021
+MRX,Not Visible,1,4/27/2021
+GLE,Not Visible,1,5/4/2021
+GLC,Not Visible,1,5/13/2021
+ODM,Not Visible,1,5/13/2021
+ORM,Not Visible,1,5/13/2021
+MRX,Not Visible,1,5/25/2021
+ORM,Low,2,6/8/2021
+GLC,Low,2,6/8/2021
+ODM,Medium,3,6/8/2021
+GLE,Not Visible,1,6/10/2021
+VCU,Low,2,6/16/2021
+ORM,Medium,3,6/29/2021
+ODM,Medium,3,6/29/2021
+GLC,Medium,3,6/29/2021
+GLE,Not Visible,1,7/14/2021
+VCU,Low,2,7/21/2021
+ODM,Low,2,8/3/2021
+ORM,Not Visible,1,8/3/2021
+GLC,Not Visible,1,8/3/2021
+GLC,NA,,
+GLE,NA,,
+GLE,NA,,
