@@ -3,6 +3,12 @@
 
 #required packages
 library(tidyverse)
+library(lubridate) #working with date-time
+library(PerformanceAnalytics) #plotting correlations
+
+#to do
+#could calculate mean values for the two relevant divisions
+#or could just use Sac drainage because it contributes more water to the system
 
 #read in the data----------
 #used read.table because it worked better than tidyverse options for dealing with variable 
@@ -57,17 +63,78 @@ indices_cleaner <-indices %>%
   filter(division == "402" | division =="405") %>% 
   #change df from wide to long
   pivot_longer(cols=jan:dec, names_to = "month", values_to = "value") %>% 
-  #create a month-year column
-  unite('date',month:year,sep="-",remove=F) %>% 
-  #format month-year column
-  mutate(date,as.Date("%Y-%m-%d")) %>% 
+  #create a month-year column and format as date type
+  mutate(date1 = paste(month, year),
+         date = my(date1)
+  ) %>% 
+  #subset and reorder columns
+  select("division", "index", "date", "value" ) %>% 
+  #filter out missing data (-99.90 or -99.99)
+  filter(value > -99) %>% 
   glimpse()
+ 
+#make a wide version for correlation plots
+indices_w <- indices_cleaner %>% 
+  pivot_wider(names_from=index
+              ,names_prefix = "index_"
+              ,values_from=value) 
+
+#make an even wider version for correlation plots
+indices_ww <- indices_w %>% 
+  pivot_wider(names_from = division
+              ,names_prefix = "div_"
+              ,values_from = index_05:index_07)
   
 #plots-------------
-  
+
+#make faceted plot showing each index for each division
+(plot_di <-ggplot(indices_cleaner, aes(x=date, y= value))+
+   geom_bar(stat = "identity") + 
+   ylab("Index") + xlab("Date") + 
+   facet_wrap(index~division,nrow = 4)
+)
+#should replace numbers with division and index names
+#also add horizontal lines showing categories of wet/dry
+
 #plot correlations among indices within districts
+
+#Sacramento
+sac_within <- indices_w %>% 
+  filter(division == 402) 
+
+#plot
+chart.Correlation(sac_within[3:6])
+
+#correlations
+cor(sac_within[3:6])
+
+#San Joaquin
+sj_within <- indices_w %>% 
+  filter(division == 405) 
+
+#plot
+chart.Correlation(sj_within[3:6])
+
+#correlations
+cor(sj_within[3:6])
+
 #plot correlations of same index between districts
-  
+
+#plots
+chart.Correlation(indices_ww[2:9])
+
+#index 05
+cor(indices_ww[2:3])  #0.7790742
+
+#index 06
+cor(indices_ww[4:5])  #0.8211686
+
+#index 07
+cor(indices_ww[8:9]) #0.8188015
+
+#index 08
+cor(indices_ww[6:7]) #0.8319748
+
   
   
   
