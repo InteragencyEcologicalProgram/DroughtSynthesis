@@ -96,6 +96,49 @@ indices_ww <- indices_w %>%
 #should replace numbers with division and index names
 #also add horizontal lines showing categories of wet/dry
 
+#plot just PHDI for sacramento drainage
+sach <- indices_cleaner %>% 
+  filter(division == "402" & index == "06") %>% 
+  mutate (category_coarse = cut (value,
+                         breaks = c(-Inf, -3, -1, 1, 3, Inf),
+                         labels = c("very dry", "dry", "normal", "wet", "very wet" ),
+                         right = TRUE)
+  )
+#write these data to share
+#write_csv(sach, "PHDI_Sacramento.csv")
+
+#color palette for categories
+pal <- c(
+  "very dry" = "red",
+  "dry" = "orange", 
+  "normal" = "green", 
+  "wet" = "blue" ,
+  "very wet" = "violet"
+)
+
+(plot_sach <-ggplot(sach, aes(x=date, y= value, fill = category_coarse))+
+    geom_bar(stat = "identity") + 
+    ylab("Value") + xlab("Date") +
+    ggtitle("Sacramento Drainage PHDI")+
+    scale_fill_manual(
+      values = pal,
+      limits = names(pal))
+)
+#index generally ranges from -6 to +6, with negative values denoting dry spells, 
+#and positive values indicating wet spells
+#There are a few values in the magnitude of +7 or -7.
+#values 0 to -0.5 = normal
+#-0.5 to -1.0 = incipient drought
+#-1.0 to -2.0 = mild drought
+#-2.0 to -3.0 = moderate drought
+#-3.0 to -4.0 = severe drought
+#greater than -4.0 = extreme drought
+#Similar adjectives are attached to positive values of wet spells
+#may I should combine the following:
+#normal + incipient (0 to 1.0)
+#mild + moderate (1.1 to 3.0)
+#severe + extreme (3.1 and up)
+
 #plot correlations among indices within districts
 
 #Sacramento
