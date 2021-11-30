@@ -24,6 +24,8 @@ chla_station_summary <- data %>%
 chla_stations_filt <- chla_station_summary %>%
   filter(count_chla >= min_samps_yr)
 
+#test <- count(chla_stations_filt, Station)
+
 data_filt <- data %>%
   filter(Station %in% chla_stations_filt$Station) %>%
   filter(!(Region %in% excluded_regions)) %>%
@@ -42,13 +44,14 @@ load("Data/DS_dataframes.Rdata")
 # Regions to exclude from the analysis
 # Seasons to include in the analysis
 # Minimum result threshold
-DS_data_filt <- filter_chla_data(DS_data,
-                                 min_samps_yr = 6,
+DS_data_filt <- filter_chla_data(data= DS_data,
+                                 min_samps_yr = 12,
                                  excluded_regions = c("Far West"),
                                  seasons= c("Summer", "Fall", "Spring", "Winter"),
                                  min_result = 0)
 
-
+Station_samples <- DS_data_filt %>% 
+  count(Source, Station)
 
 ## Get data frame of unique stations in the filtered data set
 chla_stations_filt.sf <- chla_stations.sf %>%
@@ -185,11 +188,11 @@ summary(fit_log10.1)
 plot(fit_log10.1)
 anova(fit_log10.1)
 
-emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = 8679)
+emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(DS_data_stats))
 pairs(emm_year)
-emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = 8679)
+emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = nrow(DS_data_stats))
 pairs(emm_Region)
-emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = 8679)
+emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = nrow(DS_data_stats))
 pairs(emm_season)
 
 

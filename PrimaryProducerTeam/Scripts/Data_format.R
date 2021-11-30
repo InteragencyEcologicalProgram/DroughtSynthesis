@@ -4,6 +4,18 @@ library(deltamapr) # https://github.com/InteragencyEcologicalProgram/deltamapr
 library(sf)
 source("Scripts/ggplot_themes.R")
 
+## Program Sources of Data
+# DOP= Directed Outflows Project (US Bureau of Reclamation)
+# EMP= Environmental Monitoring Program
+# FMWT= Fall Midwater Trawl
+# NCRO= DWR North Central Regional Office
+# STN= Summer Townet Survey
+# SDO= ?? 
+# USBR= US Bureau of Reclamation
+# USGS-SFBRMP= US Geologiacl Survey San Francisco Research Monitoring Projct
+# USGS-CAWSC= US Geological Survey CA Water Science Center
+
+
 # EPSG codes
 # NAD83 / UTM 10N = 26910, https://spatialreference.org/ref/epsg/nad83-utm-zone-10n/
 # WGS84 = 4326
@@ -20,15 +32,14 @@ DS_regions <- deltamapr::R_EDSM_Subregions_Mahardja_FLOAT %>% #NAD83 / UTM 10N
          Region= recode(Region, North= 'North Delta', SouthCentral= "South-Central Delta")) %>%
   distinct(.)
 
-recode(c("North", "SouthCentral"), North= 'North Delta', SouthCentral= "South-Central Delta")
-replace(c("North", "SouthCentral"), list("North"= "North Delta"))
+
 ## Load Delta waterways and filter by DS Regions
 DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
   st_transform(., crs= 26910) %>%  # NAD83 / UTM 10N
   st_join(., DS_regions, left= FALSE,
         join= st_overlaps) # filter the Delta Waterways to include only DS regions
 
-## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
+  ## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
 #devtools::install_github("sbashevkin/discretewq")
 #library(discretewq)
 idb_raw <- discretewq::wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",
@@ -47,7 +58,7 @@ idb <- idb_raw %>%
 idb_stations <- select(idb, Source, Station, Latitude, Longitude) %>%
   distinct(.)
 
-## Read DWR South Delta Monitoring data
+## Read DWR South Delta Monitoring data (North Central Regional Office, NCRO)
 dwr_Sdelta_stations <- read_csv('Data/SDelta_Station_lat_long.csv') %>%
   rename(HABstation= `HAB station ID`)
 
@@ -65,7 +76,7 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
   rename(Station= LongStationName, chla= Result, Datetime= CollectionDate, Latitude= `Latitude (WGS84)`, Longitude = `Longitude (WGS84)`) %>%
   mutate(Datetime= mdy_hm(Datetime),
          Date= ymd(str_c(year(Datetime), month(Datetime), day(Datetime), sep="-")),
-         Source= "DWR S. Delta") %>%
+         Source= "NCRO") %>%
   left_join(., dwr_Sdelta_mc) %>%
   select(LongStationName, ShortStationName, HABstation, Date, Datetime, Source, chla, SampleType, mc_rating, Latitude, Longitude) %>%
   mutate(chla= as.numeric(ifelse(str_detect(chla, "N\\.S\\.|<|D1"), -88, chla))) # transform below detects to -88 and make column numeric
