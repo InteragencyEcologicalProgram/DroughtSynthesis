@@ -16,9 +16,12 @@ DS_regions <- deltamapr::R_EDSM_Subregions_Mahardja_FLOAT %>% #NAD83 / UTM 10N
   filter(unique(.$SubRegion) %in% c(unique(rosie_regions$SubRegion), "Grant Line Canal and Old River")) %>%  # Add GLCAOR to our analysis
   select(-Region) %>% # Remove DeltaMapR Regions
   left_join(select(rosie_regions, SubRegion, Region)) %>%  # Add in Rosie's regions
-  mutate(Region= ifelse(SubRegion == "Grant Line Canal and Old River", "SouthCentral", Region)) %>%
+  mutate(Region= ifelse(SubRegion == "Grant Line Canal and Old River", "SouthCentral", Region),
+         Region= recode(Region, North= 'North Delta', SouthCentral= "South-Central Delta")) %>%
   distinct(.)
 
+recode(c("North", "SouthCentral"), North= 'North Delta', SouthCentral= "South-Central Delta")
+replace(c("North", "SouthCentral"), list("North"= "North Delta"))
 ## Load Delta waterways and filter by DS Regions
 DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
   st_transform(., crs= 26910) %>%  # NAD83 / UTM 10N
@@ -149,9 +152,6 @@ DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
   select(-Depth, -LongStationName, -ShortStationName, -HABstation, -SampleType, -Field_coords) %>% 
   distinct(.)
-
-names(DS_data_noRegions)
-
 
 
 #unique(DS_data_noRegions$Source)
