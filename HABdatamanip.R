@@ -99,4 +99,30 @@ Habs2 =   st_join(HABssf, Delta) %>%
          Month2 = factor(Month, levels = c(6,7,8,9,10),
                          labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    
 
-write.csv(Habs2, "WQ_HABs_w2021.csv")
+###################################
+#quick chlorophyll plot
+WQ = read_csv("data/Delta_Integrated_WQ.csv")
+summary(WQ)
+
+WQ = mutate(WQ, Date = mdy(Date), Year = year(Date), Month = month(Date),
+  Year = case_when(Month == 12 ~ Year +1,
+                   TRUE ~ Year),
+  Season = case_when(Month %in% c(12,2,1) ~ "Winter",
+                     Month %in% c(3,4,5) ~ "Spring",
+                     Month %in% c(6,7,8) ~ "Summer",
+                     TRUE ~ "Fall"
+                       )) 
+WQ2 = left_join(WQ, yeartypes) %>%
+  filter(!is.na(Drought)) %>%
+  left_join(rename(regs, Station = StationCode,
+                   Source = Survey)) 
+
+ggplot(WQ2, aes(x = Drought, y = log(Chlorophyll+1))) + geom_boxplot()
+
+WQsum = group_by(WQ2, Year, Drought, Index, Region, Season) %>%
+  summarize(Chlorophyll = mean(Chlorophyll, na.rm = T))
+
+ggplot(filter(WQsum, Drought != "N"),
+       aes(x = Drought, y = log(Chlorophyll+1), fill = Drought)) + 
+  geom_boxplot() + ylab("log(Chla)") + 
+  scale_x_discrete(labels = c("multi-year \nDrought", "multi-year \nwet"))
