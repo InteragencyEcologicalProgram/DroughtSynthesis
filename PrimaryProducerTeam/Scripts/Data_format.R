@@ -78,7 +78,7 @@ usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
 
 usgs_chla <- usgs_chla_raw %>%
   select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (µg/L)`, `M Chla (µg/L)`) %>%
-  #filter(`M Chla (µg/L)` != "00050") %>% # Remove all the 5 micron chla values
+  filter(`M Chla (µg/L)` == "00050") %>% # Only keep 0.7 micron chla values
   select(-`M Chla (µg/L)`) %>%
   rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, Datetime= sample_strt_dt, chla= `Chla (µg/L)`) %>%
   filter(!is.na(chla)) %>%
