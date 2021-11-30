@@ -79,6 +79,14 @@ names(data)
 #   write_csv(., "Data/mcRating_data_filtered.csv")
 # 
 
+## Calculate maximum mc_rating value per month
+mc_data_stats <- mc_data_filt %>% 
+  group_by(Source, year, ds_year_type, Region, Season, month, Station) %>% 
+  summarize(mc_max= max(mc_factor),
+            mc_min= min(mc_factor))
+mc_data_stats
+
+
 
 
 
@@ -104,19 +112,20 @@ ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6,
 mc_fmwt <- filter(mc_data_filt, Source == "FMWT")
 mc_stn <- filter(mc_data_filt, Source == "STN")
 
-ggplot(mc_data_filt, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_mod), position= "dodge") +
-  labs(x= "Year type") +
+ggplot(mc_data_stats, aes(x= ds_year_type)) +
+  geom_bar(aes(fill= mc_max), position= "dodge") +
+  labs(x= "Year type", y= "Number of observations") +
   scale_y_continuous(expand= c(0, 0)) +
   scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
-                    name= "Rating",
+                    name= expression(paste(italic("Microcystis "), "Rating")),
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_grid(.~Region) +
   theme_doc +
   theme(legend.position = "top")
 ggsave(last_plot(), filename= "MCrating_Region.png", width= 12, height= 6, dpi= 300,
        path= "Figures")
+
 
 
 
@@ -184,7 +193,7 @@ ggplot() +
 #### STATISTICS ####
 
 
-fit_ac3b <- brm(
+fit_ac3c <- brm(
   formula = mc_factor ~ 1 + cs(ds_year_type) + Season + Region + (1|Station),
   data = mc_data_filt,
   family = acat("probit"),
@@ -195,7 +204,7 @@ fit_ac3b <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-save(fit_ac3b, file= "Data/fit_ac3b.Rdata")
+save(fit_ac3c, file= "Data/fit_ac3b.Rdata")
 load("Data/fit_ac3.Rdata")
 summary(fit_ac3b)
 plot(fit_ac3)

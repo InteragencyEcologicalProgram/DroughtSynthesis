@@ -67,7 +67,9 @@ source_counts <- mc_station_summary %>%
     mutate(mc_factor= factor(mc_mod, ordered= TRUE, levels= c("a_none", "b_low", "c_high"))) %>%
     distinct(.)
     #filter(chla > min_result) %>%
-mc_data_filt %>%
+
+  
+  mc_data_filt %>%
   count(Region, SubRegion)
 
 ## WRITE CSV FILES
@@ -78,6 +80,13 @@ data %>%
 mc_data_filt %>%
  # select(-mc_factor, -chla,-Depth, -SampleType, -`M Chla (µg/L)`, -Field_coords, -LongStationName, -ShortStationName, -HABstation) %>%
   write_csv(., "Data/mcRating_data_filtered.csv")
+
+## Calculate maximum mc_rating value per month
+mc_data_stats <- mc_data_filt %>% 
+  group_by(Source, year, ds_year_type, Region, Season, month, Station) %>% 
+  summarize(mc_max= max(mc_factor),
+            mc_min= min(mc_factor))
+mc_data_stats
 
 
 
@@ -103,13 +112,13 @@ ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6,
 mc_fmwt <- filter(mc_data_filt, Source == "FMWT")
 mc_stn <- filter(mc_data_filt, Source == "STN")
 
-ggplot(mc_data_filt, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_mod), position= "dodge") +
-  labs(x= "Year type") +
+ggplot(mc_data_stats, aes(x= ds_year_type)) +
+  geom_bar(aes(fill= mc_max), position= "dodge") +
+  labs(x= "Year type", y= "Number of observations") +
   scale_y_continuous(expand= c(0, 0)) +
   scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
-                    name= "Rating",
+                    name= expression(paste(italic("Microcystis "), "Rating")),
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_grid(.~Region) +
   theme_doc +
