@@ -204,16 +204,16 @@ fit_ac3c <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-save(fit_ac3c, file= "Data/fit_ac3b.Rdata")
+save(fit_ac3c, file= "Data/fit_ac3c.data")
 load("Data/fit_ac3.Rdata")
-summary(fit_ac3b)
-plot(fit_ac3)
+summary(fit_ac3c)
+plot(fit_ac3c)
 unique(mc_data_filt$Region)
 
-conditions.df <- make_conditions(fit_ac3b, c("Region", "Season"))
+conditions.df <- make_conditions(fit_ac3c, c("Region", "Season"))
 
 #conditional_effects(fit_ac3, "ds_year_type", condition= conditions.df, categorical= TRUE)
-term_yt2 <- conditional_effects(fit_ac3b, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
+term_yt2 <- conditional_effects(fit_ac3c, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
 
 term_yt <- conditional_effects(fit_ac3, categorical= TRUE)$`ds_year_type`
 names(term_yt2)
