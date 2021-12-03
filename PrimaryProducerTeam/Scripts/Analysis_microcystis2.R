@@ -1,12 +1,14 @@
+## Script to analyse Microcystis Rating data
+
+
+## Libraries
 library(tidyverse)
-#library(lme4)
-#library(lmerTest)
 library(brms)
 #source("Scripts/Data_format.R")
 source("Scripts/ggplot_themes.R")
 
-
-load("Data/DS_dataframes.Rdata") # load data frames from Data_format.R
+## Load data frames from Data_format.R
+load("Data/DS_dataframes.Rdata") 
 
 ## Transform original 1-5 scale to None, Low, High
 mc_data <- DS_data %>%
@@ -17,16 +19,7 @@ mc_data <- DS_data %>%
          mc_binom= ifelse(mc_rating <= 4, "0", "1")) %>% 
   filter(Source != "DOP") #Remove Directed Outflows Project (DOP) data because it only starts in 2019
 
-
-
-data= mc_data
-min_samps_yr <- 1
-excluded_regions = c("Far West")
-seasons= c("Summer", "Fall")
-
-
 #### DATA FILTERING ####
-
 filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
   
   ## Get number of samples per year per station  
@@ -47,28 +40,52 @@ filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
   mc_stations_filt <- mc_station_summary %>%
     filter(count_mc >= min_samps_yr) %>% 
     select(Source, Station, Latitude, Longitude) %>% 
-    distinct(.)
-  
-  
-  #length(unique(mc_stations_filt$Station))
-  #length(unique(mc_station_summary$Station))
-  #unique(data$Source)
-  
-  
+    distinct(.) %>% 
+    mutate(SourceStation= str_c(Source, Station, sep= "-"))
+
   
   ## Filter by station, excluded region, and season
   data_filt <- data %>%
-    filter(Station %in% mc_stations_filt$Station) %>%
+    mutate(SourceStation= str_c(Source, Station, sep= "-")) %>% 
+    filter(SourceStation %in% mc_stations_filt$SourceStation) %>%
+    #filter(Station %in% mc_stations_filt$Station) %>%
     filter(!(Region %in% excluded_regions)) %>%
     filter(Season %in% seasons) %>%
-    #mutate(mc_factor= factor(mc_mod, ordered= TRUE, levels= c("a_none", "b_low", "c_high"))) %>%
     distinct(.)
-  #filter(chla > min_result) %>%
   
-  return(data_filt)
+  station2 <- data_filt2 %>% 
+    select(Source, Station, SourceStation, Latitude, Longitude) %>% 
+    distinct(.)
+  
+  length(unique(station2$SourceStation))
+  
+  summary2 <- data_filt2 %>%
+    group_by(SourceStation, year) %>%
+    summarize(count_mc= length(mc_mod)) %>%
+    ungroup() %>%
+    group_by(SourceStation) %>%
+    mutate(start_year= min(year),
+           end_year= max(year),
+           n_years= length(year))
+  
+  summary3 <- summary2 %>%
+    group_by(SourceStation) %>%
+    summarize(mean_count_mc= mean(count_mc)) %>%
+    ungroup()
+  
+  
+  ## Unique station list with Lat/Longs
+  stations_filt.sf <- data_filt2 %>% 
+    select(Source, Station, Latitude, Longitude) %>% 
+    distinct(.) %>%
+    sf::st_as_sf(., coords= c("Longitude", "Latitude"), crs= 4269) %>% #NAD83
+    sf::st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
+    distinct(.)
+  
+  return(list(data= data_filt, stations= stations_filt.sf))
 }
 
-test <- filter_mc_data(data= mc_data,
+mc_data_filt_list <- filter_mc_data(data= mc_data,
                        min_samps_yr <- 6,
                        excluded_regions = c("Far West"),
                        seasons= c("Summer", "Fall"))
@@ -89,32 +106,39 @@ mc_data_stats <- mc_data_filt %>%
   group_by(Source, ds_year, ds_year_type, Region, Season, month, Station) %>% 
   summarize(mc_max= max(mc_factor),
             mc_min= min(mc_factor))
-mc_data_stats
+
+mc_stations_filt.sf <- mc_stations_filt %>%
+  st_as_sf(., coords= c("Longitude", "Latitude"), crs= 4269) %>% #NAD83
+  st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
+  distinct(.)
+
+mc_data_stats %>% 
+  select(Source, Region, Station)
 
 
-
-
+## Summarize data
 year_summary <- mc_data_stats %>%
   group_by(Source, ds_year, Region) %>%
   count(Region)
 
-year_summary_all <- mc_data %>%
+year_summary_all <- mc_data_filt %>%
   group_by(Source, ds_year) %>%
   count(Source)
 
 
+#### DATA FIGURES ####
+
+## Data per year
 ggplot(year_summary, aes(x= ds_year, y= n)) +
   geom_col(aes(fill= Source)) +
   facet_rep_wrap(~Region, ncol= 1) +
-  labs(x= "Station-months per year", y= "Count") +
+  labs(x= "Data per year", y= "Count") +
   scale_y_continuous(expand= c(0, 0), breaks= seq(0, 500, by= 100), labels= c("0", "", "200", "", "400", "")) +
   theme_ppt
 ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6, dpi= 300,
        path= "Figures")
 
-mc_fmwt <- filter(mc_data_filt, Source == "FMWT")
-mc_stn <- filter(mc_data_filt, Source == "STN")
-
+## MC-rating by Region
 ggplot(mc_data_stats, aes(x= ds_year_type)) +
   geom_bar(aes(fill= mc_max), position= "dodge") +
   labs(x= "Year type", y= "Number of observations") +
@@ -130,10 +154,9 @@ ggsave(last_plot(), filename= "MCrating_Region.png", width= 12, height= 6, dpi= 
        path= "Figures")
 
 
-
-
-ggplot(mc_data_filt, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_mod), position= "dodge") +
+## MC-rating by Source and Region
+ggplot(mc_data_stats, aes(x= ds_year_type)) +
+  geom_bar(aes(fill= mc_max), position= "dodge") +
   labs(x= "Year type") +
   scale_y_continuous(expand= c(0, 0)) +
   scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
@@ -141,21 +164,10 @@ ggplot(mc_data_filt, aes(x= ds_year_type)) +
                     name= "Rating",
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_grid(Source~Region) +
-  theme_ppt
+  theme_doc
 ggsave(last_plot(), filename= "MCrating_Source.png", width= 10, height= 8, dpi= 300,
        path= "Figures")
 
-
-ggplot(mc_data_filt, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_binom), position= "dodge") +
-  labs(x= "Year type") +
-  scale_y_continuous(expand= c(0, 0)) +
-  scale_x_discrete(labels= c("Wet", "Dry", "Drought")) +
-  scale_fill_manual(values= c("Gray70",  "tomato"),
-                    name= "Rating",
-                    labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
-  facet_rep_grid(Source~Region) +
-  theme_ppt
 
 
 ## Station map
