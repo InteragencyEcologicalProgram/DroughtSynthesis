@@ -10,7 +10,7 @@ source("Scripts/ggplot_themes.R")
 
 
 #### DATA FILTERING ####
-filter_chla_data <- function(data, min_samps_yr, excluded_regions, seasons, min_result){
+filter_chla_data <- function(data, min_samps_yr, min_yrs, excluded_regions, seasons, min_result){
 
 chla_station_summary <- data %>%
   group_by(Source, Station, year) %>%
@@ -22,17 +22,43 @@ chla_station_summary <- data %>%
          n_years= length(year))
 
 chla_stations_filt <- chla_station_summary %>%
-  filter(count_chla >= min_samps_yr)
-
-#test <- count(chla_stations_filt, Station)
+  filter(count_chla >= min_samps_yr) %>% 
+  filter(n_years >= min_yrs) %>% 
+  mutate(SourceStation= str_c(Source, Station, sep= "-"))
 
 data_filt <- data %>%
-  filter(Station %in% chla_stations_filt$Station) %>%
+  mutate(SourceStation= str_c(Source, Station, sep= "-")) %>% 
+  filter(SourceStation %in% chla_stations_filt$SourceStation) %>%
+  #filter(Station %in% chla_stations_filt$Station) %>%
   filter(!(Region %in% excluded_regions)) %>%
   filter(Season %in% seasons) %>%
   filter(chla > min_result)
 
-return(data_filt)
+## Filter stations again by average data per year > 6
+chla_stations_filt2 <- data_filt %>% 
+  select(Source, Station, SourceStation, ds_year, chla) %>% 
+  group_by(Source, Station, SourceStation, ds_year) %>% 
+  summarize(count_chla= length(chla)) %>% 
+  group_by(Source, Station, SourceStation) %>% 
+  mutate(mean_counts= mean(count_chla)) %>% 
+  filter(mean_counts > 6) #%>% # Average amount of data per year
+  select(SourceStation) %>% 
+  distinct(.)
+  
+
+data_filt2 <- data_filt %>% 
+  filter(SourceStation %in% chla_stations_filt2$SourceStation)
+
+## Unique station list with Lat/Longs
+stations_filt.sf <- data_filt2 %>% 
+  select(Source, Station, Latitude, Longitude) %>% 
+  distinct(.) %>%
+  sf::st_as_sf(., coords= c("Longitude", "Latitude"), crs= 4269) %>% #NAD83
+  sf::st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
+  distinct(.)
+
+return(list(data= data_filt2, stations= stations_filt.sf))
+
 }
 
 ## # load data frames from Data_format.R
@@ -44,11 +70,16 @@ load("Data/DS_dataframes.Rdata")
 # Regions to exclude from the analysis
 # Seasons to include in the analysis
 # Minimum result threshold
-DS_data_filt <- filter_chla_data(data= DS_data,
+chla_data_filt_list <- filter_chla_data(data= DS_data,
                                  min_samps_yr = 12,
+                                 min_yrs= 6,
                                  excluded_regions = c("Far West"),
                                  seasons= c("Summer", "Fall", "Spring", "Winter"),
                                  min_result = 0)
+
+
+chla_data_filt <- mc_data_filt_list$data
+chla_stations_filt.sf <- mc_data_filt_list$stations
 
 Station_samples <- DS_data_filt %>% 
   count(Source, Station)
