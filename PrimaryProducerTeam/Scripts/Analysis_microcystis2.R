@@ -21,6 +21,8 @@ mc_data <- DS_data %>%
 
 #### DATA FILTERING ####
 filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
+  require(tidyverse)
+  require(sf)
   
   ## Get number of samples per year per station  
   mc_station_summary <- data %>%
@@ -80,7 +82,7 @@ mc_data_filt_list <- filter_mc_data(data= mc_data,
                        seasons= c("Summer", "Fall"))
 
 mc_data_filt <- mc_data_filt_list$data
-mc_stations.sf <- mc_data_filt_list$stations
+mc_stations_filt.sf <- mc_data_filt_list$stations
 
 
 ## Calculate maximum mc_rating value per month
@@ -119,6 +121,20 @@ months_per_year <- mc_data_stats %>%
          SourceStation= str_c(Source, Station, sep= "-"))
 
 #### DATA FIGURES ####
+
+## Station map
+ggplot() +
+  geom_sf(data= DS_regions, aes(fill= Region), alpha= 0.5) +
+  geom_sf(data= DS_waterways, fill= "skyblue3", color= "black") +
+  geom_sf(data= mc_stations_filt.sf, fill= "white", color= "black", shape= 21, size= 4) +
+  scale_x_continuous(breaks= seq(-122, -121, by= 0.5)) +
+  scale_y_continuous(breaks= seq(37.6, 38.6, by= 0.5)) +
+  coord_sf() +
+  facet_wrap(~Source, nrow= 2) +
+  theme_map +
+  theme(legend.position = c(0.8, 0.2))
+ggsave(last_plot(), filename= "mc_station_map_filtered.png", width= 10, height= 10, dpi= 600,
+       path= "Figures")
 
 ## Data per year
 ggplot(year_summary, aes(x= ds_year, y= n)) +
@@ -162,45 +178,9 @@ ggsave(last_plot(), filename= "MCrating_Source.png", width= 10, height= 8, dpi= 
 
 
 
-## Station map
-ggplot() +
-  geom_sf(data= DS_regions, aes(fill= Region), alpha= 0.5) +
-  #geom_sf(data= DS_regions, aes(color= Region), fill= "transparent", size= 3) +
-  geom_sf(data= DS_waterways, fill= "skyblue3", color= "black") +
-  geom_sf(data= mc_stations_filt.sf, fill= "white", color= "black", shape= 21, size= 4) +
-  #labs(caption= ">=12 samples per year") +
-  #scale_fill_discrete(guide= "none") +
-  #scale_color_discrete(guide= "none")  +
-  scale_x_continuous(breaks= seq(-122, -121, by= 0.5)) +
-  scale_y_continuous(breaks= seq(37.6, 38.6, by= 0.5)) +
-  coord_sf() +
-  facet_wrap(~Source, nrow= 2) +
-  theme_map +
-  theme(legend.position = c(0.8, 0.2))
-ggsave(last_plot(), filename= "mc_station_map_filtered.png", width= 10, height= 10, dpi= 600,
-       path= "Figures")
-
-ggplot() +
-  geom_sf(data= DS_regions, aes(fill= SubRegion), alpha= 0.5) +
-  #geom_sf(data= DS_regions, aes(color= Region), fill= "transparent", size= 3) +
-  geom_sf(data= DS_waterways, fill= "skyblue3", color= "black") +
-  geom_sf(data= chla_stations_filt.sf, fill= "white", color= "black", shape= 21, size= 4) +
-  labs(caption= ">=12 samples per year") +
-  scale_fill_discrete(guide= "none") +
-  #scale_color_discrete(guide= "none")  +
-  scale_x_continuous(breaks= seq(-122, -121, by= 0.5)) +
-  scale_y_continuous(breaks= seq(37.6, 38.6, by= 0.5)) +
-  coord_sf() +
-  facet_wrap(~Source, nrow= 2) +
-  theme_map
-
-
-
-
 #### STATISTICS ####
 
-
-fit_ac3c <- brm(
+fit_mc1 <- brm(
   formula = mc_factor ~ 1 + cs(ds_year_type) + Season + Region + (1|Station),
   data = mc_data_filt,
   family = acat("probit"),
