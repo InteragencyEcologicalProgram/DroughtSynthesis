@@ -93,11 +93,7 @@ mc_data_stats <- mc_data_filt %>%
   ungroup()
 
 ## WRITE CSV FILES
-# data %>% 
-#   select(-chla,-Depth, -SampleType, -`M Chla (µg/L)`, -Field_coords, -LongStationName, -ShortStationName, -HABstation) %>% 
-#   write_csv(., "Data/mcRating_data.csv")
-
-# mc_data_filt %>% 
+# mc_data_stats %>% 
 #   select(-mc_factor, -chla,-Depth, -SampleType, -`M Chla (µg/L)`, -Field_coords, -LongStationName, -ShortStationName, -HABstation) %>% 
 #   write_csv(., "Data/mcRating_data_filtered.csv")
 # 
