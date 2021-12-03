@@ -32,10 +32,6 @@ filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
            end_year= max(year),
            n_years= length(year))
   
-  # source_counts <- mc_station_summary %>% 
-  #   group_by(Source) %>% 
-  #   count(count_mc)
-  
   ## Filter stations by minimum samples per year
   mc_stations_filt <- mc_station_summary %>%
     filter(count_mc >= min_samps_yr) %>% 
@@ -53,26 +49,19 @@ filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
     filter(Season %in% seasons) %>%
     distinct(.)
   
-  station2 <- data_filt2 %>% 
-    select(Source, Station, SourceStation, Latitude, Longitude) %>% 
+  ## Filter stations again by average data per year > 3
+  mc_stations_filt2 <- data_filt %>% 
+    select(Source, Station, SourceStation, ds_year, mc_factor) %>% 
+    group_by(Source, Station, SourceStation, ds_year) %>% 
+    summarize(count_mc= length(mc_factor)) %>% 
+    group_by(Source, Station, SourceStation) %>% 
+    mutate(mean_counts= mean(count_mc)) %>% 
+    filter(mean_counts > 3) %>% # Average amount of data per year
+    select(SourceStation) %>% 
     distinct(.)
   
-  length(unique(station2$SourceStation))
-  
-  summary2 <- data_filt2 %>%
-    group_by(SourceStation, year) %>%
-    summarize(count_mc= length(mc_mod)) %>%
-    ungroup() %>%
-    group_by(SourceStation) %>%
-    mutate(start_year= min(year),
-           end_year= max(year),
-           n_years= length(year))
-  
-  summary3 <- summary2 %>%
-    group_by(SourceStation) %>%
-    summarize(mean_count_mc= mean(count_mc)) %>%
-    ungroup()
-  
+  data_filt2 <- data_filt %>% 
+    filter(SourceStation %in% mc_stations_filt2$SourceStation)
   
   ## Unique station list with Lat/Longs
   stations_filt.sf <- data_filt2 %>% 
@@ -82,7 +71,7 @@ filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
     sf::st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
     distinct(.)
   
-  return(list(data= data_filt, stations= stations_filt.sf))
+  return(list(data= data_filt2, stations= stations_filt.sf))
 }
 
 mc_data_filt_list <- filter_mc_data(data= mc_data,
@@ -90,6 +79,16 @@ mc_data_filt_list <- filter_mc_data(data= mc_data,
                        excluded_regions = c("Far West"),
                        seasons= c("Summer", "Fall"))
 
+mc_data_filt <- mc_data_filt_list$data
+mc_stations.sf <- mc_data_filt_list$stations
+
+
+## Calculate maximum mc_rating value per month
+mc_data_stats <- mc_data_filt %>% 
+  group_by(Source, ds_year, ds_year_type, Region, Season, month, Station) %>% 
+  summarize(mc_max= max(mc_factor),
+            mc_min= min(mc_factor)) %>% 
+  ungroup()
 
 ## WRITE CSV FILES
 # data %>% 
@@ -101,22 +100,8 @@ mc_data_filt_list <- filter_mc_data(data= mc_data,
 #   write_csv(., "Data/mcRating_data_filtered.csv")
 # 
 
-## Calculate maximum mc_rating value per month
-mc_data_stats <- mc_data_filt %>% 
-  group_by(Source, ds_year, ds_year_type, Region, Season, month, Station) %>% 
-  summarize(mc_max= max(mc_factor),
-            mc_min= min(mc_factor))
 
-mc_stations_filt.sf <- mc_stations_filt %>%
-  st_as_sf(., coords= c("Longitude", "Latitude"), crs= 4269) %>% #NAD83
-  st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
-  distinct(.)
-
-mc_data_stats %>% 
-  select(Source, Region, Station)
-
-
-## Summarize data
+## SUMMARIZE DATA
 year_summary <- mc_data_stats %>%
   group_by(Source, ds_year, Region) %>%
   count(Region)
@@ -125,6 +110,13 @@ year_summary_all <- mc_data_filt %>%
   group_by(Source, ds_year) %>%
   count(Source)
 
+months_per_year <- mc_data_stats %>% 
+  select(Source, Station, ds_year, mc_max) %>% 
+  group_by(Source, Station, ds_year) %>% 
+  summarize(count_mc= length(mc_max)) %>% 
+  group_by(Source, Station) %>% 
+  mutate(mean_counts= mean(count_mc),
+         SourceStation= str_c(Source, Station, sep= "-"))
 
 #### DATA FIGURES ####
 
@@ -134,7 +126,7 @@ ggplot(year_summary, aes(x= ds_year, y= n)) +
   facet_rep_wrap(~Region, ncol= 1) +
   labs(x= "Data per year", y= "Count") +
   scale_y_continuous(expand= c(0, 0), breaks= seq(0, 500, by= 100), labels= c("0", "", "200", "", "400", "")) +
-  theme_ppt
+  theme_doc
 ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6, dpi= 300,
        path= "Figures")
 
