@@ -180,9 +180,9 @@ ggsave(last_plot(), filename= "MCrating_Source.png", width= 10, height= 8, dpi= 
 
 #### STATISTICS ####
 
-fit_mc1 <- brm(
-  formula = mc_factor ~ 1 + cs(ds_year_type) + Season + Region + (1|Station),
-  data = mc_data_filt,
+fit_max_mc1 <- brm(
+  formula = mc_max ~ 1 + cs(ds_year_type) + Season + Region + (1|Station),
+  data = mc_data_stats,
   family = acat("probit"),
   chains= 4,
   iter= 5000,
@@ -191,7 +191,7 @@ fit_mc1 <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-save(fit_ac3c, file= "Data/fit_ac3c.Rdata")
+save(fit_mc1, file= "Data/fit_mc1.Rdata")
 load("Data/fit_ac3c.Rdata")
 summary(fit_ac3c)
 plot(fit_ac3c)
