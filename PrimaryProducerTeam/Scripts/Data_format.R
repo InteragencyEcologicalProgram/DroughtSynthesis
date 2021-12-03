@@ -39,9 +39,9 @@ DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
   st_join(., DS_regions, left= FALSE,
         join= st_overlaps) # filter the Delta Waterways to include only DS regions
 
-  ## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
-#devtools::install_github("sbashevkin/discretewq")
-#library(discretewq)
+## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
+# devtools::install_github("sbashevkin/discretewq")
+# library(discretewq)
 idb_raw <- discretewq::wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",
                        "SDO", "SKT", "SLS", "20mm", "Suisun",
                        "Baystudy", "USBR", "USGS", "YBFMP"))
@@ -91,10 +91,12 @@ usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
 
 
 usgs_chla <- usgs_chla_raw %>%
-  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (Âµg/L)`, `M Chla (Âµg/L)`) %>%
-  filter(`M Chla (Âµg/L)` == "00050") %>% # Only keep 0.7 micron chla values
-  select(-`M Chla (Âµg/L)`) %>%
-  rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, Datetime= sample_strt_dt, chla= `Chla (Âµg/L)`) %>%
+  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (µg/L)`, `M Chla (µg/L)`) %>%
+  filter(`M Chla (µg/L)` == "00050") %>% # Only keep 0.7 micron chla values
+  select(-`M Chla (µg/L)`) %>%
+  rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, 
+         Datetime= sample_strt_dt, 
+         chla= `Chla (µg/L)`) %>%
   filter(!is.na(chla)) %>%
   mutate(Date= ymd(Date),
          Datetime= ymd_hm(Datetime),

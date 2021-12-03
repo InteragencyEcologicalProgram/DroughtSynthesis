@@ -98,12 +98,7 @@ chla_data_stats <- chla_data_filt %>%
             chlaAvg= mean(chla, na.rm= TRUE),
             chlaAvg_log10= log10(chlaAvg), #log10
             chlaAvg_log= log(chlaAvg), # natural log
-            ) #%>%
-  mutate(chlaAvg_log10= log10(chlaAvg), #log10
-         chlaAvg_log= log(chlaAvg), # natural log
-         month_pair= ifelse(month == 6 | month == 7, "1J-J",
-                            ifelse(month == 8 | month == 9, "2A-S", "3O-N"))) %>%
-  ungroup()
+            )
 
 ## WRITE CSV FILE
 chla_data_stats %>% 
