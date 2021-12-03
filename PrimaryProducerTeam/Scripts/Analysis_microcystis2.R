@@ -191,77 +191,50 @@ fit_max_mc1 <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-save(fit_mc1, file= "Data/fit_mc1.Rdata")
-load("Data/fit_ac3c.Rdata")
-summary(fit_ac3c)
+#save(fit_max_mc1, file= "Data/fit_max_mc1.Rdata")
+load("Data/fit_max_mc1.Rdata")
+summary(fit_max_mc1)
 plot(fit_ac3c)
-unique(mc_data_filt$Region)
-
-conditions.df <- make_conditions(fit_ac3c, c("Region", "Season"))
-
-#conditional_effects(fit_ac3, "ds_year_type", condition= conditions.df, categorical= TRUE)
-term_yt2 <- conditional_effects(fit_ac3c, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
-
-term_yt <- conditional_effects(fit_ac3, categorical= TRUE)$`ds_year_type`
-names(term_yt2)
-filter(term_yt2, Season == "Summer")
-
-unique(mc_data_stats$Region)
-labeller()
 
 
-ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
+## Extract marginal effects
+max_mc1_conditions <- make_conditions(fit_max_mc1, c("Region", "Season"))
+max_mc1_effects <- conditional_effects(fit_max_mc1, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
+
+## Low & High Microcystis Ratings
+ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
                     name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
-  labs(x= "", y= expression(paste("Probability of ", italic("Microcystis"), " detection"))) +
-  scale_y_continuous(expand= c(0, 0)) +
-  #scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
-  scale_x_discrete(limits= c("b_low", "c_high"), labels= c(expression(paste("Low ", italic("Microcystis"))),
-                                                           expression(paste("High ", italic("Microcystis"))))) +
-  #facet_rep_grid(Season ~ Region, nrow= 5, repeat.tick.labels = TRUE) +
+  labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
+  scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
+  scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
   facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE) +
   theme_doc +
-  theme(legend.position= "bottom")
+  theme(legend.position= "top")
 ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
        path= "Figures")
 
 
-ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
+## None, Low, & High Microcystis Ratings
+ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
                     name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
-  labs(x= "", y= expression(paste("Probability of ", italic("Microcystis"), " detection"))) +
-  scale_y_continuous(expand= c(0, 0)) +
-  #scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
-  scale_x_discrete(limits= c("b_low", "c_high"), labels= c(expression(paste("Low ", italic("Microcystis"))),
-                                                           expression(paste("High ", italic("Microcystis"))))) +
-  facet_rep_wrap(~ Region, nrow= 5) +
+  labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
+  scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
+  scale_x_discrete(limits= c("none", "low", "high"), labels= c("None", "Low", "High")) +
+  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE) +
   theme_doc +
-  theme(legend.position= c(0.76, 0.13))
-ggsave(last_plot(), filename= "MCrating_probs_LowHigh.png", width= 6.5, height= 6, dpi= 300,
-       path= "Figures")
+  theme(legend.position= "top")
+#ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
+#       path= "Figures")
 
 
-ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
-  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
-  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
-  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
-  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
-  labs(x= "", y= "Probability of rating value") +
-  scale_y_continuous(expand= c(0, 0)) +
-  scale_x_discrete(labels= c("No\nMicrocystis", "Low\nMicrocystis", "High\nMicrocystis")) +
-  #scale_x_discrete(limits= c("b_low", "c_high"), labels= c("Low\nMicrocystis", "High\nMicrocystis")) +
-  facet_rep_wrap(~ Region, nrow= 3) +
-  theme_doc +
-  theme(legend.position= c(0.76, 0.13))
-ggsave(last_plot(), filename= "MCrating_probs.png", width= 6.5, height= 6, dpi= 300,
-       path= "Figures")
 
 
 
