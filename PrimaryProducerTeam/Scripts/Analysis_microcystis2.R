@@ -8,13 +8,15 @@ source("Scripts/ggplot_themes.R")
 
 load("Data/DS_dataframes.Rdata") # load data frames from Data_format.R
 
-
+## Transform original 1-5 scale to None, Low, High
 mc_data <- DS_data %>%
   filter(!is.na(mc_rating)) %>%
-  mutate(mc_mod= ifelse(mc_rating == 1, "a_none",
-                        ifelse(mc_rating > 1 & mc_rating < 4, "b_low", "c_high")),
+  mutate(mc_mod= ifelse(mc_rating == 1, "none",
+                        ifelse(mc_rating > 1 & mc_rating < 4, "low", "high")),
+         mc_factor= factor(mc_mod, ordered= TRUE, levels= c("none", "low", "high")), 
          mc_binom= ifelse(mc_rating <= 4, "0", "1")) %>% 
   filter(Source != "DOP") #Remove Directed Outflows Project (DOP) data because it only starts in 2019
+
 
 
 data= mc_data
@@ -24,49 +26,52 @@ seasons= c("Summer", "Fall")
 
 
 #### DATA FILTERING ####
-mc_station_summary <- data %>%
-  group_by(Source, Station, year, Latitude, Longitude) %>%
-  summarize(count_mc= length(mc_mod)) %>%
-  ungroup() %>%
-  group_by(Source, Station) %>%
-  mutate(start_year= min(year),
-         end_year= max(year),
-         n_years= length(year))
 
-source_counts <- mc_station_summary %>% 
-  group_by(Source) %>% 
-  count(count_mc)
+filter_mc_data <- function(data, min_samps_yr, excluded_regions, seasons){
+  
+  ## Get number of samples per year per station  
+  mc_station_summary <- data %>%
+    group_by(Source, Station, year, Latitude, Longitude) %>%
+    summarize(count_mc= length(mc_mod)) %>%
+    ungroup() %>%
+    group_by(Source, Station) %>%
+    mutate(start_year= min(year),
+           end_year= max(year),
+           n_years= length(year))
+  
+  # source_counts <- mc_station_summary %>% 
+  #   group_by(Source) %>% 
+  #   count(count_mc)
+  
+  ## Filter stations by minimum samples per year
+  mc_stations_filt <- mc_station_summary %>%
+    filter(count_mc >= min_samps_yr) %>% 
+    select(Source, Station, Latitude, Longitude) %>% 
+    distinct(.)
+  
+  
+  #length(unique(mc_stations_filt$Station))
+  #length(unique(mc_station_summary$Station))
+  #unique(data$Source)
+  
+  
+  
+  ## Filter by station, excluded region, and season
+  data_filt <- data %>%
+    filter(Station %in% mc_stations_filt$Station) %>%
+    filter(!(Region %in% excluded_regions)) %>%
+    filter(Season %in% seasons) %>%
+    #mutate(mc_factor= factor(mc_mod, ordered= TRUE, levels= c("a_none", "b_low", "c_high"))) %>%
+    distinct(.)
+  #filter(chla > min_result) %>%
+  
+  return(data_filt)
+}
 
-mc_stations_filt <- mc_station_summary %>%
-  filter(count_mc >= min_samps_yr) %>% 
-  select(Source, Station, Latitude, Longitude) %>% 
-  distinct(.)
-
-mc_stations_filt %>% 
-  select(Station) %>% 
-  distinct(.)
-
-length(unique(mc_stations_filt$Station))
-length(unique(mc_station_summary$Station))
-unique(data$Source)
-
-
-mc_stations_filt.sf <- mc_stations_filt %>%
-  st_as_sf(., coords= c("Longitude", "Latitude"), crs= 4269) %>% #NAD83
-  st_transform(., crs= 26910) %>% # NAD 83/ UTM10N
-  distinct(.)
-
-
-class(chla_stations.sf)
-
-mc_data_filt <- data %>%
-  filter(Station %in% mc_stations_filt$Station) %>%
-  filter(!(Region %in% excluded_regions)) %>%
-  filter(Season %in% seasons) %>%
-  mutate(mc_factor= factor(mc_mod, ordered= TRUE, levels= c("a_none", "b_low", "c_high"))) %>%
-  distinct(.)
-#filter(chla > min_result) %>%
-names(data)
+test <- filter_mc_data(data= mc_data,
+                       min_samps_yr <- 6,
+                       excluded_regions = c("Far West"),
+                       seasons= c("Summer", "Fall"))
 
 
 ## WRITE CSV FILES
@@ -81,7 +86,7 @@ names(data)
 
 ## Calculate maximum mc_rating value per month
 mc_data_stats <- mc_data_filt %>% 
-  group_by(Source, year, ds_year_type, Region, Season, month, Station) %>% 
+  group_by(Source, ds_year, ds_year_type, Region, Season, month, Station) %>% 
   summarize(mc_max= max(mc_factor),
             mc_min= min(mc_factor))
 mc_data_stats
@@ -89,8 +94,7 @@ mc_data_stats
 
 
 
-
-year_summary <- mc_data_filt %>%
+year_summary <- mc_data_stats %>%
   group_by(Source, ds_year, Region) %>%
   count(Region)
 
@@ -104,7 +108,6 @@ ggplot(year_summary, aes(x= ds_year, y= n)) +
   facet_rep_wrap(~Region, ncol= 1) +
   labs(x= "Station-months per year", y= "Count") +
   scale_y_continuous(expand= c(0, 0), breaks= seq(0, 500, by= 100), labels= c("0", "", "200", "", "400", "")) +
-  
   theme_ppt
 ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6, dpi= 300,
        path= "Figures")
@@ -204,8 +207,8 @@ fit_ac3c <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-save(fit_ac3c, file= "Data/fit_ac3c.data")
-load("Data/fit_ac3.Rdata")
+save(fit_ac3c, file= "Data/fit_ac3c.Rdata")
+load("Data/fit_ac3c.Rdata")
 summary(fit_ac3c)
 plot(fit_ac3c)
 unique(mc_data_filt$Region)
@@ -218,6 +221,10 @@ term_yt2 <- conditional_effects(fit_ac3c, "ds_year_type", condition= conditions.
 term_yt <- conditional_effects(fit_ac3, categorical= TRUE)$`ds_year_type`
 names(term_yt2)
 filter(term_yt2, Season == "Summer")
+
+unique(mc_data_stats$Region)
+labeller()
+
 
 ggplot(term_yt2, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
