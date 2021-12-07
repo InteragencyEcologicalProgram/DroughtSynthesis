@@ -9,6 +9,7 @@
 library(tidyverse)
 library(deltamapr)
 library(lubridate)
+library(anytime)
 library(sf)
 library(sp)
 # library(discretewq)
@@ -30,6 +31,7 @@ df_wq_recent <- list.files(path=drought_abs_path(fp_abs_wq_all), pattern = glob2
 
 df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
 df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'SF_wq_coords.csv')))
+df_wy <- read_csv(drought_abs_path(paste0(fp_abs_meta,'Year_assignments.csv')))
 ```
 
 ```{r}
@@ -53,19 +55,20 @@ df_wq_old <- df_wq_old %>% rename(Station = Station_Number,
                             `PO4 (Micromolar)` = Phosphate,
                             `Si (Micromolar)` = Silicate)
 
-df_wq_old$Date <- as.Date(df_wq_old$Date, '%m/%d/%y')
-df_wq_old$Year <- year(df_wq_old$Date)
-df_wq_old$Month <- month(df_wq_old$Date)
-df_wq_old$Year <- with(df_wq_old, ifelse(month(Date) == 12, Year + 1, Year))
-
+df_wq_old$Date <- parse_date_time(df_wq_old$Date, orders=c("%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"), tz="America/Los_Angeles")
 wq <- bind_rows(df_wq_old, df_wq_recent)
 rm(df_wq_old, df_wq_recent)
 
 df_wq_coords <- left_join(df_coords, wq, by = c('Station'))
 
+df_wq_coords$Date <- as.Date(df_wq_coords$Date, format = '%Y-%m-%d')
+df_wq_coords$Year <- year(df_wq_coords$Date)
+df_wq_coords$Month <- month(df_wq_coords$Date)
+df_wq_coords$Year <- with(df_wq_coords, ifelse(month(Date) == 12, Year + 1, Year))
+
 df_wq_coords <- add_season_col(df_wq_coords)
 
-df_wq_coords <- add_wy_col(df_wq_coords)
+df_wq_coords <- add_wy_col(df_wq_coords, df_wy)
 
 df_wq_coords <- df_wq_coords %>% rename(Region = Location)
 ```
