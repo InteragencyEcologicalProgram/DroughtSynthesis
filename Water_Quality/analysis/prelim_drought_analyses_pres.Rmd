@@ -1,7 +1,7 @@
 ---
 title: "Preliminary Drought Analyses - Water Quality"
 author: "Drought WQ Subteam"
-date: "11/4/2021"
+date: "12/7/2021"
 output:
   ioslides_presentation:
     widescreen: true
@@ -19,17 +19,24 @@ library(scales)
 library(DroughtData)
 
 # Seasonal averages for entire Delta
-# Add D for Drought in 2021 and convert Drought and Season to factors
+# Convert Season to factor for plotting order
 lt_seasonal_mod <- lt_seasonal %>% 
   mutate(
-    Drought = factor(if_else(Year == 2021, "D", Drought)),
-    Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall"))
+    Season = factor(
+      Season, 
+      levels = c(
+        "Winter", 
+        "Spring",
+        "Summer",
+        "Fall"
+      )
+    )
   )
 
 # Hydrology data
 lt_seasonal_hydro <- lt_seasonal_mod %>% 
-  select(Year, Season, Drought, Outflow, X2, Export) %>% 
-  pivot_longer(cols = c(Outflow:Export), names_to = "Parameter", values_to = "Value") %>% 
+  select(YearAdj, Season, Drought, Outflow, Export, X2) %>% 
+  pivot_longer(cols = c(Outflow:X2), names_to = "Parameter", values_to = "Value") %>% 
   filter(!is.na(Value))
 
 hydro_labels <- c(
@@ -40,8 +47,8 @@ hydro_labels <- c(
 
 # WQ Field measurements
 lt_seasonal_wq_meas <- lt_seasonal_mod %>% 
-  select(Year, Season, Drought, Temperature, Secchi, Salinity) %>% 
-  pivot_longer(cols = c(Temperature:Salinity), names_to = "Parameter", values_to = "Value") %>% 
+  select(YearAdj, Season, Drought, Temperature, Salinity, Secchi) %>% 
+  pivot_longer(cols = c(Temperature:Secchi), names_to = "Parameter", values_to = "Value") %>% 
   filter(!is.na(Value))
 
 wq_meas_labels <- c(
@@ -49,11 +56,44 @@ wq_meas_labels <- c(
   "Secchi" = "Secchi Depth (cm)", 
   "Salinity" = "Salinity (PSU)"
 )
+
+# Regional averages for each year
+lt_regional_wq_meas <- lt_regional %>% 
+  # Convert Region to factor for plotting order
+  mutate(
+    Region = factor(
+      Region, 
+      levels = c(
+        "Suisun Bay",
+        "Suisun Marsh",
+        "Confluence",
+        "North",
+        "SouthCentral"
+      ),
+      labels = c(
+        "Suisun Bay",
+        "Suisun Marsh",
+        "Confluence",
+        "North",
+        "South Central"
+      )
+    )
+  ) %>% 
+  # Restructure data frame
+  select(YearAdj, Region, Drought, Temperature, Salinity, Secchi) %>% 
+  pivot_longer(cols = c(Temperature:Secchi), names_to = "Parameter", values_to = "Value") %>% 
+  filter(!is.na(Value))
+
+# Custom plot theme
+drought_plt_theme <- list(
+  theme_light(),
+  theme(strip.text = element_text(color = "black"))
+)
 ```
 
-## Hydrology metrics - D/W/N classification
+## Hydrology metrics - D/N/W classification
 
-```{r}
+```{r plot hydro drought}
 lt_seasonal_hydro %>% 
   ggplot(aes(x = Drought, y = Value)) +
   geom_boxplot() +
@@ -62,12 +102,13 @@ lt_seasonal_hydro %>%
     scales = "free_y", 
     labeller = labeller(Parameter = hydro_labels)
   ) +
-  scale_y_continuous(labels = label_comma())
+  scale_y_continuous(labels = label_comma()) +
+  drought_plt_theme
 ```
 
 ## Hydrology metrics - Season
 
-```{r}
+```{r plot hydro season}
 lt_seasonal_hydro %>% 
   ggplot(aes(x = Season, y = Value)) +
   geom_boxplot() +
@@ -76,7 +117,86 @@ lt_seasonal_hydro %>%
     scales = "free_y", 
     labeller = labeller(Parameter = hydro_labels)
   ) +
-  scale_y_continuous(labels = label_comma())
+  scale_y_continuous(labels = label_comma()) +
+  drought_plt_theme
+```
 
+## Hydrology metrics - D/N/W and Season
+
+```{r plot hydro drought season, fig.width = 8.5}
+lt_seasonal_hydro %>% 
+  ggplot(aes(x = Drought, y = Value, color = Season)) +
+  geom_boxplot() +
+  facet_wrap(
+    vars(Parameter), 
+    scales = "free_y", 
+    labeller = labeller(Parameter = hydro_labels)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  drought_plt_theme
+```
+
+## WQ measurements - Season
+
+```{r plot wq season}
+lt_seasonal_wq_meas %>% 
+  ggplot(aes(x = Season, y = Value)) +
+  geom_boxplot() +
+  facet_wrap(
+    vars(Parameter), 
+    scales = "free_y", 
+    labeller = labeller(Parameter = wq_meas_labels)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
+  drought_plt_theme
+```
+
+## WQ measurements - D/N/W and Season
+
+```{r plot wq drought season, fig.width = 8.5}
+lt_seasonal_wq_meas %>% 
+  ggplot(aes(x = Drought, y = Value, color = Season)) +
+  geom_boxplot() +
+  facet_wrap(
+    vars(Parameter), 
+    scales = "free_y", 
+    labeller = labeller(Parameter = wq_meas_labels)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  drought_plt_theme
+```
+
+## WQ measurements - Region
+
+```{r plot wq region}
+lt_regional_wq_meas %>% 
+  ggplot(aes(x = Region, y = Value)) +
+  geom_boxplot() +
+  facet_wrap(
+    vars(Parameter), 
+    scales = "free_y", 
+    labeller = labeller(Parameter = wq_meas_labels)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
+  drought_plt_theme +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+```
+
+## WQ measurements - D/N/W and Region
+
+```{r plot wq drought region, fig.width = 8.5}
+lt_regional_wq_meas %>% 
+  ggplot(aes(x = Drought, y = Value, color = Region)) +
+  geom_boxplot() +
+  facet_wrap(
+    vars(Parameter), 
+    scales = "free_y", 
+    labeller = labeller(Parameter = wq_meas_labels)
+  ) +
+  scale_y_continuous(labels = label_comma()) +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  drought_plt_theme
 ```
 
