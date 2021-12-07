@@ -3,7 +3,7 @@ library(tidyverse)
 library(ggmap)
 library(sf)
 
-cdec = read.csv("CDEC_StationsEC.csv")
+cdec = read.csv("data/CDEC_StationsEC.csv")
 cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326)
 
 
