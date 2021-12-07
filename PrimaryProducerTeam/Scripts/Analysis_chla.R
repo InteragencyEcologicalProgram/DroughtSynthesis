@@ -162,7 +162,7 @@ ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 
 ## Boxplots of data
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 
-
+## Region and Season
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= Season)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
@@ -175,13 +175,28 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme_doc +
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
-ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 8, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_log10.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
 
+## Regions combined and Season
+ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
+  geom_boxplot(aes(fill= Season)) +
+  labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+                     labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_fill_manual(values= season.colors) +
+  annotation_logticks(side= "l") +
+  #facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
+  theme_doc #+
+  theme(legend.position = c(0.77, 0.15), 
+        legend.direction = "vertical")
+ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 4, dpi= 300,
+       path= "Figures")
 
 
-
+## Month and Region
 ggplot(chla_data_stats, aes(x= as.factor(month), y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type)) +
   labs(x= "Month", y= expression(paste("Chla (", mu, "g/L)"))) +
