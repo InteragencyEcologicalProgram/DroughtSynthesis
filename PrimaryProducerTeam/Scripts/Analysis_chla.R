@@ -98,12 +98,13 @@ chla_data_stats <- chla_data_filt %>%
             chlaAvg= mean(chla, na.rm= TRUE),
             chlaAvg_log10= log10(chlaAvg), #log10
             chlaAvg_log= log(chlaAvg), # natural log
-            )
+            ) %>% 
+  ungroup()
 
 ## WRITE CSV FILE
-chla_data_stats %>% 
-  select(Date, everything(), -chlaAvg_log) %>% 
-   write_csv(., "Data/chla_data_stats.csv")
+#chla_data_stats %>% 
+#  select(Date, everything(), -chlaAvg_log) %>% 
+#   write_csv(., "Data/chla_data_stats.csv")
 
 
 ## Summary Tables of data
@@ -154,15 +155,15 @@ ggplot(year_summary, aes(x= ds_year, y= n)) +
   labs(x= "Station-months per year", y= "Count") +
   scale_y_continuous(expand= c(0, 0), breaks= seq(0, 600, by= 100), labels= c("0", "", "200", "", "400", "", "600")) +
   theme_doc
-#ggsave(last_plot(), filename= "year_sample_summary.png", width= 8, height= 6, dpi= 300,
-#       path= "Figures")
+ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 6, dpi= 300,
+       path= "Figures")
 
 
 ## Boxplots of data
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 
 
-ggplot(chla_data_stats, aes(x= ds_year_type, y= chla_log10)) +
+ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= Season)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
@@ -181,7 +182,7 @@ ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, heig
 
 
 
-ggplot(chla_data_stats, aes(x= as.factor(month), y= chla_log10)) +
+ggplot(chla_data_stats, aes(x= as.factor(month), y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type)) +
   labs(x= "Month", y= expression(paste("Chla (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
@@ -209,14 +210,15 @@ ggplot() +
   coord_sf() +
   facet_wrap(~Source, nrow= 2) +
   theme_map +
-  theme(legend.position = c(0.8, 0.2))
-ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 10, height= 10, dpi= 600,
+  theme(legend.position = "right")
+  #theme(legend.position = c(0.8, 0.2))
+ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 6.5, height= 5, dpi= 600,
        path= "Figures")
 
 
 
 #### STATISTICS ####
-fit_log10.1 <- lmer(chla_log10 ~ ds_year_type + Season + Region + (1|Station),
+fit_log10.1 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station),
                    data= chla_data_stats)
 summary(fit_log10.1)
 plot(fit_log10.1)

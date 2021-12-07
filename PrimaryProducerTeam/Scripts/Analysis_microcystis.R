@@ -83,7 +83,7 @@ mc_data_filt_list <- filter_mc_data(data= mc_data,
 
 mc_data_filt <- mc_data_filt_list$data
 mc_stations_filt.sf <- mc_data_filt_list$stations
-
+length(unique(mc_stations_filt.sf$Station))
 
 ## Calculate maximum mc_rating value per month
 mc_data_stats <- mc_data_filt %>% 
@@ -93,8 +93,8 @@ mc_data_stats <- mc_data_filt %>%
   ungroup()
 
 ## WRITE CSV FILES
-mc_data_stats %>% 
-   write_csv(., "Data/mcRating_data_stats.csv")
+#mc_data_stats %>% 
+#   write_csv(., "Data/mcRating_data_stats.csv")
  
 
 
@@ -115,7 +115,19 @@ months_per_year <- mc_data_stats %>%
   mutate(mean_counts= mean(count_mc),
          SourceStation= str_c(Source, Station, sep= "-"))
 
+Station_Region_count <- mc_data_stats %>%
+  select(Source, Region, Station) %>% 
+  distinct(.) %>% 
+  group_by(Region) %>%
+  count(Region)
+sum(Station_Region_count$n)
+
 #### DATA FIGURES ####
+
+## Facet labels
+region_labels <- c(unique(mc_data_stats$Region)[1:2], "South-Central\nDelta", unique(mc_data_stats$Region)[4:5])
+names(region_labels) <-   unique(mc_data_stats$Region)
+
 
 ## Station map
 ggplot() +
@@ -150,10 +162,11 @@ ggplot(mc_data_stats, aes(x= ds_year_type)) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
                     name= expression(paste(italic("Microcystis "), "Rating")),
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
-  facet_rep_grid(.~Region) +
+  facet_rep_wrap(~Region, nrow= 2, labeller= labeller(Region= as_labeller(region_labels))) +
   theme_doc +
-  theme(legend.position = "top")
-ggsave(last_plot(), filename= "MCrating_Region.png", width= 12, height= 6, dpi= 300,
+  #theme(legend.position = "top")
+  theme(legend.position = c(0.85, 0.2))
+ggsave(last_plot(), filename= "MCrating_Region.png", width= 6.5, height= 4, dpi= 300,
        path= "Figures")
 
 
@@ -166,7 +179,7 @@ ggplot(mc_data_stats, aes(x= ds_year_type)) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
                     name= "Rating",
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
-  facet_rep_grid(Source~Region) +
+  facet_rep_grid(Source~Region, labeller= labeller(Region= as_labeller(region_labels))) +
   theme_doc
 ggsave(last_plot(), filename= "MCrating_Source.png", width= 10, height= 8, dpi= 300,
        path= "Figures")
@@ -189,12 +202,12 @@ fit_max_mc1 <- brm(
 #save(fit_max_mc1, file= "Data/fit_max_mc1.Rdata")
 load("Data/fit_max_mc1.Rdata")
 summary(fit_max_mc1)
-plot(fit_ac3c)
+plot(fit_max_mc1)
 
 
 ## Extract marginal effects
 max_mc1_conditions <- make_conditions(fit_max_mc1, c("Region", "Season"))
-max_mc1_effects <- conditional_effects(fit_max_mc1, "ds_year_type", condition= conditions.df, categorical= TRUE)$`ds_year_type`
+max_mc1_effects <- conditional_effects(fit_max_mc1, "ds_year_type", condition= max_mc1_conditions, categorical= TRUE)$`ds_year_type`
 
 ## Low & High Microcystis Ratings
 ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
@@ -206,7 +219,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
-  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE) +
+  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE, labeller= labeller(Region= as_labeller(region_labels))) +
   theme_doc +
   theme(legend.position= "top")
 ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
@@ -223,13 +236,49 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("none", "low", "high"), labels= c("None", "Low", "High")) +
-  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE) +
+  facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE, labeller= labeller(Region= as_labeller(region_labels))) +
   theme_doc +
   theme(legend.position= "top")
-#ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
-#       path= "Figures")
+ggsave(last_plot(), filename= "MCrating_probs_NoneLowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
+       path= "Figures")
 
 
+## Summer only: Low & High Microcystis Ratings
+#summer_signif <- rep(c("*", "", ""), 15)
 
+ggplot(filter(max_mc1_effects, Season == "Summer"), aes(x= cats__, y= estimate__, group= ds_year_type)) +
+  #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
+  geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
+  geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
+  #geom_text(aes(x= cats__, y= upper__ + 0.1, group= ds_year_type), 
+  #          label= summer_signif, size= 8, position= position_dodge(0.9)) +
+  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+  labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
+  scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
+  scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
+  #scale_x_discrete(labels= c("None", "Low", "High")) +
+  facet_rep_wrap(~Region, ncol=1, scales= "free_x", repeat.tick.labels = FALSE, labeller= labeller(Region= as_labeller(region_labels))) +
+  theme_doc +
+  theme(legend.position= "top")
+ggsave(last_plot(), filename= "MCrating_probs_LowHigh_Summer.png", width= 6.5, height= 8.5, dpi= 300,
+       path= "Figures")
+
+
+fit_max_mc2 <- brm(
+  formula = mc_max ~ 1 + cs(ds_year_type) + (1|Region) + (1|Station),
+  data = mc_data_stats,
+  family = acat("probit"),
+  chains= 4,
+  iter= 5000,
+  warmup= 1000,
+  cores= 4,
+  control = list(adapt_delta = 0.99)
+)
+
+#save(fit_max_mc1, file= "Data/fit_max_mc1.Rdata")
+load("Data/fit_max_mc1.Rdata")
+summary(fit_max_mc1)
+plot(fit_max_mc1)
 
 
