@@ -161,6 +161,7 @@ ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 
 
 ## Boxplots of data
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
+year.colors <- c("skyblue3", "mistyrose2", "tomato")
 
 ## Region and Season
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
@@ -178,6 +179,23 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
 ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_log10.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
+## Year Type and Season
+ggplot(chla_data_stats, aes(x= Season, y= chlaAvg_log10)) +
+  geom_boxplot(aes(fill= ds_year_type)) +
+  labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+                     labels= c("0.01", "0.1", "1", "10", "100")) +
+  #scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_fill_manual(values= year.colors, name= "Water Year Type", labels= c("Wet", "Below Avg.", "Drought")) +
+  annotation_logticks(side= "l") +
+  facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
+  theme_doc +
+  theme(legend.position = c(0.77, 0.15), 
+        legend.direction = "vertical")
+ggsave(last_plot(), filename= "chla_filtered_SeasonRegion2_log10.png", width= 6.5, height= 8, dpi= 300,
+       path= "Figures")
+
+
 
 ## Regions combined and Season
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
@@ -193,6 +211,22 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
 ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 4, dpi= 300,
+       path= "Figures")
+
+## Density plot
+ggplot(chla_data_stats, aes(x= chlaAvg_log10)) +
+  #geom_histogram(aes(fill= ds_year_type)) +
+  geom_density(aes(color= ds_year_type), size= 1.5) +
+  labs(x= "Chla (ug/L)", y= "Density") +
+  scale_y_continuous(expand= c(0, 0)) +
+  scale_x_continuous(breaks= c(0, 1, 2), labels= c(1, 10, 100)) +
+  scale_color_manual(values= year.colors, name= "Water Year Type", labels= c("Wet", "Below Avg.", "Drought")) +
+  annotation_logticks(side= "b") +
+  #facet_rep_grid(. ~ Season, repeat.tick.labels = TRUE) +
+  theme_doc +
+theme(legend.position = c(0.8, 0.8), 
+      legend.direction = "vertical")
+ggsave(last_plot(), filename= "chla_filtered_log10_density.png", width= 6.5, height= 4, dpi= 300,
        path= "Figures")
 
 
