@@ -119,34 +119,72 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
 
 #create subsets of data sets by site---------
 
-#Look at CRS for Franks Tract/Mildred Island shape file 
+#Look at CRS for Dave's shape file for Franks Tract/Mildred Island 
 st_crs(sf_franks_mildred) 
 #already in the right CRS (WGS84), which is EPSG 4326
 
 #plot the shape files
 (map_ft_md <- ggplot()+
     geom_sf(data= sf_franks_mildred, fill= "skyblue3", color= "black") 
-)
-
-# Create a bounding box of the Franks-Mildred shapefile which will be used to crop the satellite data
-# and extend it by 5% on each side
-bbox_fr_mil <- st_bbox(sf_franks_mildred)
-bbox_fr_mil_xrange <- bbox_fr_mil$xmax - bbox_fr_mil$xmin
-bbox_fr_mil_yrange <- bbox_fr_mil$ymax - bbox_fr_mil$ymin
-
-
-# Prepare HAB satellite data for maps
-franks <- cstars_format %>% 
-  mutate(
-    strs_obj_f =
-      # Crop HAB satellite data to bounding box of the Franks-Mildred shapefile
-      map(strs_prx_obj, ~st_crop(.x, bbox_fr_mil)
-          
-          
-franks <- cstars_format %>% 
-  filter(
-    coord_sf( 
-    xlim =c(-121.740, -121.685),
-    ylim = c(38.031, 38.005)
   )
-    )
+
+#Drop Mildred Island because I only need Franks Tract
+sf_franks <- sf_franks_mildred %>% 
+  filter(HNAME=="Franks Tract")
+
+#Filter CSTARS data set to just those within the Franks Tract polygon
+cstars_franks <- cstars_format %>% 
+  st_filter(sf_franks) 
+  
+#create map showing Franks Tract SAV data points
+#this shape file cuts off part of the westernmost section
+#ask UCD for their version because it extends further west
+(sav_map_ft_only <- ggplot()+
+    #plot waterways base layer
+    geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
+    #plot SAV sampling points
+    geom_sf(data=cstars_franks, fill= "red", color= "black", shape= 22, size= 3.5)+
+    #set bounding box for site
+    coord_sf( 
+      xlim =c(-121.56, -121.64),
+      ylim = c(38.07, 38.02)
+    )+
+    theme_bw()+
+    ggtitle("Franks Tract")
+)        
+          
+#look at Franks Tract samples-------
+
+#date range
+unique(cstars_franks$date)
+#"2021-08-17" "2021-07-20"
+
+#number of samples
+ft_count<-cstars_franks %>% 
+  st_set_geometry(NULL) %>%  #removes geometry
+  distinct(latitude_wgs84,longitude_wgs84,date) %>% 
+  summarize(count = n())
+#47 samples
+#will be a few more once I get the larger Franks Tract polygon
+
+#how many open water samples?
+wat <- cstars_franks %>% 
+  filter(rake_teeth_corr==0 & is.na(species)) %>% 
+  st_set_geometry(NULL) %>%  #removes geometry
+  distinct(latitude_wgs84,longitude_wgs84,date,time)
+#n=5 open water samples
+
+#just look at samples where SAV was present and species have non-zero rake_prop
+franks_filter <- cstars_franks %>% 
+  filter(rake_teeth_corr>0 & !is.na(species) & (!is.na(rake_prop) & rake_prop!=0) )
+
+#which species
+unique(cstars_franks$species)
+#9 spp + algae + NA + unidentified
+
+
+
+
+
+
+
