@@ -132,23 +132,37 @@ st_crs(sf_franks_mildred)
 sf_franks <- sf_franks_mildred %>% 
   filter(HNAME=="Franks Tract")
 
+# Create a bounding box of the Franks shapefile which will be used to crop the field data
+# and extend it by 5% on the west and north sides
+bbox_fr <- st_bbox(sf_franks)
+bbox_fr_xrange <- bbox_fr$xmax - bbox_fr$xmin
+bbox_fr_yrange <- bbox_fr$ymax - bbox_fr$ymin
+bbox_fr[1] <- bbox_fr[1] - (bbox_fr_xrange * 0.05)
+#bbox_fr[3] <- bbox_fr[3] + (bbox_fr_xrange * 0.05)
+#bbox_fr[2] <- bbox_fr[2] - (bbox_fr_yrange * 0.05)
+bbox_fr[4] <- bbox_fr[4] + (bbox_fr_yrange * 0.05)
+
 #Filter CSTARS data set to just those within the Franks Tract polygon
 cstars_franks <- cstars_format %>% 
   st_filter(sf_franks) 
-  
-#create map showing Franks Tract SAV data points
-#this shape file cuts off part of the westernmost section
-#ask UCD for their version because it extends further west
+
+  #create map showing Franks Tract SAV data points
+#this shape file excludes a few field points I'd like to include
+#particularly in the west edge
 (sav_map_ft_only <- ggplot()+
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
     geom_sf(data=cstars_franks, fill= "red", color= "black", shape= 22, size= 3.5)+
     #set bounding box for site
-    coord_sf( 
-      xlim =c(-121.56, -121.64),
-      ylim = c(38.07, 38.02)
-    )+
+   # coord_sf( 
+    #  xlim =c(-121.677, -121.576),
+     # ylim = c(38.07, 38.02)
+    #)+
+    coord_sf(
+      xlim = c(bbox_fr$xmin, bbox_fr$xmax),
+      ylim = c(bbox_fr$ymin, bbox_fr$ymax)
+    ) + 
     theme_bw()+
     ggtitle("Franks Tract")
 )        
