@@ -5,6 +5,7 @@
 library(tidyverse)
 library(lubridate) #working with date-time
 library(PerformanceAnalytics) #plotting correlations
+library(RCurl) #read csv files from GitHub
 
 #to do
 #could calculate mean values for the two relevant divisions
@@ -15,24 +16,29 @@ library(PerformanceAnalytics) #plotting correlations
 #numbers of spaces between columns
 
 #palmer drought severity index (05)
-pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211104"
+#note that these links will need to be updated over time because the date changes as files are updated
+#https://www.ncei.noaa.gov/pub/data/cirs/climdiv/
+pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #palmer hydrological drought index (06)
-phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211104"
+phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #palmer "Z" index (07)
-zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211104"
+zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #modified palmer drought severity index (08)
-pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211104"
+pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211206"
                    ,header=F
                    )
+
+#import dayflow data from the IEP Status and Trends GitHub repo
+dayflow<- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/Status-and-Trends/master/data/dayflow_all.csv")
 
 #format data------------
 
@@ -84,7 +90,17 @@ indices_ww <- indices_w %>%
   pivot_wider(names_from = division
               ,names_prefix = "div_"
               ,values_from = index_05:index_07)
-  
+
+#summarize dayflow by month to match frequency of palmer indices
+dayflow_m<-dayflow %>%
+  mutate(year = year(Date),
+         month = month(Date)) %>% 
+  unite(year_month,year:month,sep="-",remove=T) %>% 
+  group_by(year_month) %>%
+  summarize(OUT_mean = mean(OUT))
+
+
+
 #plots-------------
 
 #make faceted plot showing each index for each division
@@ -106,6 +122,18 @@ sach <- indices_cleaner %>%
   )
 #write these data to share
 #write_csv(sach, "PHDI_Sacramento.csv")
+
+#combine monthly dayflow and sac PHDI
+#first format sac PHDI date column
+sach_m<-sach %>%
+  mutate(year = year(date),
+         month = month(date)) %>% 
+  unite(year_month,year:month,sep="-",remove=T) 
+
+#combine data sets
+comb <- left_join(dayflow_m,sach_m)
+plot(comb$OUT_mean~comb$value)
+cor.test(comb$OUT_mean,comb$value) #cor=0.5253882
 
 #color palette for categories
 pal <- c(
