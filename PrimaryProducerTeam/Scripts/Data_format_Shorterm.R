@@ -91,12 +91,12 @@ usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
 
 
 usgs_chla <- usgs_chla_raw %>%
-  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (µg/L)`, `M Chla (µg/L)`) %>%
-  filter(`M Chla (µg/L)` == "00050") %>% # Only keep 0.7 micron chla values
-  select(-`M Chla (µg/L)`) %>%
+  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (ug/L)`, `M Chla (ug/L)`) %>%
+  filter(`M Chla (ug/L)` == "00050") %>% # Only keep 0.7 micron chla values
+  select(-`M Chla (ug/L)`) %>%
   rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, 
          Datetime= sample_strt_dt, 
-         chla= `Chla (µg/L)`) %>%
+         chla= `Chla (ug/L)`) %>%
   filter(!is.na(chla)) %>%
   mutate(Date= ymd(Date),
          Datetime= ymd_hm(Datetime),
@@ -199,14 +199,14 @@ chla_stations.sf <- st_as_sf(chla_stations, coords= c("Longitude", "Latitude"), 
 
 
 ## Add Region and Subregion and water year type to data frame
-DS_data <- left_join(DS_data_noRegions, st_drop_geometry(chla_stations.sf)) %>%
+DS_dataST <- left_join(DS_data_noRegions, st_drop_geometry(chla_stations.sf)) %>%
   left_join(read_tsv('Data/water_year_type.txt')) %>%
   distinct(.) %>% 
   mutate(ds_year= as.character(ds_year),
          ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
-save(chla_stations.sf, chla_stations, DS_data, DS_regions, DS_waterways,
-     file= "Data/DS_dataframes.Rdata")
+save(chla_stations.sf, chla_stations, DS_dataST, DS_regions, DS_waterways,
+     file= "Data/DS_dataframesST.Rdata")
 
 #write_tsv(DS_data, "Data/DS_Chla_DataCombined_Rexport.tsv")
 
