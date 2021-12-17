@@ -8,7 +8,7 @@ library(emmeans)
 source("Scripts/ggplot_themes.R")
 
 ## Load data frames from Data_format.R
-load("Data/DS_dataframes.Rdata")
+load("Data/DS_dataSTframesST.Rdata")
 
 
 #### DATA FILTERING ####
@@ -72,7 +72,7 @@ return(list(data= data_filt2, stations= stations_filt.sf))
 # Regions to exclude from the analysis
 # Seasons to include in the analysis
 # Minimum result threshold
-chla_data_filt_list <- filter_chla_data(data= DS_data,
+chla_data_filt_list <- filter_chla_data(data= DS_dataST,
                                         min_samps_yr = 12,
                                         min_yrs= 6,
                                         excluded_regions = c("Far West"),
@@ -86,7 +86,7 @@ chla_stations_filt.sf <- chla_data_filt_list$stations
 
 ## Get data frame of unique stations in the filtered data set
 #chla_stations_filt.sf <- chla_stations.sf %>%
-#  filter(Station %in% unique(DS_data_filt$Station)) %>% # Remove Suisun Marsh because only have 2-3 EMP stations in that Region
+#  filter(Station %in% unique(DS_dataST_filt$Station)) %>% # Remove Suisun Marsh because only have 2-3 EMP stations in that Region
 #  distinct(.)
 
 
@@ -162,6 +162,36 @@ ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 
 ## Boxplots of data
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 year.colors <- c("skyblue3", "mistyrose2", "tomato")
+
+## Yeartype only
+ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
+  geom_boxplot(aes(fill= ds_year_type)) +
+  labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+                     labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_fill_manual(values= year.colors, guide= "none") +
+  annotation_logticks(side= "l") +
+  theme_doc
+ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_log10.png", width= 6.5, height= 8, dpi= 300,
+       path= "Figures")
+
+## Yeartype and Regions
+ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
+  geom_boxplot(aes(fill= ds_year_type)) +
+  labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+                     labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_fill_manual(values= year.colors, guide= "none") +
+  annotation_logticks(side= "l") +
+  facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
+  theme_doc +
+  theme(legend.position = c(0.77, 0.15), 
+        legend.direction = "vertical")
+ggsave(last_plot(), filename= "chla_filtered_Region_log10.png", width= 6.5, height= 8, dpi= 300,
+       path= "Figures")
+
 
 ## Region and Season
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
