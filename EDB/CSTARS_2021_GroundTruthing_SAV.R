@@ -195,10 +195,6 @@ weeds_ccourt <- cstars_format %>%
 
 #create map showing Big Break SAV data points
 
-ggplot(BDpvalue, aes(x = (log(mean.m, 10) + log(mean.f, 10))/2,                      
-                     y = log(mean.f/mean.m,10), color = Chromosome)) +             
-  geom_point(aes(size = -log(pvalue,10)))
-
 (sav_map_bb_only <- ggplot()+
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
@@ -291,22 +287,23 @@ fb_spp_cov <- frbb %>%
     rake_mean = mean(rake_index)
     ,rake_se = std.error(rake_index)
     ,rake_n = n()
-    , .groups = 'drop') %>% 
+    , .groups = 'drop'
+    ) %>% 
   #drop unneeded categories
-  filter(species!="Algae" & !is.na(species) & species!= "Unidentified") %>% 
-  #replace NA with zero for standard errors
-  #replace_na(list(rake_se = 0)) %>% 
+  filter(species!="Algae" & !is.na(species) & species!= "Unidentified"& rake_n>1) %>% 
+  mutate(site=as.factor(site)
+         ,species=as.factor(species)
+         ) %>% 
   glimpse()
 
 #plot species mean abundances by site
-(plot_spp_score_avg <-ggplot(fb_spp_cov
-                             , aes(x=species, y= rake_mean
+(plot_spp_score_avg <-ggplot(fb_spp_cov, aes(x=species, y= rake_mean
                                    #, fill=native
                                    ))+
     geom_bar(stat = "identity") + 
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
-    ylab("Mean percent of rake head covered") + xlab("Site") %>%     
-    facet_wrap(~site, nrow=2)
+    ylab("Mean percent of rake head covered") + xlab("Site") +
+    facet_wrap(~site,nrow = 2)
 )
 
 #format df to make plots of total rake coverage
