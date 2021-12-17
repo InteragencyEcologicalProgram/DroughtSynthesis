@@ -24,9 +24,16 @@ sharepoint_path_read <- normalizePath(
   )
 ) 
 
-#read in data
+#read in field data
 cstars <- read_csv(file = paste0(sharepoint_path_read,"./CSTARS_2021_formatted.csv"))
-glimpse(cstars) #looks good. just need to make lat/long into geometry
+#glimpse(cstars) #looks good. just need to make lat/long into geometry
+
+#read in df with native/non-native status
+origin <- read_csv(file = paste0(sharepoint_path_read,"./FranksTractManagement_SpeciesOrigin.csv"))
+
+#add a species missing from the origin df
+org <- origin %>% 
+  add_row(species="Cabomba_caroliniana",native="n")
 
 #read in shape files for Franks Tract, Big Break, and Clifton Court
 #files from the CSTARS lab
@@ -47,7 +54,7 @@ cstars_format <- cstars %>%
            ) %>%   #EPSG code for WGS84
   glimpse()
 
-#Sampling maps-------------
+#First draft of sampling maps-------------
 
 #Note: NAD83 and WGS84 are highly similar and perhaps indistinguishable
 #this explains why transformations between them appear to do nothing
@@ -121,7 +128,7 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
     ggtitle("Clifton Court")
 )
 
-#create subsets of data sets by site---------
+#create subsets of data sets by site using site polygons---------
 
 #Look at CRS for CSTARS shape file forS Franks Tract, Big Break, and Clifton Court
 st_crs(sf_franks) 
@@ -154,7 +161,6 @@ bbox_fr_4326 <- st_bbox(sf_franks_4326)
 #will be used to crop base map in plots
 bbox_bb_4326 <- st_bbox(sf_bbreak_4326)
 
-
 #Filter CSTARS data set to just those within the Franks Tract polygon
 weeds_franks <- cstars_format %>% 
   add_column(site="Franks Tract") %>% 
@@ -173,17 +179,15 @@ weeds_ccourt <- cstars_format %>%
   st_filter(sf_ccourt_4326) 
 #n=0; no sampling in clifton court
 
+#Second draft of sampling maps using site polygons----------
+
 #create map showing Franks Tract SAV data points
 #this shape file excludes two field points in False River I'd like to include 
 (sav_map_ft_only <- ggplot()+
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
-    geom_sf(data=weeds_franks, fill= "dark green", color= "black", shape= 21
-            #use volume of sample for size of points on map
-            ,aes(size=rake_teeth_corr)
-            #, size= 3.5
-    )+
+    geom_sf(data=weeds_franks, fill= "red", color= "black", shape= 22, size= 3.5)+
     #set bounding box for site
     coord_sf(
       xlim = c(bbox_fr_4326$xmin, bbox_fr_4326$xmax),
@@ -194,16 +198,11 @@ weeds_ccourt <- cstars_format %>%
 )        
 
 #create map showing Big Break SAV data points
-
 (sav_map_bb_only <- ggplot()+
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
-    geom_sf(data=weeds_bbreak, fill= "dark green", color= "black", shape= 21
-            #use volume of sample for size of points on map
-               ,aes(size=rake_teeth_corr)
-               #, size= 3.5
-               )+
+    geom_sf(data=weeds_bbreak, fill= "red", color= "black", shape= 22, size= 3.5)+
     #set bounding box for site
     coord_sf(
       xlim = c(bbox_bb_4326$xmin, bbox_bb_4326$xmax),
@@ -271,18 +270,28 @@ unique(weeds_bbreak$species)
 
 #compare the two sites--------------
 
-#combine into one df
+#combine the two site df's into one df
 frbb <- bind_rows(weeds_bbreak,weeds_franks)
 #glimpse(frbb)
 
-#format df to create stacked bar plot showing % rake cover by spp and site
-fb_spp_cov <- frbb %>% 
+#add the spp origin info 
+fbs <- left_join(frbb,org)
+
+#look at set of species
+taxnat<-fbs %>% 
+  #removes geometry
+  st_set_geometry(NULL) %>% 
+  distinct(across(c('species','native')))
+#looks like all species are matched to an origin status as expected
+
+#format df to create bar plot showing % rake cover by spp and site
+fb_spp_cov <- fbs %>% 
   #removes geometry
   st_set_geometry(NULL) %>% 
   #add column that calculates absolute rake coverage by spp within sample
   mutate(rake_index = (rake_teeth_corr/100)*(rake_prop/100)) %>% 
   #calculate summary stats by site and species
-  group_by(site, species) %>% 
+  group_by(site, species,native) %>% 
   summarize(
     rake_mean = mean(rake_index)
     ,rake_se = std.error(rake_index)
@@ -297,18 +306,50 @@ fb_spp_cov <- frbb %>%
   glimpse()
 
 #plot species mean abundances by site
-(plot_spp_score_avg <-ggplot(fb_spp_cov, aes(x=species, y= rake_mean
-                                   #, fill=native
-                                   ))+
+(plot_spp_score_avg <-ggplot(fb_spp_cov, aes(x=species, y= rake_mean, fill=native))+
     geom_bar(stat = "identity") + 
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
     ylab("Mean percent of rake head covered") + xlab("Site") +
     facet_wrap(~site,nrow = 2)
 )
+#some interesting differences between sites
+#BB has S.filiformis and FT doesn't
+#FT has lots of Najas and BB has none
+#FT has little Myriophyllum while BB has lots
+#BB has lots of P. richardsonii while FT has much less
+
+#format df to create bar plot showing mean % rake cover of non-native spp by site
+fb_non <- fbs %>% 
+  #removes geometry
+  st_set_geometry(NULL) %>% 
+  #drop unneeded categories
+  filter(species!="Algae" & !is.na(species) & species!= "Unidentified") %>% 
+  #add column that calculates absolute rake coverage by spp within sample
+  mutate(rake_index = (rake_teeth_corr/100)*(rake_prop/100)) %>% 
+  #sum coverage within samples by origin group (native vs non-native)
+  group_by(site,latitude_wgs84,longitude_wgs84,native) %>% 
+  summarize(rake_org_sum=sum(rake_index)) %>% 
+  #calculate summary stats by site and origin
+  group_by(site, native) %>% 
+  summarize(
+    org_mean = mean(rake_org_sum)
+    ,org_se = std.error(rake_org_sum)
+    , .groups = 'drop'
+  ) %>% 
+  glimpse()
+
+#plot origin type mean abundances by site
+(plot_org_avg <-ggplot(fb_non, aes(x=site, y= org_mean, fill=native))+
+    geom_bar(position=position_dodge(0.95),stat = "identity") + 
+    geom_errorbar(aes(ymin=org_mean-org_se, ymax=org_mean+org_se),position=position_dodge(0.95), width = 0.2) +
+    ylab("Mean percent of rake head covered") + xlab("Site") 
+)
 
 #format df to make plots of total rake coverage
-fb_cov <- frbb %>% 
-  st_set_geometry(NULL) %>%  #removes geometry
+fb_cov <- fbs %>% 
+  #removes geometry
+  st_set_geometry(NULL) %>%  
+  #reduce data set to just total rake coverage, ignoring spp comp level 
   distinct(site,latitude_wgs84,longitude_wgs84,rake_teeth_corr)
 
 #plot histogram of sample volume by site
@@ -328,15 +369,59 @@ fb_avg <- fb_cov %>%
     ,rake_se = std.error(rake_teeth_corr)
     , .groups = 'drop')
 
-#plot mean and standard deviation for sample volume by site
+#plot mean and standard error for sample volume by site
 (plot_site_avg <-ggplot(fb_avg, aes(x=site, y=rake_mean))+ 
     geom_bar(stat = "identity") + 
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
     ylab("Mean percent of rake head covered") + xlab("Site")
     )
 
-#plot stacked bar plot showing frequency of species or simply native/non-native
+#redo sampling maps with points indicating size of the sav sample---------
 
-#
+#format df to make maps of total rake coverage
+#just need to add geometry back into df
+fb_cov_g <- fb_cov %>% 
+  #specify the crs which is wgs84
+  st_as_sf(coords = c(x='longitude_wgs84',y='latitude_wgs84'), 
+           crs = 4326
+           ,remove=F #retains original columns
+  ) %>%   #EPSG code for WGS84
+  glimpse()
 
+#create map showing Franks Tract SAV data points
+(sav_map_ft_only2 <- ggplot()+
+    #plot waterways base layer
+    geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
+    #plot SAV sampling points
+    geom_sf(data=fb_cov_g, fill= "dark green", color= "black", shape= 21
+            #use volume of sample for size of points on map
+            ,aes(size=rake_teeth_corr)
+    )+
+    #set bounding box for site
+    coord_sf(
+      xlim = c(bbox_fr_4326$xmin, bbox_fr_4326$xmax),
+      ylim = c(bbox_fr_4326$ymin, bbox_fr_4326$ymax)
+    ) + 
+    theme_bw()+
+    ggtitle("Franks Tract")
+)        
+
+#create map showing Big Break SAV data points
+
+(sav_map_bb_only2 <- ggplot()+
+    #plot waterways base layer
+    geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
+    #plot SAV sampling points
+    geom_sf(data=fb_cov_g, fill= "dark green", color= "black", shape= 21
+            #use volume of sample for size of points on map
+            ,aes(size=rake_teeth_corr)
+    )+
+    #set bounding box for site
+    coord_sf(
+      xlim = c(bbox_bb_4326$xmin, bbox_bb_4326$xmax),
+      ylim = c(bbox_bb_4326$ymin, bbox_bb_4326$ymax)
+    ) + 
+    theme_bw()+
+    ggtitle("Big Break")
+)        
 
