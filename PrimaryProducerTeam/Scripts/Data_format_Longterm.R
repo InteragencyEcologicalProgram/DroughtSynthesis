@@ -63,8 +63,28 @@ idb_chla <- idb_raw %>%
                                ifelse(month >= 6 & month <= 8, "Summer",
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
-  distinct(.) 
+  distinct(.) %>% 
+  filter(year < 2021)
   
+
+## Get 2021 EMP data 
+## this file from rosie only includes data from June-Sept 2021. Unless can find full 2021 EMP data, will not include in analysis
+
+# emp_2021 <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
+#   filter(Source == "EMP") %>% 
+#   select(Source, Station, Date, Chlorophyll) %>%
+#   rename(chla= Chlorophyll) %>%
+#   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
+#          Date= mdy(Date),
+#          Year= year(Date)) %>%
+#   filter(str_detect(Station, "EZ") == FALSE) %>% # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
+#   filter(Year > 2019)
+  
+  #  left_join(., idb_stations) #%>%
+#left_join(., DOP_stations)
+
+
+
 
 ## Make Simple Features (sf) object
 # https://mattherman.info/blog/point-in-poly/
