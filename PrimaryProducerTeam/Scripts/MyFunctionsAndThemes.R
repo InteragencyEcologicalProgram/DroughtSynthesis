@@ -2,6 +2,7 @@ library(ggplot2)
 library(lemon)
 library(ggsci)
 library(cowplot)
+library(colorspace)
 
 #### CUSTOM FUNCTIONS ####
 filter_chla_data <- function(data, min_samps_yr, min_yrs, excluded_regions, seasons, min_result){
@@ -122,5 +123,5 @@ theme_map <- theme(panel.grid = element_line(color= "grey92", size= 1),
                    legend.background = element_rect(size= 0.25, color="black", fill= "transparent"),
                    legend.key = element_blank(),
                    strip.background=element_rect(fill="transparent", color="transparent"),
-                   strip.text = element_text(size= 14)
+                   strip.text = element_text(size= 12)
                    )
