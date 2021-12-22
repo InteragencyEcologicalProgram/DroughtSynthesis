@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(deltamapr) # https://github.com/InteragencyEcologicalProgram/deltamapr
 library(sf)
-source("Scripts/ggplot_themes.R")
+source("Scripts/MyFunctionsAndThemes.R")
 
 ## Program Sources of Data
 # DOP= Directed Outflows Project (US Bureau of Reclamation)
@@ -40,6 +40,12 @@ DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
   st_join(., DS_regions, left= FALSE,
           join= st_overlaps) # filter the Delta Waterways to include only DS regions
 
+
+## Load Water Year Types (Based on Sacramento Index)
+wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>% 
+  select(Year, Yr_type) %>% 
+  rename(year= Year, ds_year_type= Yr_type)
+
 ## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
    # devtools::install_github("sbashevkin/discretewq")
    # library(discretewq)
@@ -57,13 +63,8 @@ idb_chla <- idb_raw %>%
                                ifelse(month >= 6 & month <= 8, "Summer",
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
-  distinct(.)
+  distinct(.) 
   
-  
-idb_stations <- select(idb, Source, Station, Latitude, Longitude) %>%
-  distinct(.)
-
-
 
 ## Make Simple Features (sf) object
 # https://mattherman.info/blog/point-in-poly/
@@ -81,10 +82,10 @@ chla_stationsLT.sf <- idb_chla %>%
 
 ## Add Region and Subregion and water year type to data frame
 DS_chlaLT <- left_join(idb_chla, st_drop_geometry(chla_stationsLT.sf)) %>%
-  left_join(read_tsv('Data/water_year_type.txt')) %>%
-  distinct(.) %>% 
+  left_join(., wy_types) %>% 
+  #left_join(read_tsv('Data/water_year_type.txt')) %>%
   mutate(ds_year= as.character(ds_year),
-         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought"))) %>%
+         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
 save(chla_stationsLT.sf, DS_chlaLT, DS_regions, DS_waterways,
      file= "Data/DS_dataframesLT.Rdata")
