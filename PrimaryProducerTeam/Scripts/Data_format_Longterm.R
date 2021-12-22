@@ -64,7 +64,7 @@ idb_chla <- idb_raw %>%
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
   distinct(.) %>% 
-  filter(year < 2021)
+  filter(ds_year < 2021)
   
 
 ## Get 2021 EMP data 
