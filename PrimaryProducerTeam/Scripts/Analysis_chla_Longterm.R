@@ -92,23 +92,40 @@ Year_type_summary <- chla_data_stats %>%
 #rm(DS_chlaLT, DS_regions, DS_waterways, chla_data_filt_list, chla_data_filt)
 options(contrasts = c("contr.sum","contr.poly"))
 
-fit_log10.1 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station),
+
+## Model 1: chla ~ year type
+fit_log10.1 <- lmer(chlaAvg_log10 ~ ds_year_type + (1|Station),
                     data= chla_data_stats)
+
 summary(fit_log10.1)
 plot(fit_log10.1)
 anova(fit_log10.1, type= 2, ddf= "Satterthwaite")
+emm_year1 <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
+save(emm_year1, file= "Data/emm_year1.Rdata")
+pairs(emm_year1)
 
-emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
-year_means <- as_tibble(pairs(emm_year))
+# emmeans results for boxplots
+emm_year_results1 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
+                            chlaAvg_log10= rep(2.8, 5),
+                            emm_group= c("a", "ab", "cd", "c", "bd"))
+
+
+## Model 2: chla ~ year type + Season + Region
+fit_log10.2 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station),
+                    data= chla_data_stats)
+summary(fit_log10.2)
+plot(fit_log10.2)
+anova(fit_log10.2, type= 2, ddf= "Satterthwaite")
+emm_year2 <- emmeans(fit_log10.2, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
+save(emm_year2, file= "Data/emm_year2.Rdata")
+pairs(emm_year2)
+
+
 emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
 pairs(emm_Region)
 emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
 pairs(emm_season)
 
-
-emm_year_results <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
-                           chlaAvg_log10= rep(2.7, 5),
-                           emm_group= c("a", "b", "c", "c", "b"))
 
 
 
@@ -153,7 +170,7 @@ ggsave(last_plot(), filename= "station_map_chla_filt_LT.png", width= 6.5, height
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type)) +
-  geom_text(data= emm_year_results, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
+  geom_text(data= emm_year_results1, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
