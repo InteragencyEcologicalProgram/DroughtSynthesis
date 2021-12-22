@@ -107,7 +107,7 @@ pairs(emm_year1)
 # emmeans results for boxplots
 emm_year_results1 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
                             chlaAvg_log10= rep(2.8, 5),
-                            emm_group= c("a", "ab", "cd", "c", "bd"))
+                            emm_group= c("a", "ab", "c", "c", "b"))
 
 
 ## Model 2: chla ~ year type + Season + Region
@@ -134,7 +134,7 @@ pairs(emm_season)
 ### FIGURES ####
 
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
-yr_type_labels <- c("Critical", "Dry", "Below\nAvg.", "Above\nAvg.", "Wet")
+yr_type_labels <- c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet")
 
 ggplot(year_summary, aes(x= ds_year, y= n)) +
   geom_col(aes(fill= Source)) +
@@ -175,21 +175,21 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
   scale_x_discrete(labels= yr_type_labels) +
-  scale_fill_discrete_diverging(rev= TRUE, name= "Water year") +
+  scale_fill_discrete_diverging(rev= TRUE, name= "Water year", guide= "none") +
   annotation_logticks(side= "l") +
-  guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
+  #guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
   theme_doc +
   theme(legend.position = "top")
 ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_LT.png", width= 6.5, height= 5, dpi= 300,
       path= "Figures")
 
 ## Year time series
-ggplot(chla_data_stats, aes(x= year, y= chlaAvg_log10)) +
+ggplot(chla_data_stats, aes(x= ds_year, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type)) +
   labs(x= "Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
-  #scale_x_discrete() +
+  scale_x_discrete(expand= c(0.02, 0)) +
   scale_fill_discrete_diverging(rev= TRUE, name= "Water year") +
   annotation_logticks(side= "l") +
   guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
@@ -207,10 +207,10 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
   scale_x_discrete(labels= yr_type_labels) +
-  scale_fill_discrete_diverging(rev= TRUE, name= "Water year") +
+  scale_fill_discrete_diverging(rev= TRUE, name= "Water year", guide= "none") +
   annotation_logticks(side= "l") +
   facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
-  guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
+  #guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
   theme_doc +
   theme(legend.position = "top")
   #theme(legend.position = c(0.77, 0.15), 

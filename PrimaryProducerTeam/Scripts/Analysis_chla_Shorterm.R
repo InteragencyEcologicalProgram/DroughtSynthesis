@@ -105,6 +105,25 @@ ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 
        path= "Figures")
 
 
+## Station map
+ggplot() +
+  #geom_sf(data= filter(DS_regions, Region != "Suisun Marsh"), aes(fill= Region), alpha= 0.5) +
+  geom_sf(data= DS_regions, aes(fill= Region), alpha= 0.5) +
+  #geom_sf(data= DS_regions, aes(color= Region), fill= "transparent", size= 3) +
+  geom_sf(data= DS_waterways, fill= "skyblue3", color= "black") +
+  geom_sf(data= chla_stations_filt.sf, fill= "white", color= "black", shape= 21, size= 4) +
+  scale_x_continuous(breaks= seq(-122, -121, by= 0.5)) +
+  scale_y_continuous(breaks= seq(37.6, 38.6, by= 0.5)) +
+  coord_sf() +
+  facet_wrap(~Source, nrow= 2) +
+  theme_map +
+  theme(legend.position = "right")
+#theme(legend.position = c(0.8, 0.2))
+ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 6.5, height= 5, dpi= 600,
+       path= "Figures")
+
+
+
 ## Boxplots of data
 season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 year.colors <- c("skyblue3", "mistyrose2", "tomato")
