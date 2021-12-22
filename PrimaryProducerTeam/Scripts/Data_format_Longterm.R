@@ -22,21 +22,6 @@ source("Scripts/ggplot_themes.R")
 # NAD83 = 4269
 
 
-#### FUNCTIONS ####
-add_DateTime <- function(df){
-  df2 <- df %>% 
-    mutate(year= year(Date),
-           month= month(Date),
-           wyear= as.character(smwrBase::waterYear(Date)), #smwrBase a USGS package: https://github.com/USGS-R/smwrBase
-           ds_year= ifelse(month == 12, year+1, year), # DS analysis will use modified year with december as the first month of the subsequent year
-           Julian= yday(Date),
-           DOY= ymd(str_c("1904", month(Date), day(Date), sep= '-')), #1904 was a leap year
-           LatLong= str_c(Latitude, Longitude, sep= " , "))
-  return(df2)
-}
-
-
-
 
 ## Load Drought Synthesis (DS) Regions
 rosie_regions <- read_csv("Data/Rosies_regions.csv")
@@ -102,12 +87,8 @@ DS_chlaLT <- left_join(idb_chla, st_drop_geometry(chla_stationsLT.sf)) %>%
          ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
 save(chla_stationsLT.sf, DS_chlaLT, DS_regions, DS_waterways,
-     file= "Data/DS_LTdataframes.Rdata")
+     file= "Data/DS_dataframesLT.Rdata")
 
-ggplot() +
-  geom_sf(data= DS_regions) + 
-  geom_sf(data= DS_waterways) +
-  geom_sf(data= chla_stationsLT.sf) +
-  coord_sf()
+
 
 
