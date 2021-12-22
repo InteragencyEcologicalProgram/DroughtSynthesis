@@ -44,7 +44,7 @@ DS_waterways <-  deltamapr::WW_Delta %>% # NAD83
 ## Load Water Year Types (Based on Sacramento Index)
 wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>% 
   select(Year, Yr_type) %>% 
-  rename(year= Year, ds_year_type= Yr_type)
+  rename(ds_year= Year, ds_year_type= Yr_type)
 
 ## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
    # devtools::install_github("sbashevkin/discretewq")
