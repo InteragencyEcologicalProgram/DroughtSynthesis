@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(deltamapr) # https://github.com/InteragencyEcologicalProgram/deltamapr
 library(sf)
-source("Scripts/ggplot_themes.R")
+source("Scripts/MyFunctionsAndThemes.R")
 
 ## Program Sources of Data
 # DOP= Directed Outflows Project (US Bureau of Reclamation)
@@ -159,13 +159,7 @@ DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
   full_join(., emp_2021) %>% 
   filter(Longitude > -122.145 & Latitude > 37.7) %>% # FILTER BY the regions of interest for Drought Synthesis
   mutate(Station= ifelse(is.na(Station), ShortStationName, Station)) %>%
-  mutate(year= year(Date),
-         month= month(Date),
-         wyear= as.character(smwrBase::waterYear(Date)), #smwrBase a USGS package: https://github.com/USGS-R/smwrBase
-         ds_year= ifelse(month == 12, year+1, year), # DS analysis will use modified year with december as the first month of the subsequent year
-         Julian= yday(Date),
-         DOY= ymd(str_c("1904", month(Date), day(Date), sep= '-')), #1904 was a leap year
-         LatLong= str_c(Latitude, Longitude, sep= " , ")) %>%
+  add_DateTime() %>% 
   filter(ds_year >= 2011) %>% ## Filter data for the Short Term Synthesis
   # SEASON
   mutate(Season= ifelse(month == 12 | month == 1 | month == 2, "Winter",
@@ -208,12 +202,19 @@ chla_stations.sf <- st_as_sf(chla_stations, coords= c("Longitude", "Latitude"), 
   select(-SQM)
 
 
+## Load Water Year Types (Based on Sacramento Index)
+wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>% 
+  select(Year, Yr_type) %>% 
+  rename(ds_year= Year, DWR_YrType= Yr_type)
+
 ## Add Region and Subregion and water year type to data frame
 DS_dataST <- left_join(DS_data_noRegions, st_drop_geometry(chla_stations.sf)) %>%
   left_join(read_tsv('Data/water_year_type.txt')) %>%
+  left_join(., wy_types) %>% 
   distinct(.) %>% 
   mutate(ds_year= as.character(ds_year),
-         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought"))) %>%
+         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought")),
+         DWR_YrType= factor(DWR_YrType, ordered= TRUE, levels= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
 save(chla_stations.sf, chla_stations, DS_dataST, DS_regions, DS_waterways,
      file= "Data/DS_dataframesST.Rdata")
