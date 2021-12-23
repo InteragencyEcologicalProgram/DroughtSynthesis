@@ -46,7 +46,25 @@ wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>%
   select(Year, Yr_type) %>% 
   rename(ds_year= Year, ds_year_type= Yr_type)
 
-## Get WQ data from integrated database (https://github.com/sbashevkin/discretewq)
+## Get 2021 EMP data 
+## March-Oct 2021. Data was not collected January-February due to COVID
+emp_colnames <- c("Station", "StationNum", "Datetime", "Depth", "chla")
+
+emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
+  rename_with(~emp_colnames) %>% 
+  select(Station, Datetime, chla) %>% 
+  mutate(Station= str_replace(Station, "\\ -.*$", ""),
+         Source= "EMP",
+         Datetime= mdy_hm(Datetime),
+         Date= as.Date(Datetime),
+         chla= as.numeric(chla)) %>% 
+  mutate(Station= ifelse(Station == "Sacramento River @ Hood", "C3A", Station),
+         Station= ifelse(Station == "NZ068 in Sacramento River", "NZ068", Station),
+         chla= ifelse(is.na(chla), 0.25, chla)) %>% 
+  filter(!str_detect(Station, "Entrapment"))
+
+
+## Get 1975-2020 WQ data from integrated database (https://github.com/sbashevkin/discretewq)
    # devtools::install_github("sbashevkin/discretewq")
    # library(discretewq)
 idb_raw <- discretewq::wq(Sources = c("EMP", "USGS")) # Only EMP and USGS go back to the 1970s
@@ -57,33 +75,14 @@ idb_chla <- idb_raw %>%
   rename(chla= Chlorophyll) %>%
   mutate(Source= ifelse(Source == "USGS", "USGS-SFBRMP", Source)) %>% #USGS San Francisco Bay Research and Monitoring Project, https://www.usgs.gov/mission-areas/water-resources/science/water-quality-san-francisco-bay-research-and-monitoring?qt-science_center_objects=0#qt-science_center_objects
   filter(str_detect(Station, "EZ") == FALSE) %>% # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
+  full_join(., emp_2021) %>% 
   add_DateTime %>% 
   mutate(Season= ifelse(month == 12 | month == 1 | month == 2, "Winter",
                         ifelse(month >= 3 & month <= 5, "Spring",
                                ifelse(month >= 6 & month <= 8, "Summer",
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
-  distinct(.) %>% 
-  filter(ds_year < 2021)
-  
-
-## Get 2021 EMP data 
-## this file from rosie only includes data from June-Sept 2021. Unless can find full 2021 EMP data, will not include in analysis
-
-# emp_2021 <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
-#   filter(Source == "EMP") %>% 
-#   select(Source, Station, Date, Chlorophyll) %>%
-#   rename(chla= Chlorophyll) %>%
-#   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
-#          Date= mdy(Date),
-#          Year= year(Date)) %>%
-#   filter(str_detect(Station, "EZ") == FALSE) %>% # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
-#   filter(Year > 2019)
-  
-  #  left_join(., idb_stations) #%>%
-#left_join(., DOP_stations)
-
-
+  distinct(.)
 
 
 ## Make Simple Features (sf) object
