@@ -5,10 +5,10 @@ library(tidyverse)
 library(lme4)
 library(lmerTest)
 library(emmeans)
-source("Scripts/ggplot_themes.R")
+source("Scripts/MyFunctionsAndThemes.R")
 
 ## Load data frames from Data_format.R
-load("Data/DS_dataSTframesST.Rdata")
+load("Data/DS_dataframesST.Rdata")
 
 
 #### DATA FILTERING ####
@@ -100,8 +100,9 @@ ggplot(year_summary, aes(x= ds_year, y= n)) +
   facet_rep_wrap(~Region, ncol= 1) +
   labs(x= "Station-months per year", y= "Count") +
   scale_y_continuous(expand= c(0, 0), breaks= seq(0, 600, by= 100), labels= c("0", "", "200", "", "400", "", "600")) +
-  theme_doc
-ggsave(last_plot(), filename= "chla_year_sample_summary.png", width= 8, height= 6, dpi= 300,
+  theme_doc +
+  theme(legend.position = "top")
+ggsave(last_plot(), filename= "chla_year_sample_summary_ST.png", width= 6.5, height= 6, dpi= 300,
        path= "Figures")
 
 
@@ -138,8 +139,26 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   scale_fill_manual(values= year.colors, guide= "none") +
   annotation_logticks(side= "l") +
   theme_doc
-ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_log10.png", width= 6.5, height= 8, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
+
+## Year time series
+ggplot(chla_data_stats, aes(x= ds_year, y= chlaAvg_log10)) +
+  geom_boxplot(aes(fill= ds_year_type)) +
+  labs(x= "Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+                     labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_x_discrete(expand= c(0.07, 0)) +
+  scale_fill_manual(values= year.colors, labels= c("Wet", "Below\nAvg", "Drought"), name= "Year type") +
+  #scale_fill_discrete_diverging(rev= TRUE, name= "Water year") +
+  annotation_logticks(side= "l") +
+  theme_doc +
+  theme(axis.text.x = element_text(angle= 90, vjust= 0.5),
+        legend.position = "top")
+ggsave(last_plot(), filename= "chla_filtered_TimeSeries_ST.png", width= 6.5, height= 5, dpi= 300,
+       path= "Figures")
+
+
 
 ## Yeartype and Regions
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
@@ -154,7 +173,7 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme_doc +
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
-ggsave(last_plot(), filename= "chla_filtered_Region_log10.png", width= 6.5, height= 8, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_Region_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
 
@@ -171,7 +190,7 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme_doc +
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
-ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_log10.png", width= 6.5, height= 8, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
 ## Year Type and Season
@@ -187,7 +206,7 @@ ggplot(chla_data_stats, aes(x= Season, y= chlaAvg_log10)) +
   theme_doc +
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
-ggsave(last_plot(), filename= "chla_filtered_SeasonRegion2_log10.png", width= 6.5, height= 8, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_SeasonRegion2_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
 
