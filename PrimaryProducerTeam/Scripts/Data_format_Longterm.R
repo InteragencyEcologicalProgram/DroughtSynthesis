@@ -46,6 +46,18 @@ wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>%
   select(Year, Yr_type) %>% 
   rename(ds_year= Year, ds_year_type= Yr_type)
 
+
+## Get 1975-2020 WQ data from integrated database (https://github.com/sbashevkin/discretewq)
+# devtools::install_github("sbashevkin/discretewq")
+# library(discretewq)
+idb_raw <- discretewq::wq(Sources = c("EMP", "USGS")) # Only EMP and USGS go back to the 1970s
+
+emp_stations <- idb_raw %>% 
+  filter(Source == "EMP") %>% 
+  select(Source, Station, Latitude, Longitude) %>%
+  distinct(.)
+
+
 ## Get 2021 EMP data 
 ## March-Oct 2021. Data was not collected January-February due to COVID
 emp_colnames <- c("Station", "StationNum", "Datetime", "Depth", "chla")
@@ -61,14 +73,12 @@ emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
   mutate(Station= ifelse(Station == "Sacramento River @ Hood", "C3A", Station),
          Station= ifelse(Station == "NZ068 in Sacramento River", "NZ068", Station),
          chla= ifelse(is.na(chla), 0.25, chla)) %>% 
-  filter(!str_detect(Station, "Entrapment"))
+  filter(!str_detect(Station, "Entrapment")) %>% 
+  left_join(., emp_stations)
 
 
-## Get 1975-2020 WQ data from integrated database (https://github.com/sbashevkin/discretewq)
-   # devtools::install_github("sbashevkin/discretewq")
-   # library(discretewq)
-idb_raw <- discretewq::wq(Sources = c("EMP", "USGS")) # Only EMP and USGS go back to the 1970s
 
+## Format idb data and combine with EMP 2021 data
 idb_chla <- idb_raw %>%
   filter(!is.na(Chlorophyll)) %>% # remove rows with NA for both chla and mc_rating
   select(Source, Station, Latitude, Longitude, Field_coords, Date, Datetime, Depth, Chlorophyll) %>%
@@ -83,6 +93,8 @@ idb_chla <- idb_raw %>%
                                       ifelse(month >= 9 & month <= 11, "Fall", NA)))),
          Season= factor(Season, levels= c("Winter", "Spring", "Summer", "Fall"))) %>% 
   distinct(.)
+
+
 
 
 ## Make Simple Features (sf) object
