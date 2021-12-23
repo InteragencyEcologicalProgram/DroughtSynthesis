@@ -50,7 +50,7 @@ chla_data_stats <- chla_data_filt %>%
 ## WRITE CSV FILE
 #chla_data_stats %>% 
 #  select(Date, everything(), -chlaAvg_log) %>% 
-#   write_csv(., "Data/chla_data_stats.csv")
+#   write_csv(., "Data/chla_data_stats_ST.csv")
 
 
 ## Summary Tables of data
@@ -110,9 +110,9 @@ save(emm_year1, file= "Data/emm_year1_ST.Rdata")
 pairs(emm_year1)
 
 # emmeans results for boxplots
-emm_year_results1 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
-                            chlaAvg_log10= rep(2.8, 5),
-                            emm_group= c("a", "ab", "c", "c", "b"))
+emm_year_results1 <- tibble(ds_year_type= c("1_Wet", "2_Below_avg", "3_Drought"),
+                            chlaAvg_log10= rep(2.5, 3),
+                            emm_group= c("a", "b", "a"))
 
 
 ## Model 2: chla ~ year type + Season + Region
@@ -269,7 +269,7 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme_doc #+
   theme(legend.position = c(0.77, 0.15), 
         legend.direction = "vertical")
-ggsave(last_plot(), filename= "chla_filtered_Season_log10.png", width= 6.5, height= 4, dpi= 300,
+ggsave(last_plot(), filename= "chla_filtered_Season_ST.png", width= 6.5, height= 4, dpi= 300,
        path= "Figures")
 
 ## Density plot
