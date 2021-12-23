@@ -43,9 +43,9 @@ chla_data_stats <- chla_data_filt %>%
   ungroup()
 
 ## WRITE CSV FILE
-#chla_data_stats %>% 
-#  select(Date, everything(), -chlaAvg_log) %>% 
-#   write_csv(., "Data/chla_data_statsLT.csv")
+chla_data_stats %>%
+ select(Date, everything(), -chlaAvg_log) %>%
+  write_csv(., "Data/chla_data_statsLT.csv")
 
 
 ## Summary Tables of data
@@ -100,11 +100,15 @@ fit_log10.1 <- lmer(chlaAvg_log10 ~ ds_year_type + (1|Station),
 summary(fit_log10.1)
 plot(fit_log10.1)
 anova(fit_log10.1, type= 2, ddf= "Satterthwaite")
-emm_year1 <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
-save(emm_year1, file= "Data/emm_year1.Rdata")
+#emm_year1 <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_year1, file= "Data/emm_year1_LT.Rdata")
+load("Data/emm_year1_LT.Rdata")
 pairs(emm_year1)
+plot(emm_year1, comparisons= TRUE)
+pwpm(emm_year1)
 
-# emmeans results for boxplots
+
+# emmeans1 results for boxplots
 emm_year_results1 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
                             chlaAvg_log10= rep(2.8, 5),
                             emm_group= c("a", "ab", "c", "c", "b"))
@@ -116,18 +120,32 @@ fit_log10.2 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station)
 summary(fit_log10.2)
 plot(fit_log10.2)
 anova(fit_log10.2, type= 2, ddf= "Satterthwaite")
-emm_year2 <- emmeans(fit_log10.2, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
-save(emm_year2, file= "Data/emm_year2.Rdata")
+#ref_grid(fit_log10.2)@grid
+#emm_year2 <- emmeans(fit_log10.2, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_year2, file= "Data/emm_year2_LT.Rdata")
+load("Data/emm_year2_LT.Rdata")
 pairs(emm_year2)
+plot(emm_year2, comparisons= TRUE)
+pwpm(emm_year2)
+
+# emmeans1 results for boxplots
+emm_year_results2 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
+                            chlaAvg_log10= rep(2.8, 5),
+                            emm_group= c("", "a", "b", "b", "a"))
 
 
-emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
-pairs(emm_Region)
-emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
-pairs(emm_season)
 
 
+## Region is non-significant in ANOVA
 
+#emm_Region <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_Region, file= "Data/emm_Region.Rdata")
+#load("Data/emm_Region.Rdata")
+#pairs(emm_Region)
+
+#emm_season <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_season, file= "Data/emm_season.Rdata")
+#pairs(emm_season)
 
 
 
@@ -170,7 +188,7 @@ ggsave(last_plot(), filename= "station_map_chla_filt_LT.png", width= 6.5, height
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type)) +
-  geom_text(data= emm_year_results1, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
+  geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -282,21 +300,3 @@ ggplot(chla_data_stats, aes(x= chlaAvg_log10)) +
 ggsave(last_plot(), filename= "chla_filtered_density_LT.png", width= 6.5, height= 4, dpi= 300,
        path= "Figures")
 
-
-
-
-
-
-ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
-  geom_boxplot(aes(fill= ds_year_type)) +
-  geom_text(data= emm_year_results, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
-  labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
-  scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
-                     labels= c("0.01", "0.1", "1", "10", "100"),
-                     expand= c(0.02, 0)) +
-  scale_x_discrete(labels= yr_type_labels) +
-  scale_fill_discrete_diverging(rev= TRUE, name= "Water year") +
-  annotation_logticks(side= "l") +
-  guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
-  theme_doc +
-  theme(legend.position = "top")
