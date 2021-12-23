@@ -58,6 +58,8 @@ idb <- idb_raw %>%
 idb_stations <- select(idb, Source, Station, Latitude, Longitude) %>%
   distinct(.)
 
+
+
 ## Read DWR South Delta Monitoring data (North Central Regional Office, NCRO)
 dwr_Sdelta_stations <- read_csv('Data/SDelta_Station_lat_long.csv') %>%
   rename(HABstation= `HAB station ID`)
@@ -102,51 +104,59 @@ usgs_chla <- usgs_chla_raw %>%
          Datetime= ymd_hm(Datetime),
          Source= "USGS-CAWSC")
 
+
+
+
 ## Read in additional HABs Data from Fall Midwater Trawl, Directed Outflows Project, and EMP
-#read_csv("Data/HABs2021.csv")
-#Microcystis_4NOV2021
-# habs_add <- read_csv("Data/HABs2021.csv") %>%
-#   select(Source, Station, Datex, Microcystis) %>%
-#   rename(mc_rating= Microcystis, Date= Datex) %>%
-#   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
-#          Station= str_c(Source, Station, sep= " ")) %>%
-#   left_join(., idb_stations)
-
-# habs_add <- readxl::read_xlsx("Data/WQ_HABs_w2021.xlsx", sheet= "in", n_max= 18434) %>%
-#   select(Source, Station, Date, Microcystis, Chlorophyll) %>%
-#   rename(mc_rating= Microcystis) %>%
-#   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station)) %>%
-#          #Station= str_c(Source, Station, sep= " ")) %>%
-#   left_join(., idb_stations)
-
-## Directed Outflow Project stations
-# DOP_stations <- readxl::read_xlsx("Data/DOP_WQ_ 2019_2021_11-2-2021.xlsx") %>%
-#   select(site_id, start_latitude, start_longitude) %>%
-#   distinct(.) %>%
-#   rename(Station= site_id, Latitude= start_latitude, Longitude= start_longitude)
-
-
 habs_add <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
   select(Source, Station, Date, Microcystis, Chlorophyll, Latitude, Longitude) %>%
   rename(mc_rating= Microcystis, chla= Chlorophyll) %>%
   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
          Date= mdy(Date)) %>%
   filter(str_detect(Station, "EZ") == FALSE) %>% # Remove the EMP stations EZ2, EZ6, EZ2-SJR, and EZ6-SJR (These have variable lat/longs, need to follow up with Ted on what they mean)
-  left_join(., idb_stations) #%>%
+  left_join(., idb_stations) %>% 
+  add_DateTime() #%>%
   #left_join(., DOP_stations)
-
 
 habs_add %>%
   group_by(Source) %>%
   summarize(totNA= sum(is.na(Latitude)))
 
-
 #habs_add_stations %in% idb_stations
+
+## Get 2021 EMP data 
+## March-Oct 2021. Data was not collected January-February due to COVID
+emp_colnames <- c("Station", "StationNum", "Datetime", "Depth", "chla")
+
+# Get 2021 MC-rating values from EMP from the habs_add data frame
+emp_2021_mc <- habs_add %>% 
+  filter(ds_year == 2021 & Source == "EMP") %>% 
+  select(Source, Station, Date, mc_rating)
+
+
+emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
+  rename_with(~emp_colnames) %>% 
+  select(Station, Datetime, chla) %>% 
+  mutate(Station= str_replace(Station, "\\ -.*$", ""),
+         Source= "EMP",
+         Datetime= mdy_hm(Datetime),
+         Date= as.Date(Datetime),
+         chla= as.numeric(chla)) %>% 
+  mutate(Station= ifelse(Station == "Sacramento River @ Hood", "C3A", Station),
+         Station= ifelse(Station == "NZ068 in Sacramento River", "NZ068", Station),
+         chla= ifelse(is.na(chla), 0.25, chla)) %>% 
+  filter(!str_detect(Station, "Entrapment")) %>% 
+  left_join(., idb_stations) %>% 
+  left_join(., emp_2021_mc)
+
+
+
 
 ## Combine data and filter to the Short Term Synthesis time period 2011-present
 DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
   full_join(., usgs_chla) %>%
-  full_join(., habs_add) %>%
+  full_join(., filter(habs_add, !(year == 2021 & Source == "EMP"))) %>%
+  full_join(., emp_2021) %>% 
   filter(Longitude > -122.145 & Latitude > 37.7) %>% # FILTER BY the regions of interest for Drought Synthesis
   mutate(Station= ifelse(is.na(Station), ShortStationName, Station)) %>%
   mutate(year= year(Date),
