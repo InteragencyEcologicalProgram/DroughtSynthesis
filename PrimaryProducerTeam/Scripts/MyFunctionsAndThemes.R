@@ -59,14 +59,14 @@ filter_chla_data <- function(data, min_samps_yr, min_yrs, excluded_regions, seas
 }
 
 add_DateTime <- function(df){
+  library(lubridate)
   df2 <- df %>% 
     mutate(year= year(Date),
            month= month(Date),
            wyear= as.character(smwrBase::waterYear(Date)), #smwrBase a USGS package: https://github.com/USGS-R/smwrBase
            ds_year= ifelse(month == 12, year+1, year), # DS analysis will use modified year with december as the first month of the subsequent year
            Julian= yday(Date),
-           DOY= ymd(str_c("1904", month(Date), day(Date), sep= '-')), #1904 was a leap year
-           LatLong= str_c(Latitude, Longitude, sep= " , "))
+           DOY= ymd(str_c("1904", month(Date), day(Date), sep= '-'))) #1904 was a leap year
   return(df2)
 }
 
