@@ -60,6 +60,7 @@ filter_chla_data <- function(data, min_samps_yr, min_yrs, excluded_regions, seas
 
 add_DateTime <- function(df){
   library(lubridate)
+  
   df2 <- df %>% 
     mutate(year= year(Date),
            month= month(Date),
