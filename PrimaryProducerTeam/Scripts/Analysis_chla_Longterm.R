@@ -42,6 +42,11 @@ chla_data_stats <- chla_data_filt %>%
   ) %>% 
   ungroup()
 
+## Year Type mean
+mean_YT <- chla_data_stats %>% 
+  group_by(ds_year_type) %>% 
+  summarize(mean_chla= mean(chlaAvg_log10))
+
 ## WRITE CSV FILE
 chla_data_stats %>%
  select(Date, everything(), -chlaAvg_log) %>%
@@ -187,7 +192,8 @@ ggsave(last_plot(), filename= "station_map_chla_filt_LT.png", width= 6.5, height
 
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
-  geom_boxplot(aes(fill= ds_year_type)) +
+ geom_boxplot(aes(fill= ds_year_type)) +
+  #geom_point(data= mean_YT, aes(x= ds_year_type, y= mean_chla), color= "white", shape= 8, size= 4) +
   geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
