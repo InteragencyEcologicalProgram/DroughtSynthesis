@@ -72,9 +72,6 @@ df_wq_sub <- subset(df_wq, Region == 'SouthCentral')
 ggplot(df_wq_sub, aes(Date, DissNitrateNitrite, color = DS)) +
   geom_point()
 ```
-```{r}
-test <- subset(df_wsc, Station == 'MAL')
-```
 
 ```{r}
 # checks
