@@ -138,14 +138,14 @@ emm_year_results2 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "
 
 ## Region is non-significant in ANOVA
 
-#emm_Region <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
-#save(emm_Region, file= "Data/emm_Region.Rdata")
-#load("Data/emm_Region.Rdata")
-#pairs(emm_Region)
+#emm_Region2 <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_Region2, file= "Data/emm_Region2.Rdata")
+#load("Data/emm_Region2.Rdata")
+pairs(emm_Region2)
 
-#emm_season <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
-#save(emm_season, file= "Data/emm_season.Rdata")
-#pairs(emm_season)
+emm_season2 <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
+save(emm_season2, file= "Data/emm_season2.Rdata")
+pairs(emm_season2)
 
 
 
