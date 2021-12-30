@@ -133,7 +133,7 @@ TNmeanS = group_by(TNSd, Year, Regions, Species) %>%
   summarize(CPUE = mean(Catch, na.rm = T), SD = sd(Catch, na.rm = T), SE = SD/sqrt(n())) %>%
   left_join(yeartypes)
 
-ggplot(TNmeanS, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = Species))+
+ggplot(TNmeanS, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = Species), position = "fill")+
   facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
   scale_fill_manual(values = c(mypal, "red", "green"))
 
@@ -200,7 +200,7 @@ ggplot(TNmeanSi, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = 
   facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
   scale_fill_manual(values = c(mypal, "red", "green"))
 #############################################################################################
-
+#now let's try some models. 
 hist(TNsum$Catch, breaks = 50)
 hist(log(TNsum$Catch+1), breaks = 50)
 #GROSSS
@@ -236,10 +236,10 @@ plot(c3)
 c3 = brm(Catch ~ Regions*yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
          data = TNsum, iter = 2000, chains = 4)
 
-c3
+c3s = summary(c3)
 plot(c3)
 conditional_effects(c3)
-
+write.csv(c3s$fixed, "TownNetModel.csv")
 
 #I need to check for salmon, smelt, sturgeon
   
@@ -279,14 +279,21 @@ TNMat = pivot_wider(TNSd2, id_cols = c(StationCode, Regions, Year, Survey),
          Regions = as.factor(Regions), Year = as.factor(Year)) %>%
   filter(total!= 0)
 TNMat2 = dplyr::select(ungroup(TNMat), `American Shad`:`Yellowfin Goby`)
+TNMat3 = TNMat2/rowSums(TNMat2)
 
 source("PlotNMDS.R")
 FNMDS = metaMDS(TNMat2, k=3, trymax = 500)
 PlotNMDS(FNMDS, data = TNMat, group = "Year")
 PlotNMDS(FNMDS, data = TNMat, group = "Regions")
 
+#CPUE
+adonis(TNMat2~ as.factor(Year)*Regions, data = TNMat)
+adonis(TNMat2~ as.factor(Year)+Regions, data = TNMat)
 
-adonis(TNMat2~ as.factor(Year) + Regions, data = TNMat)
+#relative abundance
+adonis(TNMat3~ as.factor(Year)*Regions, data = TNMat)
+adonis(TNMat3~ as.factor(Year)+Regions, data = TNMat)
+
 #so only a very, very small perportion of hte variance. 
 
 #one hypothesis ws there might be an increase in black bas sin the central delta
