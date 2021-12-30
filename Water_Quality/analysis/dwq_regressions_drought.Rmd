@@ -1,0 +1,339 @@
+```{r}
+# Title: Exploratory analysis of WQ data
+# Purpose: determine best regressions to use for the drought synthesis project
+# Author: Sarah Perry
+# Contact: sarah.perry@water.ca.gov
+```
+
+```{r}
+library(car)
+library(english)
+library(tseries)
+library(tidyverse)
+library(lubridate)
+library(emmeans)
+library(DroughtData)
+source('Water_Quality/wq_analysis_funcs.R')
+```
+
+From Dave's Drought package
+```{r}
+# raw data
+df_wq <- raw_nutr_1975_2021
+
+df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia')
+df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite')
+df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
+```
+
+# Seasonal Averages
+## Seasonal Averages for Entire Delta (DissNitrateNitrite)
+```{r message = FALSE}
+df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
+df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
+df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
+
+print('TEST THINGS')
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season, data = df_nn_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
+df_nn_seasonal$DissNN_twolag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 2L)
+
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag, data = df_nn_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_seasonal)
+
+aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
+print(aov_seasonal)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
+print(test(emm_seas_seas)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_seas_WY)$contrasts)
+```
+### Conclusion:
+There is a signficiant difference between Drought and Neutral/Wet years, with Drought years having higher DissNitrateNitrite values (slightly higher over Wet). No signifiant difference between Netural and Wet.
+
+
+## Seasonal Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'season', month.na = 'relaxed')
+df_am_seasonal <- drt_add_yr_assign(df_am_seasonal)
+df_am_seasonal$DissAmmonia <- log10(df_am_seasonal$DissAmmonia)
+
+print('TEST THINGS')
+lm_seasonal <- lm(DissAmmonia ~ Drought + Season, data = df_am_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_am_seasonal$DissAmmonia_onelag <- lag(df_am_seasonal$DissAmmonia, n = 1L)
+
+lm_seasonal <- lm(DissAmmonia ~ Drought + Season + DissAmmonia_onelag, data = df_am_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_seasonal)
+
+aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
+print(aov_seasonal)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
+print(test(emm_seas_seas)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_seas_WY)$contrasts)
+```
+### Conclusion:
+There is a signficiant difference between Drought and Wet years, with Drought years having higher DissAmmonia values (slightly higher over Wet based on contrast estimates). No signifiant difference between Netural and Wet nor Drought and Neutral.
+
+
+## Seasonal Averages for Entire Delta (DissOrthophos)
+```{r}
+df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'season', month.na = 'relaxed')
+df_op_seasonal <- drt_add_yr_assign(df_op_seasonal)
+df_op_seasonal$DissOrthophos <- log10(df_op_seasonal$DissOrthophos)
+
+print('TEST THINGS')
+lm_seasonal <- lm(DissOrthophos ~ Drought + Season, data = df_op_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_op_seasonal$DissOrthophos_onelag <- lag(df_op_seasonal$DissOrthophos, n = 1L)
+
+lm_seasonal <- lm(DissOrthophos ~ Drought + Season + DissOrthophos_onelag, data = df_op_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_seasonal)
+
+aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
+print(aov_seasonal)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
+print(test(emm_seas_seas)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_seas_WY)$contrasts)
+```
+
+## Conclusion:
+There is a signficiant difference between Drought and Wet/Neutral years, with Drought years having higher DissOrthophos values (particularly over Wet years). Neutral and Wet were also significantly different, with Neutral years having higher DissOrthophos values.
+
+# Regional
+## Regional Averages per Year (DissNitrateNitrite)
+```{r}
+df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
+df_nn_regional <- drt_add_yr_assign(df_nn_regional)
+df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
+
+print('TEST THINGS')
+lm_regional <- lm(DissNitrateNitrite ~ Drought + Region, data = df_nn_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_nn_regional$DissNN_onelag <- lag(df_nn_regional$DissNitrateNitrite, n = 1L)
+
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Region + DissNN_onelag, data = df_nn_regional)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_regional)
+
+aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
+print(aov_regional)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
+print(test(emm_reg_reg)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_reg_WY)$contrasts)
+```
+
+## Conclusion:
+There is a signficiant difference between Drought and Wet/Neutral years, with Drought years having higher DissNitrateNitrite values (particularly over Wet years). Neutral and Wet were not signfiicantly different.
+
+# Regional Averages per Year (DissAmmonia)
+```{r}
+df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
+df_am_regional <- drt_add_yr_assign(df_am_regional)
+df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
+
+print('TEST THINGS')
+lm_regional <- lm(DissAmmonia ~ Drought + Region, data = df_am_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_am_regional$DissAM_onelag <- lag(df_am_regional$DissAmmonia, n = 1L)
+
+lm_seasonal <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag, data = df_am_regional)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_regional)
+
+aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
+print(aov_regional)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
+print(test(emm_reg_reg)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_reg_WY)$contrasts)
+```
+## Conclusion:
+There is a signficiant difference between Drought and Wet years for DissAmmonia, with Drought years beign higher. Neutral and Drought/Wet were not signfiicantly different.
+
+# Regional Averages per Year (DissOrthophos)
+```{r}
+df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'region', month.na = 'relaxed')
+df_op_regional <- drt_add_yr_assign(df_op_regional)
+df_op_regional$DissOrthophos <- log10(df_op_regional$DissOrthophos)
+
+print('TEST THINGS')
+lm_regional <- lm(DissOrthophos ~ Drought + Region, data = df_op_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_op_regional$DissOrthophos_onelag <- lag(df_op_regional$DissOrthophos, n = 1L)
+
+lm_regional <- lm(DissOrthophos ~ Drought + Region  + DissOrthophos_onelag, data = df_op_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_regional)
+
+aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
+print(aov_regional)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
+print(test(emm_reg_reg)$contrasts)
+
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
+print(test(emm_reg_WY)$contrasts)
+```
+
+## Conclusion:
+There is a signficiant difference between Drought and Wet/Neutral years for DissOrthophos, with Drought years being higher (particularly over Wet). Neutral and Drought/Wet were also signfiicantly different, with Neutral being higher than Wet.
