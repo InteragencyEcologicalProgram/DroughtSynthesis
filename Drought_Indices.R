@@ -5,6 +5,7 @@
 library(tidyverse)
 library(lubridate) #working with date-time
 library(PerformanceAnalytics) #plotting correlations
+library(RCurl) #read csv files from GitHub
 
 #to do
 #could calculate mean values for the two relevant divisions
@@ -15,24 +16,29 @@ library(PerformanceAnalytics) #plotting correlations
 #numbers of spaces between columns
 
 #palmer drought severity index (05)
-pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211104"
+#note that these links will need to be updated over time because the date changes as files are updated
+#https://www.ncei.noaa.gov/pub/data/cirs/climdiv/
+pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #palmer hydrological drought index (06)
-phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211104"
+phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #palmer "Z" index (07)
-zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211104"
+zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211206"
                    ,header=F
                    )
 
 #modified palmer drought severity index (08)
-pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211104"
+pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211206"
                    ,header=F
                    )
+
+#import dayflow data from the IEP Status and Trends GitHub repo
+dayflow<- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/Status-and-Trends/master/data/dayflow_all.csv")
 
 #format data------------
 
@@ -84,7 +90,17 @@ indices_ww <- indices_w %>%
   pivot_wider(names_from = division
               ,names_prefix = "div_"
               ,values_from = index_05:index_07)
-  
+
+#summarize dayflow by month to match frequency of palmer indices
+dayflow_m<-dayflow %>%
+  mutate(year = year(Date),
+         month = month(Date)) %>% 
+  unite(year_month,year:month,sep="-",remove=T) %>% 
+  group_by(year_month) %>%
+  summarize(OUT_mean = mean(OUT))
+
+
+
 #plots-------------
 
 #make faceted plot showing each index for each division
@@ -95,6 +111,61 @@ indices_ww <- indices_w %>%
 )
 #should replace numbers with division and index names
 #also add horizontal lines showing categories of wet/dry
+
+#plot just PHDI for sacramento drainage
+sach <- indices_cleaner %>% 
+  filter(division == "402" & index == "06") %>% 
+  mutate (category_coarse = cut (value,
+                         breaks = c(-Inf, -3, -1, 1, 3, Inf),
+                         labels = c("very dry", "dry", "normal", "wet", "very wet" ),
+                         right = TRUE)
+  )
+#write these data to share
+#write_csv(sach, "PHDI_Sacramento.csv")
+
+#combine monthly dayflow and sac PHDI
+#first format sac PHDI date column
+sach_m<-sach %>%
+  mutate(year = year(date),
+         month = month(date)) %>% 
+  unite(year_month,year:month,sep="-",remove=T) 
+
+#combine data sets
+comb <- left_join(dayflow_m,sach_m)
+plot(comb$OUT_mean~comb$value)
+cor.test(comb$OUT_mean,comb$value) #cor=0.5253882
+
+#color palette for categories
+pal <- c(
+  "very dry" = "red",
+  "dry" = "orange", 
+  "normal" = "green", 
+  "wet" = "blue" ,
+  "very wet" = "violet"
+)
+
+(plot_sach <-ggplot(sach, aes(x=date, y= value, fill = category_coarse))+
+    geom_bar(stat = "identity") + 
+    ylab("Value") + xlab("Date") +
+    ggtitle("Sacramento Drainage PHDI")+
+    scale_fill_manual(
+      values = pal,
+      limits = names(pal))
+)
+#index generally ranges from -6 to +6, with negative values denoting dry spells, 
+#and positive values indicating wet spells
+#There are a few values in the magnitude of +7 or -7.
+#values 0 to -0.5 = normal
+#-0.5 to -1.0 = incipient drought
+#-1.0 to -2.0 = mild drought
+#-2.0 to -3.0 = moderate drought
+#-3.0 to -4.0 = severe drought
+#greater than -4.0 = extreme drought
+#Similar adjectives are attached to positive values of wet spells
+#may I should combine the following:
+#normal + incipient (0 to 1.0)
+#mild + moderate (1.1 to 3.0)
+#severe + extreme (3.1 and up)
 
 #plot correlations among indices within districts
 

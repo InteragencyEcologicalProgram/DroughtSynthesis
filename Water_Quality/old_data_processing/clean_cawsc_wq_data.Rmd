@@ -15,18 +15,34 @@ source('Water_Quality/wq_funcs.R')
 ```
 
 ```{r, message = FALSE}
-fp_abs_wq <- 'WQ_Team/raw_data/USGS_CAWSC/Samples_USGS_CAWSC_nuts_clean.csv'
+fp_abs_wq <- 'WQ_Team/raw_data/USGS_CAWSC/USGS_CAWSC_1975_2021.csv'
 fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
 
 df_wq <- read_csv(drought_abs_path(fp_abs_wq))
 
+df_wq <- rename(df_wq, Date = activity_start_date, site_no = monitoring_location_identifier, Analyte = characteristic_name, Value = result_measure_value)
+df_wq$site_no <- lapply(df_wq$site_no, function(x) str_split(x, '-', 2)[[1]][[2]])
+df_wq$site_no <- unlist(df_wq$site_no)
+```
+
+
+```{r, message = FALSE}
+df_wy <- read_csv(drought_abs_path(paste0(fp_abs_meta,'Year_assignments.csv')))
 df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv')))
 df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'USGS_CAWSC_stations.csv')))
 
 df_coords <- rename(df_coords, site_no = NWIS_ID)
+df_coords$site_no <- as.character(df_coords$site_no)
 
 df_wq <- left_join(df_wq, df_coords, by = 'site_no')
 df_wq <- subset(df_wq, !(Site_Abbrev %in% c('ROD','PCT')))
+
+df_wq <- subset(df_wq, select = c(Site_Abbrev, Date, Analyte, Value, Lat, Long))
+row.names(df_wq) <- NULL
+df_wq$ID <- seq.int(nrow(df_wq))
+
+df_wq <- df_wq %>%
+  pivot_wider(id_cols = c(ID, Site_Abbrev, Date, Lat, Long), values_from = Value, names_from = Analyte)
 ```
 PCT and FER also share a site ID/datetime stamp
 
@@ -36,20 +52,30 @@ sf_delta <- R_EDSM_Subregions_Mahardja_FLOAT
 
 # combine & clean up wq datasets
 df_wq <- df_wq %>% rename(Station = Site_Abbrev,
-                          Date = sample_dt,
-                          DissNitrateNitrite = result_va_NO3_NO2_mg_L,
-                          DissAmmonia = result_va_NH4_mg_L,
-                          DissOrthophos = result_va_OrthoP_mg_L,
-                          DissNitrate = result_va_NO2_mg_L,
+                          DissNitrateNitrite = `Inorganic nitrogen (nitrate and nitrite)`,,
+                          DissAmmonia = `Ammonia and ammonium`,
+                          DissOrthophos = Orthophosphate,
                           Latitude = Lat,
                           Longitude = Long)
 
-df_wq <- subset(df_wq, select = c(Station, Date, DissNitrateNitrite, DissAmmonia, DissOrthophos, DissNitrate, Latitude, Longitude))
+df_wq <- subset(df_wq, select = c(Station, Date, DissNitrateNitrite, DissAmmonia, DissOrthophos, Latitude, Longitude))
 df_wq$Date <- as.Date(df_wq$Date, format = '%Y-%m-%d')
 
 df_wq <- add_season_col(df_wq)
 
-df_wq <- add_wy_col(df_wq)
+df_wq <- subset(df_wq, !c(is.na(DissAmmonia) & is.na(DissOrthophos) & is.na(DissNitrateNitrite)))
+
+df_wq$Year <- year(df_wq$Date)
+df_wq$Month <- month(df_wq$Date)
+df_wq$Year <- with(df_wq, ifelse(month(Date) == 12, Year+1, Year))
+
+df_wq <- add_wy_col(df_wq, df_wy)
+
+df_wq <- df_wq %>%
+  group_by(Station, Date, Year, Month, Season, Drought, YearType, Longitude, Latitude) %>%
+  summarize(across(DissNitrateNitrite:DissOrthophos, ~mean(., na.rm = TRUE)), .groups = 'drop')
+  
+df_wq <- df_wq[order(df_wq$Date),]
 ```
 
 ```{r}
@@ -74,7 +100,7 @@ sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
 
 # add longterm col
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion'))
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion','Region')], by = c('Season','SubRegion'))
 
 # check data
 ggplot() + 

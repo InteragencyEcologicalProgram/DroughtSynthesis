@@ -1,0 +1,72 @@
+```{r}
+# Title: Drought Graphs
+# Purpose: create graphs for drought synthesis
+# Author: Sarah Perry
+# Contact: sarah.perry@water.ca.gov
+```
+
+```{r}
+library(DroughtData)
+library(tidyverse)
+source('Water_Quality/wq_graph_funcs.R')
+```
+
+```{r}
+# read in data
+df_wq <- raw_nutr_1975_2021
+df_wq <- drt_add_yr_assign(df_wq)
+df_wq$YearType[df_wq$YearType == 'Below Normal'] <- 'Below Norm'
+df_wq$YearType[df_wq$YearType == 'Above Normal'] <- 'Above Norm'
+df_wq <- df_wq %>%
+    mutate(across(c(Drought, YearType), list(`20_21`=~case_when(YearAdj==2021 ~ "2021", 
+                                                              YearAdj==2020 ~ "2020", 
+                                                              TRUE ~ as.character(.x)))),
+         across(c(YearType, YearType_20_21), ~factor(.x, levels=c("2020", "2021", "Critical", "Dry", "Below Norm", "Above Norm", "Wet"))),
+         Region=factor(Region, levels=c("Suisun Marsh", "Suisun Bay", "Confluence", "SouthCentral", "North")),
+         Season=factor(Season, levels=c("Winter", "Spring", "Summer", "Fall")))
+```
+
+```{r}
+# boxplots
+df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('Drought_20_21','Region'), metadat = c('Drought'))
+
+plt_bp <- create_bp(df_bp, x = 'Drought_20_21', fill = 'Drought', wrap = 'Region')
+plt_bp <- plt_bp + scale_fill_viridis_d(direction = -1) + theme_bw() + ylab('Dissolved Ammonia (mg/L)') + xlab('Year/Drought')
+# ggsave(paste0(getwd(),'/Water_Quality/plots/region_bp_dissammonia.jpg'),z, width = 7, height = 4.5)
+```
+
+```{r}
+# boxplots
+df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('YearType_20_21'), metadat = c('YearType'))
+
+plt_bp <- create_bp(df_bp, x = 'YearType_20_21', fill = 'YearType', show_outliers = TRUE)
+plt_bp <- plt_bp +
+  scale_fill_viridis_d(direction = -1) +
+  theme_bw() +
+  ylab('Dissolved Ammonia (mg/L)') +
+  xlab('Year/Drought') +
+  ylim(0,0.5)
+plt_bp
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_da_yt.jpg'),plt_bp, width = 7, height = 4.5)
+```
+
+```{r}
+# boxplots
+df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('Drought_20_21'), metadat = c('Drought'))
+
+plt_bp <- create_bp(df_bp, x = 'Drought_20_21', fill = 'Drought', show_outliers = TRUE)
+plt_bp <- plt_bp +
+  scale_fill_viridis_d(direction = -1) +
+  theme_bw() +
+  ylab('Dissolved Ammonia (mg/L)') +
+  xlab('Year/Drought') +
+  ylim(0,0.5)
+plt_bp
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_da_di.jpg'),plt_bp, width = 7, height = 4.5)
+```
+
+```{r}
+x <- NA
+if(!is.na(x)){print('cool')}
+```
+

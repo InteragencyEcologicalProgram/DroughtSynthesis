@@ -16,13 +16,14 @@ source('Water_Quality/wq_funcs.R')
 
 ```{r message = FALSE}
 # import data
-fp_abs_wq <- 'WQ_Team/raw_data/EMP_delta_water_quality_1975_2020.csv'
+fp_abs_wq <- 'WQ_Team/raw_data/EMP_delta_water_quality_1975_2021.csv'
 fp_abs_meta <- 'WQ_Team/raw_data/metadata_wq_files/'
 
 df_wq <- read_csv(drought_abs_path(fp_abs_wq))
 
 df_regions <- read_csv(drought_abs_path(paste0(fp_abs_meta,'drought_regions.csv'))) # change the fp of this one
 df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'EMP_wq_coords.csv')))
+df_wy <- read_csv(drought_abs_path(paste0(fp_abs_meta,'Year_assignments.csv')))
 ```
 
 ```{r}
@@ -30,12 +31,15 @@ df_coords <- read_csv(drought_abs_path(paste0(fp_abs_meta,'EMP_wq_coords.csv')))
 sf_delta <- R_EDSM_Subregions_Mahardja_FLOAT
 
 # clean wq file
-df_wq$Date <- as.Date(df_wq$Date, '%m/%d/%Y', tz = 'UTC')
+df_wq$Date <- as.Date(df_wq$Date, '%m/%d/%Y', tz = 'America/Los_Angeles')
+df_wq$Year <- year(df_wq$Date)
+df_wq$Month <- month(df_wq$Date)
+df_wq$Year <- with(df_wq, ifelse(month(Date) == 12, Year+1, Year))
 df_wq <- subset(df_wq, !(Station %in% c('EZ2','EZ2-SJR','EZ6','EZ6-SJR')))
 
 df_wq_coords <- add_season_col(df_wq)
 
-df_wq_coords <- add_wy_col(df_wq_coords)
+df_wq_coords <- add_wy_col(df_wq_coords, df_wy)
 
 df_wq_coords <- left_join(df_wq_coords, df_coords[,c('Station','Longitude','Latitude')], by = c('Station'))
 ```
@@ -56,24 +60,26 @@ spdf_delta <- spTransform(spdf_delta, CRS('+init=epsg:4326 +proj=longlat'))
 # add subregion col to wq df
 col_sr <- sp::over(spdf_wq, spdf_delta[,'SubRegion'])
 spdf_wq$SubRegion <- col_sr$SubRegion
+# spdf_wq$Region <- col_sr$Region
 
 # convert to shapefile
 sf_wq <- st_as_sf(spdf_wq)
 sf_wq <- st_transform(sf_wq, st_crs = sf_delta)
 
 # add longterm col 
-sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion')], by = c('Season','SubRegion')) # add the region col as well
+sf_wq_lt <- merge(sf_wq, df_regions[,c('Long_term','Season','SubRegion','Region')], by = c('Season','SubRegion'))
 
 # check data
 ggplot() + 
   geom_sf(data = sf_delta) + 
-  #geom_sf_text(data = sf_delta, aes(label = SubRegion)) +
+  #geom_sf_text(data = sf_delta, aes(label = SubSubRegion)) +
   geom_sf(data = sf_wq_lt, aes(color = Long_term))
 ```
 
 ```{r}
 # check extra regions in original wq df (ie. not in sf_wq_lt)
 unique(sf_wq$SubRegion)[!(unique(sf_wq$SubRegion) %in% unique(df_regions$SubRegion))] # double check the regions
+unique(sf_wq$Region)[!(unique(sf_wq$Region) %in% unique(df_regions$Region))] # double check the regions
 ```
 
 ```{r}
@@ -84,7 +90,5 @@ df_wq_lt <- as_tibble(sf_wq_lt)
 
 df_wq_lt <- subset(df_wq_lt, select = -c(geometry))
 
-write_csv(df_wq_lt, drought_abs_path('WQ_Team/processed_data/EMPWQData1975-2020.csv'))
-
-# add in the regions from rosie's file
+write_csv(df_wq_lt, drought_abs_path('WQ_Team/processed_data/EMPWQData1975-2021.csv'))
 ```
