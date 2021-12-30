@@ -107,7 +107,9 @@ plot(fit_log10.1)
 anova(fit_log10.1, type= 2, ddf= "Satterthwaite")
 emm_year1 <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
 save(emm_year1, file= "Data/emm_year1_ST.Rdata")
+load("Data/emm_year1_ST.Rdata")
 pairs(emm_year1)
+plot(emm_year1, comparison= TRUE)
 
 # emmeans results for boxplots
 emm_year_results1 <- tibble(ds_year_type= c("1_Wet", "2_Below_avg", "3_Drought"),
@@ -123,7 +125,26 @@ plot(fit_log10.2)
 anova(fit_log10.2, type= 2, ddf= "Satterthwaite")
 emm_year2 <- emmeans(fit_log10.2, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
 save(emm_year2, file= "Data/emm_year2_ST.Rdata")
+load("Data/emm_year2_ST.Rdata")
 pairs(emm_year2)
+plot(emm_year2, comparison= TRUE)
+pwpp(emm_year2)
+pwpm(emm_year2)
+
+
+emm_YearType_Season2 <- emmeans(fit_log10.2, specs= c("ds_year_type", "Season"), pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_YearType_Season2, file= "Data/emm_YearType_Season2.Rdata")
+load("Data/emm_YearType_Season2.Rdata")
+pairs(emm_YearType_Season2)
+pwpp(emm_YearType_Season2) +
+  scale_x_continuous(limits= c(0.05, 1))
+pwpm(emm_YearType_Season2)
+
+plot(emm_YearType_Season2, comparison= TRUE, CI= FALSE) +
+  labs(x= "Estimated marginal mean", y= "YearType & Season") +
+  theme_bw()
+ggsave(last_plot(), filename= "emmean_YearType_Season_ST.png", width= 6.5, height= 4, dpi= 300,
+       path= "Figures")
 
 
 emm_Region <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
@@ -133,9 +154,6 @@ pairs(emm_Region)
 emm_season <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
 save(emm_season, file= "Data/emm_season.Rdata")
 pairs(emm_season)
-
-
-
 
 
 #### FIGURES ####
