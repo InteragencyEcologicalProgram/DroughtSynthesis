@@ -10,6 +10,7 @@ library(readxl)
 library(lme4)
 library(lmerTest)
 library(visreg)
+library(deltamapr)
 #I had Jeff Galef add teh 2021 , summer townet, and FMWT data to the 
 #water quality data set that Sam put together. He did it in python
 #and I don't have the code
@@ -137,6 +138,8 @@ BH =   st_join(BarHABs, regions) %>%
   mutate(Yearf = as.factor(Year))
 
 BHm = filter(BH, !is.na(Microcystis), Year >2013, Month %in% c(5,6,7,8,9, 10))
+
+BH2 = filter(BH, !is.na(Microcystis), Year >2013)
 
 ggplot(BHm, aes(x = as.factor(Year), y = Microcystis)) +geom_boxplot()+ facet_wrap(~Stratum)
 
@@ -288,25 +291,40 @@ HABssf1 = filter(sumfall, !is.na(Longitude), !is.na(Latitude)) %>%
 ggplot() + geom_sf(data = reg3) + geom_sf(data = HABssf1)
 #crop it to the area we are interested in
 sfhab = st_crop(HABssf1, reg3)%>%
-  st_join(reg3) #%>%
- # filter(Year == 2021) 
+  st_join(reg3)# %>%
+  #filter(Year == 2021) 
+
+#load teh grab sample stations
 EMPstas = read.csv("EMP_Discrete_Water_Quality_Stations_1975-2020.csv") 
 EMP = st_as_sf(filter(EMPstas, !is.na(Latitude)), coords = c("Longitude", "Latitude"), crs = st_crs(4326)) %>%
   filter(Status == "Active")
 
+#load CDEC coordinates and filter to stations of inerest
+cdec = read.csv("data/CDEC_StationsEC.csv") %>%
+  filter(STA %in% c("MRZ", "NSL", "MAL", "LIB", "DWS", "SRH", "SJJ", "BET", "FRK", "LPS"))
+cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326) 
+
+
+##############################################################################
+
+library(ggsn)
 #plot the map
 ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
-  geom_sf(data = reg3, aes(fill = Stratum), alpha = 0.4) + 
+  geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.4) + 
   geom_sf(data = sfhab, aes(shape = Source)) +
   scale_shape_discrete(name = "Visual Index Sites")+
-  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "EMP"))+
-  scale_color_discrete(name = "Grab Samples")+
+  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "EMP grab samples"))+
+  geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
+  scale_color_manual(values = c("red", "blue"), name = NULL)+
   scale_fill_brewer(palette = "Set3", guide = NULL)+
  coord_sf(xlim = c(-122.4, -121.2), ylim = c(37.6, 38.6))+
-  geom_sf_label(data = reg3, aes(label = Stratum), 
+  geom_sf_label(data = reg3, aes(label = Stratum2), 
                  label.size = 0.05,
                 label.padding = unit(0.1, "lines"),
-                nudge_y = reg3$nudge)+
+                nudge_y = reg3$nudge, alpha = 0.8, fontface = "bold")+
+  geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"))+
   #You can adjust the size, units, etc of your scale bar.
   scalebar(data = EMP, dist = 20, dist_unit = "km",
            transform = TRUE, st.dist = .05) +
@@ -559,7 +577,7 @@ stasT = filter(cdecsf, STA %in% c("BET", "DWS", "FRK", "LIB", "LPS",
 stasT2 = st_join(stasT, reg3) %>%
   st_drop_geometry() %>%
   rename(Station = STA) %>%
-  select(Station, Stratum2)
+  dplyr::select(Station, Stratum2)
 
 #join temperatures to regions
 Temps = left_join(Temps, stasT2)
@@ -580,7 +598,7 @@ ggplot(HAB3a, aes(x = Days, y = PresentPerc)) + geom_point(aes(shape = Yearf, co
   scale_shape_manual(values = c(16,17,15,4,5,6,7,8), name = NULL)+
   scale_color_brewer(palette = "Dark2", name = NULL)+theme_bw()+
   ylab("Percent of observations\n with Microcystis present")+
-  xlab("Days above temperture threshold")
+  xlab("Days above temperature threshold")
 
 HAB3b = group_by(HAB3a, Year, Threshold) %>%
   summarize(Days = mean(Days), Percent = mean(PresentPerc), 
@@ -588,7 +606,7 @@ HAB3b = group_by(HAB3a, Year, Threshold) %>%
 ggplot(HAB3b, aes(x = Days, y = Percent)) + geom_point()+
   facet_wrap(~Threshold, scales = "free_x") + geom_smooth(method = "lm")+
   ylab("Percent of observations\n with Microcystis Present")+
-  xlab("Days above temperture threshold")
+  xlab("Days above temperature threshold")
 #binomial regression
 
 Thresh25 = filter(HAB3a, Threshold == "Temp25")

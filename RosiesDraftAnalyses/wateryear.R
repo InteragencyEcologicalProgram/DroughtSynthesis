@@ -7,15 +7,24 @@ library(smonitr)
 indecies = filter(water_year_indices, location != "San Joaquin Valley")
 i1820 = data.frame(WY = c(2018,2019,2020,2021), Index = c(7.14, 10.34, 6.0, 4.0), 
                    Yr_type = c("Below Normal", "Wet", "Dry", "Critical"), location = c(rep("Sacramento Valley", 4)))
-indecies = bind_rows(indecies, i1820)
+indecies = bind_rows(indecies, i1820) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+write.csv(indecies, "data/indecies.csv")
 
-ggplot(filter(indecies, location != "San Joaquin Valley"), aes(x = WY, y = Index))+
-  geom_bar(stat = "identity", aes(fill = Yr_type))+  
-  scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))+
-  #geom_smooth(method = "lm") +
-  #facet_grid(location~., scales = "free_y")+
-  coord_cartesian(xlim = c(1905, 2021))+
-  theme(legend.position = "bottom")
+WYs = read.csv("data/yearassignments.csv")
+WYs = mutate(WYs,Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+
+ggplot(WYs)+
+  geom_tile(data = filter(WYs, Drought == "D"), aes(x = Year, y = 15, height = 0.5), fill = "black", color = "black")  +
+  geom_tile(data = filter(WYs, Drought == "W"), aes(x = Year, y = 15, height = 0.5), fill = "yellow", color = "yellow", alpha = 0.5)  +
+  geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
+ scale_fill_manual(values = c("firebrick", "firebrick1",  "darkorange","chartreuse3", "dodgerblue"), name = "Water Year Type")+
+  coord_cartesian(xlim = c(1906, 2020))+theme_bw()+
+  theme(legend.position = "bottom") +
+  ylab("Sacramento Valley Index")+
+  xlab(NULL)+
+  annotate("text", x = 1960, y = 15.6, label = "Drought (black)/Wet Period (yellow)")
+
 
 
 Seasons = data.frame(Season = c("Spring", "Summer", "Winter", "Fall"))
