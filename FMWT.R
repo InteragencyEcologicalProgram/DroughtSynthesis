@@ -66,3 +66,53 @@ plot(nb4)
 visreg(nb4)
 #yuck. q-q plot looks aweful.
 #but the year effect looks pretty good. 
+
+
+#######################################################################
+#just some basic summary plots of indecies by season and year for the short-term analyses
+yeartypes = read.csv("data/yearassignments.csv")
+
+Integrated_data_set <- read_excel("data/Integrated data set.xlsx", na = "NA")
+recent = filter(Integrated_data_set, Year > 2010) %>%
+  dplyr::select(-Index)%>%
+  mutate(SmeltIndex = as.numeric(SmeltIndex),
+         Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall"), 
+                         labels = c("Winter - SKT","Spring - 20mm", "Summer - STN", "Fall - FMWT"))) %>%
+  left_join(yeartypes) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+
+recent2 = pivot_longer(recent, cols = c(Sbindex, AmShadIndex, SmeltIndex, LongfinIndex),
+                       names_to = "Species", values_to = "IndexX") %>%
+  mutate(Species = factor(Species, levels = c("Sbindex", "AmShadIndex", 
+                                              "SmeltIndex", "LongfinIndex"),
+                          labels = c("Age-0 Striped Bass", "American Shad",
+                                     "Delta Smelt", "Longfin Smelt")))
+
+ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = ShortTerm))+
+  facet_grid(Species~Season, scales = "free_y")
+
+ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
+  scale_fill_viridis_d( direction = -1)+
+  facet_grid(Season~Species, scales = "free_y") +
+  theme_bw()
+
+ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = ShortTerm))+
+  facet_wrap(~Species+Season, scales = "free_y")+ theme_bw()+
+  scale_fill_viridis_d(name = "Year Type", direction = -1)
+
+
+ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
+  facet_wrap(~Species+Season, scales = "free_y")+ theme_bw()+
+  scale_fill_viridis_d(name = "Year Type", , direction = -1)
+
+ggplot(recent, aes(x = Year, y = SmeltIndex)) + geom_col(aes(fill = ShortTerm))+
+  facet_wrap(~Season, scales = "free_y")
+
+ggplot(recent, aes(x = Year, y = Sbindex)) + geom_col(aes(fill = ShortTerm))+
+  facet_wrap(~Season, scales = "free_y")+ ylab("Striped Bass Index")
+
+ggplot(recent, aes(x = Year, y = AmShadIndex)) + geom_col(aes(fill = ShortTerm))+
+  facet_wrap(~Season, scales = "free_y")+ ylab("American Shad Index")+ theme_bw()
+
+ggplot(recent, aes(x = Year, y = LongfinIndex)) + geom_col(aes(fill = ShortTerm))+
+  facet_wrap(~Season, scales = "free_y")+ ylab("Longfin Smelt Index")

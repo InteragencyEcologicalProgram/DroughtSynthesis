@@ -1,5 +1,6 @@
 #jellyvish
 
+#Add water year types
 library(tidyverse)
 library(readxl)
 library(lubridate)
@@ -18,7 +19,7 @@ JellyWide = pivot_wider(FMWTjellies, id_cols = c(Year, Month, SurveyNumber, Stat
 #Let's go grab common names
 
 OrgCodes = read_excel("data/OrganismsLookUp.xlsx") %>%
-  select(OrganismCode, CommonName)
+  dplyr::select(OrganismCode, CommonName)
 JellyFMWT = left_join(JellyWide, OrgCodes) %>%
   mutate(Volume = (MeterEnd-MeterStart)*0.2875,
          CPUE = Catch/Volume*10000)
@@ -222,24 +223,24 @@ JelLookup = read_excel("data/JellyLookup.xlsx") %>%
   mutate(FMWT = as.character(FMWT))
 
 X20b3 = rename(X20b2, `20mm` = OrganismCode) %>%
-  left_join(select(JelLookup, `20mm`, OrganismCode)) %>%
+  left_join(dplyr::select(JelLookup, `20mm`, OrganismCode)) %>%
   mutate(Month = month(SampleDate)) %>%
-  select(StationID, Source, Region, SampleDate, Month,
+  dplyr::select(StationID, Source, Region, SampleDate, Month,
          Latitude, Longitude, Volume, Year, CPUE,
          OrganismCode, Survey)
 
 
 JellyFMWT3 = rename(JellyFMWT2, `FMWT` = OrganismCode) %>%
-  left_join(select(JelLookup, `FMWT`, OrganismCode))%>%
-  select(StationID, Source, Region,
+  left_join(dplyr::select(JelLookup, `FMWT`, OrganismCode))%>%
+  dplyr::select(StationID, Source, Region,
          Latitude, Longitude, Volume, Year, CPUE, Month,
          OrganismCode, SurveyNumber) %>%
   rename(Survey = SurveyNumber)
 
 BSjellies3 = rename(BSjellies2, `BayStudy` = OrganismCode) %>%
   ungroup() %>%
-  left_join(select(JelLookup, `BayStudy`, OrganismCode))%>%
-  select(StationID, Source, Region, SampleDate, 
+  left_join(dplyr::select(JelLookup, `BayStudy`, OrganismCode))%>%
+  dplyr::select(StationID, Source, Region, SampleDate, 
          Latitude, Longitude, Volume, Year, Catch, CPUE,
          OrganismCode, Survey) %>%
   mutate(Month = month(SampleDate))
@@ -247,9 +248,7 @@ BSjellies3 = rename(BSjellies2, `BayStudy` = OrganismCode) %>%
 #Now we are ready to combine everything!
 Alljellies = bind_rows(X20b3, BSjellies3, JellyFMWT3)
 ######################################################
-#Add water year types
-WYs <- read_excel("data/Integrated data set.xlsx", 
-                  sheet = "yearassignments")
+WYs <- read_csv("data/yearassignments.csv")
 
 Alljellies = mutate(Alljellies,
                        Season = case_when(
@@ -268,21 +267,40 @@ Alljellies = mutate(Alljellies,
 
 #total jelly catch per station
 AlljelliesTot = group_by(Alljellies, Year, Yr_type, StationID, Source, Region, 
-                         Survey, Season, Index, Drought, Month) %>%
-  summarize(TotJellies = sum(CPUE))
+                         Survey, Season, Index, Drought, ShortTerm, Month) %>%
+  summarize(TotJellies = sum(CPUE)) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
 
 #average jelly catch per region and month
-AlljelliesMean = group_by(AlljelliesTot, Year, Yr_type, Region, Season, Drought, Index,
+AlljelliesMean = group_by(AlljelliesTot, Year, Yr_type, Region, Season, ShortTerm, Drought, Index,
                           Month) %>%
   summarize(meanJellies = mean(TotJellies), sdJellies = sd(TotJellies), NTrawl = n())
 
-
+##################################################################################
+#graphs
+#Alljellies = read_csv( "AllJelly_18SEP2021.csv")
+#AlljelliesMean = read_csv("MeanJelliesRegionMonth_18Sep2021.csv")
+#AlljelliesTot = read_csv( "AllJelly_totalCatch_30DEC2021.csv")
 #let's explore!
 ggplot(filter(AlljelliesMean, Year == 2017), aes(x = Month, y = meanJellies)) +
   geom_col()+ facet_grid(Region~Year)
 
-ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
+ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
   geom_col()+ facet_wrap(~Region)
+
+
+
+ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
+  geom_col()+ facet_wrap(~Region)
+
+
+ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
+  geom_col(aes(fill = Yr_type), position = "dodge")+
+  scale_fill_viridis_d()+
+ # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
+  ylab("Mean monthly jellyfish CPUE") + theme_bw()+
+  facet_wrap(~Region)
+
 
 ggplot(AlljelliesTot, aes(x = Year, y = TotJellies, 
                           color = Yr_type)) +
@@ -296,7 +314,31 @@ ggplot(AlljelliesTot, aes(x = Month, y = TotJellies)) +
 ggplot(AlljelliesTot, aes(x = Drought, y = TotJellies)) +
   geom_point()+ facet_grid(Season~Region)
 
+Alltotsub = filter(AlljelliesTot, Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
 
-write.csv(Alljellies, "AllJelly_18SEP2021.csv")
-write.csv(AlljelliesMean, "MeanJelliesRegionMonth_18Sep2021.csv")
-write.csv(AlljelliesTot, "AllJelly_totalCatch_18SEP2021.csv")
+ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
+  geom_boxplot()+ facet_wrap(~Region)
+
+
+Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
+
+ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
+  scale_fill_viridis_d(guide = NULL, direction = -1)+
+  geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
+  scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
+  ylab("Mean monthly jellyfish CPUE (log-transformed)")
+
+
+write.csv(Alljellies, "AllJelly_18SEP2021.csv", row.names = FALSE)
+write.csv(AlljelliesMean, "MeanJelliesRegionMonth_18Sep2021.csv",  row.names = FALSE)
+write.csv(AlljelliesTot, "AllJelly_totalCatch_30DEC2021.csv",  row.names = FALSE)
+#Alljellies = read_csv( "AllJelly_18SEP2021.csv",  row.names = FALSE)
+#AlljelliesMean = read_csv("MeanJelliesRegionMonth_18Sep2021.csv")
+#AlljelliesTot = read_csv( "AllJelly_totalCatch_18SEP2021.csv")
+
+#What kind of analysis can we do on this?
+
+hist(AlljelliesMean$meanJellies)
+hist(Allmeansub$meanJellies)
+hist(log(Allmeansub$meanJellies+1))
+#OK, slightyl zero=inflated
