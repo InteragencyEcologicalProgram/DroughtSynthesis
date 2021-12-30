@@ -50,7 +50,7 @@ mean_YT <- chla_data_stats %>%
 ## WRITE CSV FILE
 chla_data_stats %>%
  select(Date, everything(), -chlaAvg_log) %>%
-  write_csv(., "Data/chla_data_statsLT.csv")
+  write_csv(., "Data/chla_data_stats_LT.csv")
 
 
 ## Summary Tables of data
