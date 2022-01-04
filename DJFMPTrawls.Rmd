@@ -1,0 +1,170 @@
+---
+title: "chipps island"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(chron)
+library(magrittr)
+library(tsibble)
+library(ggplot2)
+library(dataRetrieval) # may require R v4.1.1
+library(DescTools)
+library(emmeans)
+```
+
+## Chipps island data
+
+The trawl data is structured very similar to the beach seine data, we will just subset it to just the "chipps" location. Since it's just a single location, we can use day of year instead of week to calculate cummulative catch.
+
+```{r}
+Trawl1 = read_csv("data/1976-2001_DJFMP_trawl_fish_and_water_quality_data.csv")
+Trawl2 = read_csv("data/2002-2021_DJFMP_trawl_fish_and_water_quality_data.csv")
+Trawls = bind_rows(Trawl1, Trawl2)%>%
+  select(Location, StationCode, SampleDate, MethodCode, TowNumber, TowDuration, Volume, IEPFishCode, Count)
+TrawlsCH = pivot_wider(Trawls, names_from = IEPFishCode, values_from = Count, values_fn = sum, values_fill = 0) %>%
+  select(Location, StationCode, SampleDate, MethodCode, TowNumber, TowDuration, Volume, CHISAL) %>% 
+  mutate(year_wk = yearweek(SampleDate),
+         setID = paste(SampleDate, StationCode),
+         CPUE = CHISAL/Volume)
+#calculate cummulative CPUE for Chipps
+Chipps = filter(TrawlsCH, Location == "Chipps Island") %>%
+  arrange(SampleDate) %>%
+mutate(Year = year(SampleDate), julian = yday(SampleDate), wyjulian = case_when(
+  julian > 274 ~ julian -274,
+  TRUE ~ julian +91
+))%>%
+  rename(Date = SampleDate) %>%
+  addWaterYear() %>%
+  group_by(waterYear) %>%
+    mutate(cumcatch = cumsum(CHISAL), cumcpue = cumsum(CPUE), 
+           percentcatch = cumcatch/max(cumcatch, na.rm = T))
+```
+
+Ok, now let's plot it 
+```{r}
+ggplot(Chipps, aes(x=wyjulian, y = cumcatch, group = waterYear)) + geom_line()+
+  coord_cartesian(xlim = c(0,360))
+
+
+ggplot(Chipps, aes(x=wyjulian, y = percentcatch, group = waterYear, color = as.factor(waterYear))) + geom_line()+
+  coord_cartesian(xlim = c(0,360))+
+  ylab("Percent of Annual Chinook Salmon Catch")+
+  xlab("day of water year")
+```
+
+
+
+Calculating the point where we get to 50% of the annual catch, then join it to the water year
+
+```{r}
+Chipps50 = Chipps %>%
+filter(percentcatch >= 0.5) %>% 
+  group_by(waterYear) %>% 
+  summarise(a50_day = min(wyjulian))
+
+
+WYs <- read_csv("data/yearassignments.csv")
+
+chipdate2 = left_join(Chipps50, WYs, by = c("waterYear" = "Year"))
+```
+
+Now do a box plot of the 50% day versus our drought designations
+
+```{r}
+ggplot(chipdate2, aes(x=Drought, y = a50_day)) + geom_boxplot()
+```
+
+Let's see what it looks like if we do the five water year types instaed, or the sacramento water year index
+```{r}
+ggplot(chipdate2, aes(x=Yr_type, y = a50_day)) + geom_boxplot()
+
+ggplot(chipdate2, aes(x= Index, y = a50_day)) + geom_point() + geom_smooth(method = "lm")
+```
+
+How about just the current and past drought?
+```{r cars}
+ggplot(filter(Chipps, waterYear>2013), aes(x=wyjulian, y = percentcatch, group = waterYear, color = as.factor(waterYear))) + geom_line()+
+  coord_cartesian(xlim = c(0,350))+
+  ylab("Percent of Annual Chinook Salmon Catch")+
+  xlab("day of water year")
+
+
+
+```
+
+## Now the Sacramento tral (point of Delta entry)
+
+
+Theis is the "sherwood harbor" location
+
+```{r}
+
+Shr = filter(TrawlsCH, Location == "Sherwood Harbor") %>%
+  arrange(SampleDate) %>%
+mutate(Year = year(SampleDate), julian = yday(SampleDate), wyjulian = case_when(
+  julian > 274 ~ julian -274,
+  TRUE ~ julian +91
+))%>%
+  rename(Date = SampleDate) %>%
+  addWaterYear() %>%
+  group_by(waterYear) %>%
+    mutate(cumcatch = cumsum(CHISAL), cumcpue = cumsum(CPUE), 
+           percentcatch = cumcatch/max(cumcatch, na.rm = T))
+```
+
+Ok, now let's plot it 
+```{r}
+ggplot(Shr, aes(x=wyjulian, y = cumcatch, group = waterYear)) + geom_line()+
+  coord_cartesian(xlim = c(0,360))
+
+
+ggplot(Shr, aes(x=wyjulian, y = percentcatch, group = waterYear, color = as.factor(waterYear))) + geom_line()+
+  coord_cartesian(xlim = c(0,360))+
+  ylab("Percent of Annual Chinook Salmon Catch at Sherwood")+
+  xlab("day of water year")
+```
+
+
+
+Calculating the point where we get to 50% of the annual catch, then join it to the water year
+
+```{r}
+Sher50 = Shr %>%
+filter(percentcatch >= 0.5) %>% 
+  group_by(waterYear) %>% 
+  summarise(a50_day = min(wyjulian))
+
+
+yeartypes <- read_csv("data/yearassignments.csv")
+
+Sherdate2 = left_join(Sher50, WYs, by = c("waterYear" = "Year"))
+```
+
+Now do a box plot of the 50% day versus our drought designations
+
+```{r}
+ggplot(Sherdate2, aes(x=Drought, y = a50_day)) + geom_boxplot()
+```
+
+Let's see what it looks like if we do the five water year types instaed, or the sacramento water year index
+```{r}
+ggplot(Sherdate2, aes(x=Yr_type, y = a50_day)) + geom_boxplot()
+
+ggplot(Sherdate2, aes(x= Index, y = a50_day)) + geom_point() + geom_smooth(method = "lm")
+```
+
+How about just the current and past drought?
+```{r}
+ggplot(filter(Shr, waterYear>2013), aes(x=wyjulian, y = percentcatch, group = waterYear, color = as.factor(waterYear))) + geom_line()+
+  coord_cartesian(xlim = c(0,350))+
+  ylab("Percent of Annual Chinook Salmon Catch")+
+  xlab("day of water year")
+
+
+

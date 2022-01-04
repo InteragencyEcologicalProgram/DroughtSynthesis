@@ -38,7 +38,7 @@ ggplot(habs2021, aes(x = as.factor(Date), y = value, fill = Species)) + geom_col
   theme(axis.text.x = element_text(vjust = 1, hjust = 1, angle = 90))+
   ylab("units present") +xlab(NULL)
   
-HABcol = data.frame(Color = brewer.pal(8, "Dark2"),
+HABcol = data.frame(Color = brewer.pal(7, "Dark2"),
                     Genus = sort(unique(EMPHAB2$Genus)))
 
 

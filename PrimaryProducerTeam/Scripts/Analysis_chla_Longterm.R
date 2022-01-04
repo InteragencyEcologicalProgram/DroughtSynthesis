@@ -42,10 +42,15 @@ chla_data_stats <- chla_data_filt %>%
   ) %>% 
   ungroup()
 
+## Year Type mean
+mean_YT <- chla_data_stats %>% 
+  group_by(ds_year_type) %>% 
+  summarize(mean_chla= mean(chlaAvg_log10))
+
 ## WRITE CSV FILE
 chla_data_stats %>%
  select(Date, everything(), -chlaAvg_log) %>%
-  write_csv(., "Data/chla_data_statsLT.csv")
+  write_csv(., "Data/chla_data_stats_LT.csv")
 
 
 ## Summary Tables of data
@@ -138,14 +143,14 @@ emm_year_results2 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "
 
 ## Region is non-significant in ANOVA
 
-#emm_Region <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
-#save(emm_Region, file= "Data/emm_Region.Rdata")
-#load("Data/emm_Region.Rdata")
-#pairs(emm_Region)
+#emm_Region2 <- emmeans(fit_log10.2, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_Region2, file= "Data/emm_Region2.Rdata")
+#load("Data/emm_Region2.Rdata")
+pairs(emm_Region2)
 
-#emm_season <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
-#save(emm_season, file= "Data/emm_season.Rdata")
-#pairs(emm_season)
+emm_season2 <- emmeans(fit_log10.2, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
+save(emm_season2, file= "Data/emm_season2.Rdata")
+pairs(emm_season2)
 
 
 
@@ -187,7 +192,8 @@ ggsave(last_plot(), filename= "station_map_chla_filt_LT.png", width= 6.5, height
 
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
-  geom_boxplot(aes(fill= ds_year_type)) +
+ geom_boxplot(aes(fill= ds_year_type)) +
+  #geom_point(data= mean_YT, aes(x= ds_year_type, y= mean_chla), color= "white", shape= 8, size= 4) +
   geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),

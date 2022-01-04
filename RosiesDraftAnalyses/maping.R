@@ -2,6 +2,8 @@ library(deltamapr)
 library(tidyverse)
 library(ggmap)
 library(sf)
+library(readxl)
+library(ggsn)
 
 cdec = read.csv("data/CDEC_StationsEC.csv")
 cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326)
@@ -9,9 +11,8 @@ cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326)
 
 #import list of regions with enough data for analysis
 library(readr)
-Rosies_regions <- read_csv("RosiesDraftAnalyses/Rosies_regions.csv")
-FLOATlong = left_join(Rosies_regions, R_EDSM_Subregions_Mahardja_FLOAT) %>%
-  filter(Long_term == TRUE) %>%
+Rosies_regions <- read_excel("RosiesDraftAnalyses/Rosies_regions.xlsx")
+FLOATlong = left_join(Rosies_regions, select(R_EDSM_Subregions_Mahardja_FLOAT, -Region)) %>%
   st_as_sf()
 
 #plot of all the regions and all the cdec stations
@@ -24,15 +25,29 @@ ggplot()+
   theme(legend.position="none")+
     coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.6, 38.6))
 
-#plot of all the cdec stations and a subset of the regions
+Regions = FLOATlong %>%
+  group_by(Region) %>%
+  summarize()
+
+#Map for drought report
 ggplot()+
   geom_sf(data = WW_Delta)+
-  geom_sf(data = cdecsf)+
-  geom_sf(data = FLOATlong,
-          aes(fill=SubRegion), alpha = 0.2)+
+  #geom_sf(data = cdecsf)+
+  geom_sf(data = Regions,
+          aes(fill=Region), alpha = 0.2)+
   theme_bw()+
   theme(legend.position="none")+
-  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.6, 38.6))
+  scalebar(data = Regions, transform = TRUE, dist = 10, dist_unit = "km", model = "WGS84") +
+#  north(data = FLOATlong, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")+
+  scale_fill_discrete(guide = NULL)+
+  geom_sf_label(data = Regions, aes(label = Region), 
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"),
+                fontface = "bold")+
+  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
+  
+
 
 #plot of the regional averages (centroisds)
 centroids = st_centroid(FLOATlong)
