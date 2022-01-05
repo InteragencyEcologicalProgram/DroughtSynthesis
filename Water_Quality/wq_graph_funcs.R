@@ -227,8 +227,14 @@ emm_plotter <-
             line_size = .6,
             fatten = 2) {
 
+    # check that fill type is valid argument
     if (fill_type %!in% c('boxplot', 'rect')) {
       stop('fill_rect must be in c("boxplot", "rect")')
+    }
+    
+    # change fill to factor if not already
+    if(!is.factor(pull(df_data, .data[[fill]]))){
+      df_data[fill] <- as.factor(dplyr::pull(df_data, .data[[fill]]))
     }
     
     # calc data
@@ -251,17 +257,16 @@ emm_plotter <-
     
     if(fill_type == 'rect' & !is.na(fill)){
       x_max <- max(as.numeric(as.factor(pull(df_data, .data[[grouping]]))), na.rm = TRUE)
-      
       df_shading <- data.frame(
         xmin = seq(from = 0.5, to = x_max, by = 1),
         xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
         ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
-        Group = pull(df_data, .data[[fill]])
+        Fill = levels(pull(df_data, .data[[fill]]))
       )
 
       plt <- plt +
         ggplot2::geom_rect(data = df_shading,
-                           mapping = aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = ymax, fill = Group))
+                           mapping = aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = ymax, fill = Fill))
     }
     
     # finish plot
@@ -285,11 +290,11 @@ emm_plotter <-
   }
 
 # -- Year Barplots --
-dual_year_plts <- function(plt_reg, plt_seas){
+dual_year_plts <- function(plt_reg, plt_seas, angle = 0){
   legend <- cowplot::get_legend(plt_reg + guides(color = guide_legend(nrow = 1)) + theme(legend.position = 'top'))
   
-  plt_reg <- plt_reg + ylab(NULL) + xlab('Year (Regional Averages)') + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none')
-  plt_seas <- plt_seas + xlab('Year (Seasonal Averages)') + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none')
+  plt_reg <- plt_reg + ylab(NULL) + xlab('Year (Regional Averages)') + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
+  plt_seas <- plt_seas + xlab('Year (Seasonal Averages)') + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
   
   int <- cowplot::plot_grid(plotlist = list(plt_seas, plt_reg), labels = 'auto', align = 'vh', hjust = -1, nrow = 1)
   

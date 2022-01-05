@@ -70,8 +70,20 @@ df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'DI') %>% relo
 write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv')
 
 # plts
+plt_am_seas <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
 
-plt_am_seas <- emm_plotter(lm_seasonal, df_am_seasonal, analyte = 'DissAmmonia', grouping = 'Drought') + theme_bw() + ylab('log(Dissolved Ammonia)')
+plt_am_seas
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
 ```
 
@@ -115,7 +127,20 @@ write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, a
 
 # plts
 
-plt_am_reg <- emm_plotter(lm_regional, df_am_regional, analyte = 'DissAmmonia', grouping = 'Drought') + theme_bw() + ylab('log(Dissolved Ammonia)')
+plt_am_reg <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_reg
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_reg.jpg'), plt_am_reg, width = 7, height = 4.5)
 ```
 
@@ -159,8 +184,17 @@ write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, a
 
 # plts
 
-plt_nn_seas <- emm_plotter(lm_seasonal, df_nn_seasonal, analyte = 'DissNitrateNitrite', grouping = 'Drought') +
+plt_nn_seas <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
   theme_bw() +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Nitrate/Nitrite)')
 
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_sea.jpg'), plt_nn_seas, width = 7, height = 4.5)
@@ -206,9 +240,19 @@ write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, a
 
 # plts
 
-plt_nn_reg <- emm_plotter(lm_regional, df_nn_regional, analyte = 'DissNitrateNitrite', grouping = 'Drought') +
+plt_nn_reg <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
   theme_bw() +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Nitrate/Nitrite)')
+
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_reg.jpg'), plt_nn_reg, width = 7, height = 4.5)
 ```
 
@@ -253,7 +297,19 @@ write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, a
 
 # plts
 
-plt_op_seas <- emm_plotter(lm_seasonal, df_op_seasonal, analyte = 'DissOrthophos', grouping = 'Drought') + theme_bw() + ylab('log(Dissolved Orthophosphate)')
+plt_op_seas <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought()
++ ylab('log(Dissolved Orthophosphate)')
+
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_sea.jpg'), plt_op_seas, width = 7, height = 4.5)
 ```
 
@@ -297,31 +353,34 @@ write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, a
 
 #plts
 
-plt_op_reg <- emm_plotter(lm_regional, df_op_regional, analyte = 'DissOrthophos', grouping = 'Drought') + theme_bw() + ylab('log(Dissolved Orthophosphate)')
+plt_op_reg <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
+
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_reg.jpg'), plt_op_reg, width = 7, height = 4.5)
 ```
 
 ```{r}
 # save plots
 # dissam
-plt_am_reg <- plt_am_reg + ylab(NULL) + xlab('Drought (Regional Averages)')
-plt_am_seas <- plt_am_seas + xlab('Drought (Seasonal Averages)')
-
-bp_em_DissAmmonia_di_both <- cowplot::plot_grid(plotlist = list(plt_am_seas, plt_am_reg), labels = 'auto')
+bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_reg, plt_am_seas)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_both.jpg'), bp_em_DissAmmonia_di_both, width = 8, height = 3.5)
 
 # dissnn
-plt_nn_reg <- plt_nn_reg + ylab(NULL) + xlab('Drought (Regional Averages)')
-plt_nn_seas <- plt_nn_seas + xlab('Drought (Seasonal Averages)')
-
-bp_em_DissNitrateNitrite_di_both <- cowplot::plot_grid(plotlist = list(plt_nn_seas, plt_nn_reg), labels = 'auto')
+bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_reg, plt_nn_seas)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_both.jpg'), bp_em_DissNitrateNitrite_di_both, width = 8, height = 3.5)
 
 # dissorthophos
-plt_op_reg <- plt_op_reg + ylab(NULL) + xlab('Drought (Regional Averages)')
-plt_op_seas <- plt_op_seas + xlab('Drought (Seasonal Averages)')
-
-bp_em_DissOrthophos_di_both <- cowplot::plot_grid(plotlist = list(plt_op_seas, plt_op_reg), labels = 'auto')
+bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_reg, plt_op_seas)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_both.jpg'), bp_em_DissOrthophos_di_both, width = 8, height = 3.5)
 ```
 

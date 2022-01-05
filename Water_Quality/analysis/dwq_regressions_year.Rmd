@@ -61,7 +61,7 @@ aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
 
 df_aov <- aov_as_df(aov_seasonal, 'DissAmmonia')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-# write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv')
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv')
 
 # plts
 plt_am_seas <- emm_plotter(
@@ -72,18 +72,17 @@ plt_am_seas <- emm_plotter(
   fill = 'Drought',
   fill_type = 'rect',
   rect_gap = 0.02,
-  fill_alpha = 0.8,
   fatten = 0.85,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Ammonia)')
 
 plt_am_seas
 
-# ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
 ```
 
 # Regional Averages for Entire Delta (DissAmmonia)
@@ -126,13 +125,14 @@ plt_am_reg <- emm_plotter(
   analyte = 'DissAmmonia',
   grouping = 'YearAdj',
   fill = 'Drought',
-  fill_alpha = 0.8,
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fatten = 0.85,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Ammonia)')
 plt_am_reg
 
@@ -179,13 +179,14 @@ plt_nn_seas <- emm_plotter(
   analyte = 'DissNitrateNitrite',
   grouping = 'YearAdj',
   fill = 'Drought',
-  fill_alpha = 0.8,
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fatten = 0.85,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Nitrate/Nitrite)')
 
 plt_nn_seas
@@ -233,13 +234,14 @@ plt_nn_reg <- emm_plotter(
   analyte = 'DissNitrateNitrite',
   grouping = 'YearAdj',
   fill = 'Drought',
-  fill_alpha = 0.8,
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fatten = 0.85,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Nitrate/Nitrite)')
 
 plt_nn_reg
@@ -286,13 +288,14 @@ plt_op_seas <- emm_plotter(
   analyte = 'DissOrthophos',
   grouping = 'YearAdj',
   fill = 'Drought',
-  fill_alpha = 0.8,
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fatten = 0.85,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Orthophosphate)')
 
 plt_op_seas
@@ -340,13 +343,14 @@ plt_op_reg <- emm_plotter(
   analyte = 'DissOrthophos',
   grouping = 'YearAdj',
   fill = 'Drought',
-  fill_alpha = 0.8,
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fatten = 0.8,
   line_size = .7,
   text_size = 4.5
 ) +
   theme_bw() +
-  scale_fill_manual(values = c('#d8b365', '#f5f5f5')) +
+  drt_color_pal_drought() +
   ylab('log(Dissolved Orthophosphate)')
 
 plt_op_reg
@@ -357,15 +361,15 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_reg.jpg'), pl
 ```{r}
 # save plots
 # dissam
-bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_reg, plt_am_seas)
+bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_reg, plt_am_seas, angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_both.jpg'), bp_em_DissAmmonia_yt_both, width = 8, height = 3.5)
 
 # dissnn
-bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_reg, plt_nn_seas)
+bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_both.jpg'), bp_em_DissNitrateNitrite_yt_both, width = 8, height = 3.5)
 
 # dissorthophos
-bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_reg, plt_op_seas)
+bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_reg, plt_op_seas, angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_both.jpg'), bp_em_DissOrthophos_yt_both, width = 8, height = 3.5)
 ```
 

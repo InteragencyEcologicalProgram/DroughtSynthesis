@@ -1,30 +1,25 @@
 Response Var,Agg Type,Avg Type,Dependent Var,Sum Sq,Df,F value,Pr(>F),Signif
-DissAmmonia,Seasonal,DI,Drought,0.196021203,2,3.912851318,0.021911821,< 0.05
-DissAmmonia,Seasonal,DI,Season,0.697204473,3,9.278103255,1.07E-05,< 0.001
-DissAmmonia,Seasonal,DI,DissAmmonia_onelag,0.276447167,1,11.03652712,0.001105613,< 0.01
-DissAmmonia,Seasonal,DI,Residuals,4.032789787,161,NA,NA,NA
+DissAmmonia,Seasonal,DI,Drought,0.19602120290005853,2,3.912851317598208,0.02191182076619893,< 0.05
+DissAmmonia,Seasonal,DI,Season,0.6972044730140601,3,9.278103254504666,1.074624153529086e-5,< 0.001
+DissAmmonia,Seasonal,DI,DissAmmonia_onelag,0.27644716687269444,1,11.036527121972794,0.00110561268752823,< 0.01
+DissAmmonia,Seasonal,DI,Residuals,4.032789787458787,161,NA,NA,NA
  , , , , , , , , 
-DissAmmonia,Regional,DI,Drought,0.048730927,2,1.143375308,0.322188811,> 0.1 (NS)
-DissAmmonia,Regional,DI,Region,0.093658337,2,2.197508549,0.11553025,> 0.1 (NS)
-DissAmmonia,Regional,DI,DissAM_onelag,1.815427691,1,85.1908758,1.17E-15,< 0.001
-DissAmmonia,Regional,DI,Residuals,2.557214266,120,NA,NA,NA
+DissAmmonia,Regional,DI,Drought,0.0487309274694114,2,1.14337530773368,0.322188811019281,> 0.1 (NS)
+DissAmmonia,Regional,DI,Region,0.0936583368593484,2,2.19750854928015,0.115530250458731,> 0.1 (NS)
+DissAmmonia,Regional,DI,DissAM_onelag,1.81542769089745,1,85.1908757965279,1.17176243198816e-15,< 0.001
+DissAmmonia,Regional,DI,Residuals,2.55721426585654,120,NA,NA,NA
  , , , , , , , , 
-DissNitrateNitrite,Seasonal,DI,Drought,0.340457103,2,16.32656308,3.09E-07,< 0.001
-DissNitrateNitrite,Seasonal,DI,Season,0.927777031,3,29.66092762,1.34E-15,< 0.001
-DissNitrateNitrite,Seasonal,DI,DissNN_onelag,0.075792433,1,7.269226705,0.007687789,< 0.01
-DissNitrateNitrite,Seasonal,DI,Residuals,1.85591309,178,NA,NA,NA
+DissNitrateNitrite,Seasonal,DI,Drought,0.340457102679545,2,16.3265630810559,3.08913111209271e-07,< 0.001
+DissNitrateNitrite,Seasonal,DI,Season,0.927777030849258,3,29.6609276177987,1.33506963996672e-15,< 0.001
+DissNitrateNitrite,Seasonal,DI,DissNN_onelag,0.0757924325700108,1,7.26922670540193,0.00768778860804953,< 0.01
+DissNitrateNitrite,Seasonal,DI,Residuals,1.85591309010027,178,NA,NA,NA
  , , , , , , , , 
-DissNitrateNitrite,Regional,DI,Drought,0.160226023,2,12.13372351,1.47E-05,< 0.001
-DissNitrateNitrite,Regional,DI,Region,0.508347358,2,38.49653236,7.40E-14,< 0.001
-DissNitrateNitrite,Regional,DI,DissNN_onelag,0.113619629,1,17.20855494,6.01E-05,< 0.001
-DissNitrateNitrite,Regional,DI,Residuals,0.858326094,130,NA,NA,NA
+DissNitrateNitrite,Regional,DI,Drought,0.160226023206772,2,12.1337235138513,1.47397083793326e-05,< 0.001
+DissNitrateNitrite,Regional,DI,Region,0.508347357643801,2,38.4965323559631,7.39931037444991e-14,< 0.001
+DissNitrateNitrite,Regional,DI,DissNN_onelag,0.113619628773807,1,17.2085549362812,6.00945321228086e-05,< 0.001
+DissNitrateNitrite,Regional,DI,Residuals,0.858326093927491,130,NA,NA,NA
  , , , , , , , , 
-DissOrthophos,Seasonal,DI,Drought,0.397031823,2,18.49734487,4.94E-08,< 0.001
-DissOrthophos,Seasonal,DI,Season,0.091518483,3,2.842507576,0.039222842,< 0.05
-DissOrthophos,Seasonal,DI,DissOrthophos_onelag,0.604987398,1,56.37160491,2.68E-12,< 0.001
-DissOrthophos,Seasonal,DI,Residuals,1.931783419,180,NA,NA,NA
- , , , , , , , , 
-DissOrthophos,Regional,DI,Drought,0.251324048,2,15.63064569,7.92E-07,< 0.001
-DissOrthophos,Regional,DI,Region,0.220392768,2,13.70693053,3.84E-06,< 0.001
-DissOrthophos,Regional,DI,DissOrthophos_onelag,0.785824802,1,97.74591142,1.20E-17,< 0.001
-DissOrthophos,Regional,DI,Residuals,1.077288267,134,NA,NA,NA
+DissOrthophos,Seasonal,DI,Drought,0.397031823385192,2,18.4973448665592,4.94431260446041e-08,< 0.001
+DissOrthophos,Seasonal,DI,Season,0.091518483373078,3,2.84250757564408,0.0392228418845822,< 0.05
+DissOrthophos,Seasonal,DI,DissOrthophos_onelag,0.604987398114328,1,56.3716049128188,2.68288224002664e-12,< 0.001
+DissOrthophos,Seasonal,DI,Residuals,1.93178341877962,180,NA,NA,NA
