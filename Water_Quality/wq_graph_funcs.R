@@ -258,3 +258,15 @@ emm_plotter <-
     
     return(plt)
   }
+
+# -- Year Barplots --
+dual_year_plts <- function(plt_reg, plt_seas){
+  legend <- cowplot::get_legend(plt_reg + guides(color = guide_legend(nrow = 1)) + theme(legend.position = 'top'))
+  
+  plt_reg <- plt_reg + ylab(NULL) + xlab('Year (Regional Averages)') + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none')
+  plt_seas <- plt_seas + xlab('Year (Seasonal Averages)') + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = 'none')
+  
+  int <- cowplot::plot_grid(plotlist = list(plt_seas, plt_reg), labels = 'auto', align = 'vh', hjust = -1, nrow = 1)
+  
+  plt_both <- cowplot::plot_grid(legend, int, ncol = 1, rel_heights = c(.1, .9))
+}
