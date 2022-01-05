@@ -57,11 +57,11 @@ print('')
 # plot(lm_seasonal)
 
 aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
-print(aov_seasonal)
+# print(aov_seasonal)
 
 df_aov <- aov_as_df(aov_seasonal, 'DissAmmonia')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv')
+# write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv')
 
 # plts
 plt_am_seas <- emm_plotter(
@@ -70,6 +70,8 @@ plt_am_seas <- emm_plotter(
   analyte = 'DissAmmonia',
   grouping = 'YearAdj',
   fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
   fill_alpha = 0.8,
   fatten = 0.85,
   line_size = .7,
@@ -81,7 +83,7 @@ plt_am_seas <- emm_plotter(
 
 plt_am_seas
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
+# ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
 ```
 
 # Regional Averages for Entire Delta (DissAmmonia)

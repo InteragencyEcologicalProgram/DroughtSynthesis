@@ -1,4 +1,6 @@
 `%>%` <- purrr::`%>%`
+`%!in%` <- Negate(`%in%`)
+
 # BOXPLOTS
 
 # calc outliers
@@ -214,6 +216,8 @@ emm_plotter <-
             grouping,
             y,
             fill = NA,
+            fill_type = 'boxplot',
+            rect_gap = 0,
             adjust = 'Tukey',
             pt_color = 'red',
             fill_alpha = 1,
@@ -222,24 +226,45 @@ emm_plotter <-
             nudge_y = 0.05,
             line_size = .6,
             fatten = 2) {
-    
-    df_emm <- emm_data(model, df_data, analyte, grouping, adjust = 'Tukey')
 
-    # create plot
+    if (fill_type %!in% c('boxplot', 'rect')) {
+      stop('fill_rect must be in c("boxplot", "rect")')
+    }
+    
+    # calc data
+    df_emm <- emm_data(model, df_data, analyte, grouping, adjust = 'Tukey')
+    tt = 'x'
+    # create plot (fills)
     plt <- ggplot2::ggplot()
 
-    if (is.na(fill)) {
+    if (is.na(fill) | fill_type == 'rect') {
       plt <- plt +
         ggplot2::geom_boxplot(data = df_data,
                               mapping = aes(x = .data[[grouping]], y = .data[[analyte]]),
                               alpha = fill_alpha)
-    } else {
+    } else if (!is.na(fill) & fill_type == 'boxplot') {
       plt <- plt +
         ggplot2::geom_boxplot(data = df_data,
                               mapping = aes(x = .data[[grouping]], y = .data[[analyte]], fill = .data[[fill]]),
                               alpha = fill_alpha)
     }
     
+    if(fill_type == 'rect' & !is.na(fill)){
+      x_max <- max(as.numeric(as.factor(pull(df_data, .data[[grouping]]))), na.rm = TRUE)
+      
+      df_shading <- data.frame(
+        xmin = seq(from = 0.5, to = x_max, by = 1),
+        xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
+        ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
+        Group = pull(df_data, .data[[fill]])
+      )
+
+      plt <- plt +
+        ggplot2::geom_rect(data = df_shading,
+                           mapping = aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = ymax, fill = Group))
+    }
+    
+    # finish plot
     plt <- plt +
       ggplot2::geom_pointrange(
         data = df_emm,

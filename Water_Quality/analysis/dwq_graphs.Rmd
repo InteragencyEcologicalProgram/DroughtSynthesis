@@ -33,8 +33,7 @@ df_wq <- df_wq %>%
 for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
   full_name <- assign_full_name(analyte)
   ylim_cut <- assign_cutoffs(analyte)
-  
-  source('Water_Quality/wq_graph_funcs.R')
+
   df_bp <- gen_bp_data(df_wq, analyte, group = 'YearType_20_21', metadat = c('YearType'))
   
   plt_bp <- create_bp(df_bp, x = 'YearType_20_21', fill = 'YearType', show_outliers = TRUE)
@@ -45,9 +44,9 @@ for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
     xlab('Year/Drought') +
     ylim(0,ylim_cut)
   
-  # print(plt_bp)
+  print(plt_bp)
   
-  ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_yt.jpg'),plt_bp, width = 7, height = 4.5)
+#  ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_yt.jpg'),plt_bp, width = 7, height = 4.5)
 }
 
 # drought index
