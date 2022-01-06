@@ -137,6 +137,20 @@ plt_am_reg <- emm_plotter(
 plt_am_reg
 
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_reg.jpg'), plt_am_reg, width = 7, height = 4.5)
+
+plt_am_reg_reg <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Region',
+  fatten = 0.8,
+  line_size = .7,
+  text_size = 4.5
+) +
+  theme_bw() +
+  ylab('log(Dissolved Ammonia)')
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_reg_reg.jpg'), plt_op_reg_reg, width = 4.5, height = 3)
 ```
 
 # DissNitrateNitrite
@@ -353,23 +367,35 @@ plt_op_reg <- emm_plotter(
   drt_color_pal_drought() +
   ylab('log(Dissolved Orthophosphate)')
 
-plt_op_reg
-
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_reg.jpg'), plt_op_reg, width = 7, height = 4.5)
+
+plt_op_reg_reg <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Region',
+  fatten = 0.8,
+  line_size = .7,
+  text_size = 4.5
+) +
+  theme_bw() +
+  ylab('log(Dissolved Orthophosphate)')
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_reg_reg.jpg'), plt_op_reg_reg, width = 4.5, height = 3)
 ```
 
 ```{r}
 # save plots
 # dissam
-bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_reg, plt_am_seas, angle = 45)
+bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_reg, plt_am_seas, 'Year', angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_both.jpg'), bp_em_DissAmmonia_yt_both, width = 8, height = 3.5)
 
 # dissnn
-bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, angle = 45)
+bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, 'Year', angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_both.jpg'), bp_em_DissNitrateNitrite_yt_both, width = 8, height = 3.5)
 
 # dissorthophos
-bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_reg, plt_op_seas, angle = 45)
+bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_reg, plt_op_seas, 'Year', angle = 45)
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_both.jpg'), bp_em_DissOrthophos_yt_both, width = 8, height = 3.5)
 ```
 

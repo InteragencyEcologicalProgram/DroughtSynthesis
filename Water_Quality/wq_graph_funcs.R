@@ -214,11 +214,12 @@ emm_plotter <-
             df_data,
             analyte,
             grouping,
+            emm_alpha = 0.05,
             y,
             fill = NA,
             fill_type = 'boxplot',
             rect_gap = 0,
-            adjust = 'Tukey',
+            adjust = 'Sidak',
             pt_color = 'red',
             fill_alpha = 1,
             position_nudge = 0.1,
@@ -233,21 +234,22 @@ emm_plotter <-
     }
     
     # change fill to factor if not already
-    if(!is.factor(pull(df_data, .data[[fill]]))){
-      df_data[fill] <- as.factor(dplyr::pull(df_data, .data[[fill]]))
+    if(!is.na(fill)) {
+      if (!is.factor(pull(df_data, .data[[fill]]))) {
+        df_data[fill] <- as.factor(dplyr::pull(df_data, .data[[fill]]))
+      }
     }
-    
+
     # calc data
-    df_emm <- emm_data(model, df_data, analyte, grouping, adjust = 'Tukey')
-    tt = 'x'
+    df_emm <- emm_data(model, df_data, analyte, grouping, emm_alpha, adjust = 'Sidak')
+
     # create plot (fills)
     plt <- ggplot2::ggplot()
 
     if (is.na(fill) | fill_type == 'rect') {
       plt <- plt +
         ggplot2::geom_boxplot(data = df_data,
-                              mapping = aes(x = .data[[grouping]], y = .data[[analyte]]),
-                              alpha = fill_alpha)
+                              mapping = aes(x = .data[[grouping]], y = .data[[analyte]]))
     } else if (!is.na(fill) & fill_type == 'boxplot') {
       plt <- plt +
         ggplot2::geom_boxplot(data = df_data,
@@ -255,15 +257,25 @@ emm_plotter <-
                               alpha = fill_alpha)
     }
     
-    if(fill_type == 'rect' & !is.na(fill)){
+    if (fill_type == 'rect' & !is.na(fill)) {
       x_max <- max(as.numeric(as.factor(pull(df_data, .data[[grouping]]))), na.rm = TRUE)
-      df_shading <- data.frame(
-        xmin = seq(from = 0.5, to = x_max, by = 1),
-        xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
-        ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
-        Fill = levels(pull(df_data, .data[[fill]]))
-      )
-
+      
+      if (grouping == fill) {
+        df_shading <- data.frame(
+          xmin = seq(from = 0.5, to = x_max, by = 1),
+          xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
+          ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
+          Fill = levels(pull(df_data, .data[[fill]]))
+        )
+      } else{
+        df_shading <- data.frame(
+          xmin = seq(from = 0.5, to = x_max, by = 1),
+          xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
+          ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
+          Fill = pull(df_data, .data[[fill]])
+        )
+      }
+      
       plt <- plt +
         ggplot2::geom_rect(data = df_shading,
                            mapping = aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = ymax, fill = Fill))
@@ -290,13 +302,56 @@ emm_plotter <-
   }
 
 # -- Year Barplots --
-dual_year_plts <- function(plt_reg, plt_seas, angle = 0){
+dual_year_plts <- function(plt_reg, plt_seas, type, angle = 0){
   legend <- cowplot::get_legend(plt_reg + guides(color = guide_legend(nrow = 1)) + theme(legend.position = 'top'))
   
-  plt_reg <- plt_reg + ylab(NULL) + xlab('Year (Regional Averages)') + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
-  plt_seas <- plt_seas + xlab('Year (Seasonal Averages)') + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
+  plt_reg <- plt_reg + ylab(NULL) + xlab(paste(type, '(Regional Averages)')) + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
+  plt_seas <- plt_seas + xlab(paste(type, '(Seasonal Averages)')) + theme(axis.text.x = element_text(angle = angle, hjust = 1), legend.position = 'none')
   
   int <- cowplot::plot_grid(plotlist = list(plt_seas, plt_reg), labels = 'auto', align = 'vh', hjust = -1, nrow = 1)
   
   plt_both <- cowplot::plot_grid(legend, int, ncol = 1, rel_heights = c(.1, .9))
+}
+
+quad_year_plts <- function(plt_lt_di, plt_st_yr, plt_lt_avg, plt_st_avg, type, txt_size = 10, label_size = 14, angle = 0){
+  legend <- cowplot::get_legend(plt_lt_di + guides(color = guide_legend(nrow = 1)) + theme(legend.position = 'top', text = element_text(size = txt_size)))
+  
+  plt_lt_di <- plt_lt_di +
+    xlab(paste0('Drought (', type, 'al Averages)')) +
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = 1),
+      legend.position = 'none',
+      text = element_text(size = txt_size)
+    )
+  
+  plt_st_yr <- plt_st_yr +
+    ylab(NULL) +
+    xlab(paste0('Year (', type, 'al Averages)')) +
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = 1),
+      legend.position = 'none',
+      text = element_text(size = txt_size)
+    )
+  
+  plt_lt_avg <- plt_lt_avg +
+    xlab(paste(type, '(Long Term)')) +
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = 1),
+      legend.position = 'none',
+      text = element_text(size = txt_size)
+    )
+  
+  plt_st_avg <- plt_st_avg +
+    ylab(NULL) + xlab(paste(type, '(Short Term)')) +
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = 1),
+      legend.position = 'none',
+      text = element_text(size = txt_size)
+    )
+  
+  plt_list <- list(plt_lt_di, plt_st_yr, plt_lt_avg, plt_st_avg)
+  
+  int <- cowplot::plot_grid(plotlist = plt_list, labels = 'auto', label_size = label_size, align = 'vh', hjust = -1, nrow = 2)
+  
+  plt_quad <- cowplot::plot_grid(legend, int, ncol = 1, rel_heights = c(.1, .9))
 }

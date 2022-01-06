@@ -27,8 +27,6 @@ df_wq <- raw_nutr_1975_2021
 df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia')
 df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite')
 df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
-
-df_wq <- filter(df_wq, Region != 'Suisun Bay')
 ```
 
 # Dissolved Ammonia
@@ -307,8 +305,8 @@ plt_op_seas <- emm_plotter(
   rect_gap = 0.02
 ) +
   theme_bw() +
-  drt_color_pal_drought()
-+ ylab('log(Dissolved Orthophosphate)')
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
 
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_sea.jpg'), plt_op_seas, width = 7, height = 4.5)
 ```
@@ -372,15 +370,15 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_reg.jpg'), pl
 ```{r}
 # save plots
 # dissam
-bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_reg, plt_am_seas)
+bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_reg, plt_am_seas, 'Drought')
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_both.jpg'), bp_em_DissAmmonia_di_both, width = 8, height = 3.5)
 
 # dissnn
-bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_reg, plt_nn_seas)
+bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, 'Drought')
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_both.jpg'), bp_em_DissNitrateNitrite_di_both, width = 8, height = 3.5)
 
 # dissorthophos
-bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_reg, plt_op_seas)
+bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_reg, plt_op_seas, 'Drought')
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_both.jpg'), bp_em_DissOrthophos_di_both, width = 8, height = 3.5)
 ```
 

@@ -18,45 +18,14 @@ replace_rl <- function(df_wq, val, seed = 42) {
   return(col_new)
 }
 
-library(emmeans)
-
-# -- Model Plots (from Sam) --
-model_plotter <- function(model, data){
-  data<-data%>%
-    mutate(Residuals=resid(model),
-           Fitted=predict(model))
-  
-  p_hist<-ggplot(data, aes(x=Residuals))+
-    geom_histogram()+
-    # xlab("Residuals (°C)")+
-    theme_bw()
-  
-  p_res_fit<-ggplot(data, aes(x=Residuals, y=Fitted))+
-    geom_point()+
-    # ylab("Predicted temperature (°C)")+
-    # xlab("Residuals (°C)")+
-    theme_bw()
-  
-  p_obs_fit<-ggplot(data, aes(x=Temperature, y=Fitted))+
-    geom_point()+
-    geom_abline(slope=1, intercept=0, color="red")+
-    # ylab("Predicted temperature (°C)")+
-    # xlab("Observed temperature (°C)")+
-    theme_bw()
-  
-  out<-(p_hist+plot_layout(ncol=1))+(p_res_fit+p_obs_fit+plot_layout(ncol=2))+plot_layout(nrow=2, widths=c(1, 0.5, 0.5))
-  
-  return(out)
-}
-
 # -- EMM Func --
-emm_data <- function(model, df, analyte, grouping, adjust = 'Tukey'){
+emm_data <- function(model, df, analyte, grouping, emm_alpha = 0.05, adjust = 'Sidak'){
   # run post-hoc test
   emm <- emmeans::emmeans(model, specs = stats::reformulate(grouping), adjust = adjust)
-  
+
   # create df of emmeans output
-  df_emm <- dplyr::tibble(multcomp::cld(emm, sort = FALSE, Letters = letters))
-  
+  df_emm <- dplyr::tibble(multcomp::cld(emm, sort = FALSE, Letters = letters, alpha = emm_alpha))
+
   # extract max vals from df for graphing purposes
   df <- df %>%
     dplyr::group_by(across(all_of(grouping))) %>%

@@ -1,0 +1,567 @@
+```{r}
+# Title: Exploratory analysis of WQ data
+# Purpose: determine best regressions to use for the drought synthesis project
+# Author: Sarah Perry
+# Contact: sarah.perry@water.ca.gov
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(emmeans)
+library(DroughtData)
+source('Water_Quality/wq_analysis_funcs.R')
+source('Water_Quality/wq_graph_funcs.R')
+```
+
+# ----
+LONG TERM DATA ANALYSIS (DROUGHT)
+# ----
+
+```{r}
+# raw data
+df_wq <- raw_nutr_1975_2021
+
+df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia')
+df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite')
+df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
+```
+
+# Dissolved Ammonia
+## Seasonal Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'season', month.na = 'relaxed')
+df_am_seasonal <- drt_add_yr_assign(df_am_seasonal)
+df_am_seasonal$DissAmmonia <- log10(df_am_seasonal$DissAmmonia)
+
+df_am_seasonal$DissAmmonia_onelag <- lag(df_am_seasonal$DissAmmonia, n = 1L)
+
+lm_seasonal <- lm(DissAmmonia ~ Drought + Season + DissAmmonia_onelag, data = df_am_seasonal)
+
+# plts
+plt_am_lt_seas_di <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_lt_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Ammonia)')
+```
+
+# Regional Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
+df_am_regional <- drt_add_yr_assign(df_am_regional)
+df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
+
+df_am_regional$DissAM_onelag <- lag(df_am_regional$DissAmmonia, n = 1L)
+
+lm_regional <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag, data = df_am_regional)
+
+# plts
+plt_am_lt_reg_di <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_lt_reg_reg <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Region',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Ammonia)')
+```
+
+# DissNitrateNitrite
+## Seasonal Averages for Entire Delta
+```{r message = FALSE}
+df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
+df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
+df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
+
+df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
+
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag, data = df_nn_seasonal)
+
+# plts
+plt_nn_lt_seas_di <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+plt_nn_lt_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+```
+
+## Regional Averages for the Entire Delta (DissNitrateNitrite)
+```{r}
+df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
+df_nn_regional <- drt_add_yr_assign(df_nn_regional)
+df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
+
+df_nn_regional$DissNN_onelag <- lag(df_nn_regional$DissNitrateNitrite, n = 1L)
+
+lm_regional <- lm(DissNitrateNitrite ~ Drought + Region + DissNN_onelag, data = df_nn_regional)
+
+# plts
+plt_nn_lt_reg_di <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+plt_nn_lt_reg_reg <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Region',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+```
+
+# Dissolved Orthophosphate
+## Seasonal Averages for Entire Delta (DissOrthophos)
+```{r}
+df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'season', month.na = 'relaxed')
+df_op_seasonal <- drt_add_yr_assign(df_op_seasonal)
+df_op_seasonal$DissOrthophos <- log10(df_op_seasonal$DissOrthophos)
+
+df_op_seasonal$DissOrthophos_onelag <- lag(df_op_seasonal$DissOrthophos, n = 1L)
+
+lm_seasonal <- lm(DissOrthophos ~ Drought + Season + DissOrthophos_onelag, data = df_op_seasonal)
+
+# plts
+plt_op_lt_seas_di <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
+
+plt_op_lt_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Orthophosphate)')
+```
+
+# Regional Averages for the Entire Delta (DissOrthophos)
+```{r}
+df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'region', month.na = 'relaxed')
+df_op_regional <- drt_add_yr_assign(df_op_regional)
+df_op_regional$DissOrthophos <- log10(df_op_regional$DissOrthophos)
+
+df_op_regional$DissOrthophos_onelag <- lag(df_op_regional$DissOrthophos, n = 1L)
+
+lm_regional <- lm(DissOrthophos ~ Drought + Region  + DissOrthophos_onelag, data = df_op_regional)
+
+#plts
+plt_op_lt_reg_di <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
+
+plt_op_lt_reg_reg <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Region',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Orthophosphate)')
+
+```
+
+```{r}
+# save plots
+# dissam
+bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_lt_reg_di, plt_am_lt_seas_di, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_both.jpg'), bp_em_DissAmmonia_di_both, width = 8, height = 3.5)
+
+# dissnn
+bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_lt_reg_di, plt_nn_lt_seas_di, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_both.jpg'), bp_em_DissNitrateNitrite_di_both, width = 8, height = 3.5)
+
+# dissorthophos
+bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_lt_reg_di, plt_op_lt_seas_di, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_both.jpg'), bp_em_DissOrthophos_di_both, width = 8, height = 3.5)
+```
+
+# ----
+SHORT TERM DATA ANALYSIS (YEARS)
+# ----
+
+From Dave's Drought package
+```{r}
+# raw data
+df_wq <- raw_nutr_2013_2021
+
+df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia', seed = 42)
+df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite', seed = 42)
+df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos', seed = 42)
+df_wq <- filter(df_wq, Region != 'Suisun Marsh')
+```
+
+# Dissolved Ammonia
+## Seasonal Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'season', month.na = 'relaxed')
+df_am_seasonal <- drt_add_yr_assign(df_am_seasonal)
+df_am_seasonal$DissAmmonia <- log10(df_am_seasonal$DissAmmonia)
+df_am_seasonal$YearAdj <- as.factor(df_am_seasonal$YearAdj)
+
+lm_seasonal <- lm(DissAmmonia ~ YearAdj + Season, data = df_am_seasonal)
+
+# plts
+plt_am_st_seas_yr <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.85,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_st_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Ammonia)')
+```
+
+# Regional Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
+df_am_regional <- drt_add_yr_assign(df_am_regional)
+df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
+df_am_regional$YearAdj <- as.factor(df_am_regional$YearAdj)
+
+lm_regional <- lm(DissAmmonia ~ YearAdj + Region, data = df_am_regional)
+
+# plts
+plt_am_st_reg_yr <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.85,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_st_reg_reg <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Region',
+  fatten = 0.8,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Ammonia)')
+```
+
+# DissNitrateNitrite
+## Seasonal Averages for Entire Delta
+```{r message = FALSE}
+df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
+df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
+df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
+df_nn_seasonal$YearAdj <- as.factor(df_nn_seasonal$YearAdj)
+
+lm_seasonal <- lm(DissNitrateNitrite ~ YearAdj + Season, data = df_nn_seasonal)
+
+# plts
+plt_nn_st_seas_yr <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.85,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+plt_nn_st_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+```
+
+## Regional Averages for the Entire Delta (DissNitrateNitrite)
+```{r}
+df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
+df_nn_regional <- drt_add_yr_assign(df_nn_regional)
+df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
+df_nn_regional$YearAdj <- as.factor(df_nn_regional$YearAdj)
+
+lm_regional <- lm(DissNitrateNitrite ~ YearAdj + Region, data = df_nn_regional)
+
+# plts
+plt_nn_st_reg_yr <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.85,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+plt_nn_st_reg_reg <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Region',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+```
+
+# Dissolved Orthophosphate
+## Seasonal Averages for Entire Delta (DissOrthophos)
+```{r}
+df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'season', month.na = 'relaxed')
+df_op_seasonal <- drt_add_yr_assign(df_op_seasonal)
+df_op_seasonal$DissOrthophos <- log10(df_op_seasonal$DissOrthophos)
+df_op_seasonal$YearAdj <- as.factor(df_op_seasonal$YearAdj)
+
+lm_seasonal <- lm(DissOrthophos ~ YearAdj + Season, data = df_op_seasonal)
+
+# plts
+plt_op_st_seas_yr <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.85,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
+
+plt_op_st_seas_seas <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'Season',
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Orthophosphate)')
+```
+
+# Regional Averages for the Entire Delta (DissOrthophos)
+```{r}
+df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'region', month.na = 'relaxed')
+df_op_regional <- drt_add_yr_assign(df_op_regional)
+df_op_regional$DissOrthophos <- log10(df_op_regional$DissOrthophos)
+df_op_regional$YearAdj <- as.factor(df_op_regional$YearAdj)
+
+lm_regional <- lm(DissOrthophos ~ YearAdj + Region, data = df_op_regional)
+
+#plts
+plt_op_st_reg_yr <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'YearAdj',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02,
+  fatten = 0.8,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
+
+plt_op_st_reg_reg <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Region',
+  fatten = 0.8,
+  line_size = .7,
+  text_size = 6
+) +
+  theme_bw() +
+  ylab('log(Dissolved Orthophosphate)')
+```
+
+```{r}
+# save plots
+# dissam
+bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_st_reg_yr, plt_am_st_seas_yr, 'Year', angle = 45)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_both.jpg'), bp_em_DissAmmonia_yt_both, width = 8, height = 3.5)
+
+# dissnn
+bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_st_reg_yr, plt_nn_st_seas_yr, 'Year', angle = 45)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_both.jpg'), bp_em_DissNitrateNitrite_yt_both, width = 8, height = 3.5)
+
+# dissorthophos
+bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_st_reg_yr, plt_op_st_seas_yr, 'Year', angle = 45)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_both.jpg'), bp_em_DissOrthophos_yt_both, width = 8, height = 3.5)
+```
+
+# ----
+SAVE AS FOUR PLOTS
+# ----
+
+```{r}
+# seasonal
+#dissam
+bp_am_seasonal <- quad_year_plts(plt_am_lt_seas_di, plt_am_st_seas_yr, plt_am_lt_seas_seas, plt_am_st_seas_seas,
+                                 type = 'Season', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_am_seasonal.jpg'), bp_am_seasonal, width = 11.5, height = 9.5)
+
+#dissam
+bp_nn_seasonal <- quad_year_plts(plt_nn_lt_seas_di, plt_nn_st_seas_yr, plt_nn_lt_seas_seas, plt_nn_st_seas_seas,
+                                 type = 'Season', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_nn_seasonal.jpg'), bp_nn_seasonal, width = 11.5, height = 9.5)
+
+#dissam
+bp_op_seasonal <- quad_year_plts(plt_op_lt_seas_di, plt_op_st_seas_yr, plt_op_lt_seas_seas, plt_op_st_seas_seas,
+                                 type = 'Season', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_op_seasonal.jpg'), bp_op_seasonal, width = 11.5, height = 9.5)
+```
+```{r}
+# regional
+#dissam
+bp_am_regional <- quad_year_plts(plt_am_lt_reg_di, plt_am_st_reg_yr, plt_am_lt_reg_reg, plt_am_st_reg_reg,
+                                 type = 'Region', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_am_regional.jpg'), bp_am_regional, width = 11.5, height = 9.5)
+
+#dissam
+bp_nn_regional <- quad_year_plts(plt_nn_lt_reg_di, plt_nn_st_reg_yr, plt_nn_lt_reg_reg, plt_nn_st_reg_reg,
+                                 type = 'Region', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_nn_regional.jpg'), bp_nn_regional, width = 11.5, height = 9.5)
+
+#dissam
+bp_op_regional <- quad_year_plts(plt_op_lt_reg_di, plt_op_st_reg_yr, plt_op_lt_reg_reg, plt_op_st_reg_reg,
+                                 type = 'Region', txt_size = 15, label_size = 17)
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_op_regional.jpg'), bp_op_regional, width = 11.5, height = 9.5)
+```

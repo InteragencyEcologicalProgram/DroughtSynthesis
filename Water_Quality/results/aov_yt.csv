@@ -2,3 +2,31 @@ Response Var,Agg Type,Avg Type,Dependent Var,Sum Sq,Df,F value,Pr(>F),Signif
 DissAmmonia,Seasonal,yt,YearAdj,0.3586309615200509,8,1.9713275732611433,0.09497185229105992,< 0.1
 DissAmmonia,Seasonal,yt,Season,0.6728349633354247,3,9.862529138443174,2.009221445125445e-4,< 0.001
 DissAmmonia,Seasonal,yt,Residuals,0.5457707278858359,24,NA,NA,NA
+ , , , , , , , , 
+DissAmmonia,Regional,yt,YearAdj,0.268894659202665,8,2.01138383228798,0.0887867231120828,< 0.1
+DissAmmonia,Regional,yt,Region,0.839771418199454,3,16.751071797831,4.38737902313261e-06,< 0.001
+DissAmmonia,Regional,yt,Residuals,0.401059193505786,24,NA,NA,NA
+ , , , , , , , , 
+DissNitrateNitrite,Seasonal,yt,YearAdj,0.380643442989247,8,5.85664837318457,0.000338342285250608,< 0.001
+DissNitrateNitrite,Seasonal,yt,Season,0.607630109473304,3,24.9309493013409,1.4993958777105e-07,< 0.001
+DissNitrateNitrite,Seasonal,yt,Residuals,0.194980175725799,24,NA,NA,NA
+ , , , , , , , , 
+DissNitrateNitrite,Regional,yt,YearAdj,0.314445239246201,8,33.8218877154274,3.07879078141005e-11,< 0.001
+DissNitrateNitrite,Regional,yt,Region,1.1069615115294,3,317.507561681211,1.93470832046223e-19,< 0.001
+DissNitrateNitrite,Regional,yt,Residuals,0.0278912793299918,24,NA,NA,NA
+ , , , , , , , , 
+DissOrthophos,Seasonal,yt,YearAdj,0.100715126209328,8,4.93106887663034,0.00108187888858644,< 0.01
+DissOrthophos,Seasonal,yt,Season,0.0436953332443826,3,5.70492784086319,0.00427884020339044,< 0.01
+DissOrthophos,Seasonal,yt,Residuals,0.0612738102401958,24,NA,NA,NA
+ , , , , , , , , 
+DissOrthophos,Regional,yt,YearAdj,0.0972605835101339,8,8.76050249217715,1.54627199876301e-05,< 0.001
+DissOrthophos,Regional,yt,Region,0.121048286961206,3,29.0749868398485,3.67373008594159e-08,< 0.001
+DissOrthophos,Regional,yt,Residuals,0.0333065084783611,24,NA,NA,NA
+ , , , , , , , , 
+DissOrthophos,Seasonal,yt,YearAdj,0.100715126209328,8,4.93106887663034,0.00108187888858644,< 0.01
+DissOrthophos,Seasonal,yt,Season,0.0436953332443826,3,5.70492784086319,0.00427884020339044,< 0.01
+DissOrthophos,Seasonal,yt,Residuals,0.0612738102401958,24,NA,NA,NA
+ , , , , , , , , 
+DissOrthophos,Regional,yt,YearAdj,0.0972605835101339,8,8.76050249217715,1.54627199876301e-05,< 0.001
+DissOrthophos,Regional,yt,Region,0.121048286961206,3,29.0749868398485,3.67373008594159e-08,< 0.001
+DissOrthophos,Regional,yt,Residuals,0.0333065084783611,24,NA,NA,NA
