@@ -15,58 +15,60 @@ source('Water_Quality/wq_graph_funcs.R')
 # read in data
 df_wq <- raw_nutr_1975_2021
 df_wq <- drt_add_yr_assign(df_wq)
-df_wq$YearType[df_wq$YearType == 'Below Normal'] <- 'Below Norm'
-df_wq$YearType[df_wq$YearType == 'Above Normal'] <- 'Above Norm'
+# df_wq$YearType[df_wq$YearType == 'Below Normal'] <- 'Below Norm'
+# df_wq$YearType[df_wq$YearType == 'Above Normal'] <- 'Above Norm'
 df_wq <- df_wq %>%
     mutate(across(c(Drought, YearType), list(`20_21`=~case_when(YearAdj==2021 ~ "2021", 
                                                               YearAdj==2020 ~ "2020", 
                                                               TRUE ~ as.character(.x)))),
-         across(c(YearType, YearType_20_21), ~factor(.x, levels=c("2020", "2021", "Critical", "Dry", "Below Norm", "Above Norm", "Wet"))),
+         across(c(YearType, YearType_20_21), ~factor(.x, levels=c("2020", "2021", "Critical", "Dry", "Below Normal", "Above Normal", "Wet"))),
          Region=factor(Region, levels=c("Suisun Marsh", "Suisun Bay", "Confluence", "SouthCentral", "North")),
          Season=factor(Season, levels=c("Winter", "Spring", "Summer", "Fall")))
 ```
 
 ```{r}
 # boxplots
-df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('Drought_20_21','Region'), metadat = c('Drought'))
 
-plt_bp <- create_bp(df_bp, x = 'Drought_20_21', fill = 'Drought', wrap = 'Region')
-plt_bp <- plt_bp + scale_fill_viridis_d(direction = -1) + theme_bw() + ylab('Dissolved Ammonia (mg/L)') + xlab('Year/Drought')
-# ggsave(paste0(getwd(),'/Water_Quality/plots/region_bp_dissammonia.jpg'),z, width = 7, height = 4.5)
-```
+# year type
+for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
+  full_name <- assign_full_name(analyte)
+  ylim_cut <- assign_cutoffs(analyte)
 
-```{r}
-# boxplots
-df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('YearType_20_21'), metadat = c('YearType'))
+  df_bp <- gen_bp_data(df_wq, analyte, group = 'YearType_20_21', metadat = c('YearType'))
+  
+  plt_bp <- create_bp(df_bp, x = 'YearType_20_21', fill = 'YearType', show_outliers = TRUE)
+  plt_bp <- plt_bp +
+    drt_color_pal_yrtype() +
+    theme_bw() +
+    theme(legend.position = 'top') +
+    ylab(paste(full_name,'(mg/L)')) +
+    xlab('Year/Drought') +
+    ylim(0,ylim_cut)
+  
+  # print(plt_bp)
+  
+ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_yt.jpg'),plt_bp, width = 5.5, height = 4)
+}
 
-plt_bp <- create_bp(df_bp, x = 'YearType_20_21', fill = 'YearType', show_outliers = TRUE)
-plt_bp <- plt_bp +
-  scale_fill_viridis_d(direction = -1) +
-  theme_bw() +
-  ylab('Dissolved Ammonia (mg/L)') +
-  xlab('Year/Drought') +
-  ylim(0,0.5)
-plt_bp
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_da_yt.jpg'),plt_bp, width = 7, height = 4.5)
-```
-
-```{r}
-# boxplots
-df_bp <- gen_bp_data(df_wq, 'DissAmmonia', group = c('Drought_20_21'), metadat = c('Drought'))
-
-plt_bp <- create_bp(df_bp, x = 'Drought_20_21', fill = 'Drought', show_outliers = TRUE)
-plt_bp <- plt_bp +
-  scale_fill_viridis_d(direction = -1) +
-  theme_bw() +
-  ylab('Dissolved Ammonia (mg/L)') +
-  xlab('Year/Drought') +
-  ylim(0,0.5)
-plt_bp
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_da_di.jpg'),plt_bp, width = 7, height = 4.5)
-```
-
-```{r}
-x <- NA
-if(!is.na(x)){print('cool')}
+# drought index
+for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
+  full_name <- assign_full_name(analyte)
+  ylim_cut <- assign_cutoffs(analyte)
+  
+  df_bp <- gen_bp_data(df_wq, analyte, group = c('Drought_20_21'), metadat = c('Drought'))
+  
+  plt_bp <- create_bp(df_bp, x = 'Drought_20_21', fill = 'Drought', show_outliers = TRUE)
+  plt_bp <- plt_bp +
+    drt_color_pal_drought() +
+    theme_bw() +
+    theme(legend.position = 'top') +
+    ylab(paste(full_name,'(mg/L)')) +
+    xlab('Year/Drought') +
+    ylim(0,ylim_cut)
+  
+  # print(plt_bp)
+  
+  ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_di.jpg'),plt_bp, width = 5.5, height = 4)
+}
 ```
 
