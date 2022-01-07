@@ -155,8 +155,6 @@ pairs(emm_season2)
 
 
 ### FIGURES ####
-
-season.colors <- c("burlywood4", "darkslategray3", "chartreuse3", "sienna3")
 yr_type_labels <- c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet")
 
 ggplot(year_summary, aes(x= ds_year, y= n)) +

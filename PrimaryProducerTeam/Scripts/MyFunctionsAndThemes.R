@@ -72,6 +72,10 @@ add_DateTime <- function(df){
 }
 
 #### GGPLOT THEMES ############################
+season.colors <- c("Winter"= "burlywood4", "Spring"= "darkslategray3", "Summer"= "chartreuse3", "Fall"= "sienna3")
+year.colors <- c("Drought" = "#FDE333", "Neutral" = "#53CC67","Wet" = "#00588B")
+sacI.colors <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055")
+
 theme_ppt <- theme(panel.grid = element_blank(),
                    plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm"),
                    text = element_text(size= 16),

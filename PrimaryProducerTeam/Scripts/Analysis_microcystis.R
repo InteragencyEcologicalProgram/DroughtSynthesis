@@ -214,7 +214,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
-  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+  scale_fill_manual(values= year.colors, 
                     name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
@@ -231,7 +231,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   #geom_point(aes(color= ds_year_type), position= position_dodge(width= 0.3), size= 3) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
-  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+  scale_fill_manual(values= year.colors, 
                     name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
@@ -252,7 +252,7 @@ ggplot(filter(max_mc1_effects, Season == "Summer"), aes(x= cats__, y= estimate__
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   #geom_text(aes(x= cats__, y= upper__ + 0.1, group= ds_year_type), 
   #          label= summer_signif, size= 8, position= position_dodge(0.9)) +
-  scale_fill_manual(values= c("skyblue3", "mistyrose2", "tomato"), 
+  scale_fill_manual(values= year.colors, 
                     name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +

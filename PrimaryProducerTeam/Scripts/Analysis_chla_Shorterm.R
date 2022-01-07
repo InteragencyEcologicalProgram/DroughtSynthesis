@@ -198,7 +198,7 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
-  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
+  scale_x_discrete(labels= c("Wet", "Neutral", "Drought")) +
   scale_fill_manual(values= year.colors, guide= "none") +
   annotation_logticks(side= "l") +
   theme_doc
