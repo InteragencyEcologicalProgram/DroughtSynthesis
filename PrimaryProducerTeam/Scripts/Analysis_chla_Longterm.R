@@ -276,6 +276,9 @@ ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_LT.png", width= 6.5, h
 ## Year Type and Season
 ggplot(chla_data_stats, aes(x= Season, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  geom_point(data= mean_YT_R_S, aes(x= Season, y= mean_chla, group= ds_year_type), 
+             color= "white", shape= 18, size= 0.75, position= position_dodge(width= 0.75)) +
+ # stat_summary(fun=mean, geom="point", shape= 8, size= 3, color="red", fill="red") +
   labs(x= "Season", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
