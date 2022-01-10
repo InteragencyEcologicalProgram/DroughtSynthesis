@@ -213,7 +213,7 @@ DS_dataST <- left_join(DS_data_noRegions, st_drop_geometry(chla_stations.sf)) %>
   left_join(., wy_types) %>% 
   distinct(.) %>% 
   mutate(ds_year= as.character(ds_year),
-         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("1_Wet", "2_Below_avg", "3_Drought")),
+         ds_year_type= factor(ds_year_type, ordered= TRUE, levels= c("Drought", "Neutral", "Wet")),
          DWR_YrType= factor(DWR_YrType, ordered= TRUE, levels= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) %>%
   filter(!is.na(Region)) # remove data in a Region not included in this analysis
 save(chla_stations.sf, chla_stations, DS_dataST, DS_regions, DS_waterways,

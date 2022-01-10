@@ -6,14 +6,17 @@
 ```
 
 ```{r}
-library(car)
-library(english)
-library(tseries)
+# library(car)
+# library(english)
+# library(tseries)
 library(tidyverse)
 library(lubridate)
 library(emmeans)
 library(DroughtData)
+require(knitr)
+require(car)
 source('Water_Quality/wq_analysis_funcs.R')
+source('Water_Quality/wq_graph_funcs.R')
 ```
 
 From Dave's Drought package
@@ -26,59 +29,7 @@ df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite')
 df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
 ```
 
-# Seasonal Averages
-## Seasonal Averages for Entire Delta (DissNitrateNitrite)
-```{r message = FALSE}
-df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
-df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
-df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
-
-print('TEST THINGS')
-lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season, data = df_nn_seasonal)
-
-pacf(residuals(lm_seasonal), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
-print('')
-print('END TEST THINGS')
-print('')
-
-# failed tests, add lags based on pacf
-df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
-df_nn_seasonal$DissNN_twolag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 2L)
-
-lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag, data = df_nn_seasonal)
-
-pacf(residuals(lm_seasonal), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-plot(lm_seasonal)
-
-aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
-print(aov_seasonal)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
-print(test(emm_seas_seas)$contrasts)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_seas_WY)$contrasts)
-```
-### Conclusion:
-There is a signficiant difference between Drought and Neutral/Wet years, with Drought years having higher DissNitrateNitrite values (slightly higher over Wet). No signifiant difference between Netural and Wet.
-
-
+# Dissolved Ammonia
 ## Seasonal Averages for Entire Delta (DissAmmonia)
 ```{r}
 df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'season', month.na = 'relaxed')
@@ -112,24 +63,198 @@ plot(lm_seasonal)
 aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
 print(aov_seasonal)
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
+df_aov <- aov_as_df(aov_seasonal, 'DissAmmonia')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv')
 
-emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
-print(test(emm_seas_seas)$contrasts)
+# plts
+plt_am_seas <- emm_plotter(
+  lm_seasonal,
+  df_am_seasonal,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_seas_WY)$contrasts)
+plt_am_seas
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
 ```
-### Conclusion:
-There is a signficiant difference between Drought and Wet years, with Drought years having higher DissAmmonia values (slightly higher over Wet based on contrast estimates). No signifiant difference between Netural and Wet nor Drought and Neutral.
 
+# Regional Averages for Entire Delta (DissAmmonia)
+```{r}
+df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
+df_am_regional <- drt_add_yr_assign(df_am_regional)
+df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
 
+print('TEST THINGS')
+lm_regional <- lm(DissAmmonia ~ Drought + Region, data = df_am_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_am_regional$DissAM_onelag <- lag(df_am_regional$DissAmmonia, n = 1L)
+
+lm_regional <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag, data = df_am_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_regional)
+
+aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
+print(aov_regional)
+
+df_aov <- aov_as_df(aov_regional, 'DissAmmonia')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, append = TRUE)
+
+# plts
+
+plt_am_reg <- emm_plotter(
+  lm_regional,
+  df_am_regional,
+  analyte = 'DissAmmonia',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Ammonia)')
+
+plt_am_reg
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_reg.jpg'), plt_am_reg, width = 7, height = 4.5)
+```
+
+# DissNitrateNitrite
+## Seasonal Averages for Entire Delta
+```{r message = FALSE}
+df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
+df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
+df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
+
+print('TEST THINGS')
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season, data = df_nn_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
+
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag, data = df_nn_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_seasonal)
+
+aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
+print(aov_seasonal)
+
+df_aov <- aov_as_df(aov_seasonal, 'DissNitrateNitrite')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, append = TRUE)
+
+# plts
+
+plt_nn_seas <- emm_plotter(
+  lm_seasonal,
+  df_nn_seasonal,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_sea.jpg'), plt_nn_seas, width = 7, height = 4.5)
+```
+
+## Regional Averages for the Entire Delta (DissNitrateNitrite)
+```{r}
+df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
+df_nn_regional <- drt_add_yr_assign(df_nn_regional)
+df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
+
+print('TEST THINGS')
+lm_regional <- lm(DissNitrateNitrite ~ Drought + Region, data = df_nn_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+
+print('')
+print('END TEST THINGS')
+print('')
+
+# failed tests, add lags based on pacf
+df_nn_regional$DissNN_onelag <- lag(df_nn_regional$DissNitrateNitrite, n = 1L)
+
+lm_regional <- lm(DissNitrateNitrite ~ Drought + Region + DissNN_onelag, data = df_nn_regional)
+
+pacf(residuals(lm_regional), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
+print('')
+print('*-*-*-*-*-*-*')
+print('')
+
+plot(lm_regional)
+
+aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
+print(aov_regional)
+
+df_aov <- aov_as_df(aov_regional, 'DissNitrateNitrite')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, append = TRUE)
+
+# plts
+
+plt_nn_reg <- emm_plotter(
+  lm_regional,
+  df_nn_regional,
+  analyte = 'DissNitrateNitrite',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Nitrate/Nitrite)')
+
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_reg.jpg'), plt_nn_reg, width = 7, height = 4.5)
+```
+
+# Dissolved Orthophosphate
 ## Seasonal Averages for Entire Delta (DissOrthophos)
 ```{r}
 df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'season', month.na = 'relaxed')
@@ -164,129 +289,29 @@ plot(lm_seasonal)
 aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
 print(aov_seasonal)
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
+df_aov <- aov_as_df(aov_seasonal, 'DissOrthophos')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, append = TRUE)
 
-emm_seas_seas <- emmeans(lm_seasonal, specs = pairwise ~ Season:Season, adjust = 'Tukey')
-print(test(emm_seas_seas)$contrasts)
+# plts
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
+plt_op_seas <- emm_plotter(
+  lm_seasonal,
+  df_op_seasonal,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
 
-emm_seas_WY <- emmeans(lm_seasonal, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_seas_WY)$contrasts)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_sea.jpg'), plt_op_seas, width = 7, height = 4.5)
 ```
 
-## Conclusion:
-There is a signficiant difference between Drought and Wet/Neutral years, with Drought years having higher DissOrthophos values (particularly over Wet years). Neutral and Wet were also significantly different, with Neutral years having higher DissOrthophos values.
-
-# Regional
-## Regional Averages per Year (DissNitrateNitrite)
-```{r}
-df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
-df_nn_regional <- drt_add_yr_assign(df_nn_regional)
-df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
-
-print('TEST THINGS')
-lm_regional <- lm(DissNitrateNitrite ~ Drought + Region, data = df_nn_regional)
-
-pacf(residuals(lm_regional), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
-
-print('')
-print('END TEST THINGS')
-print('')
-
-# failed tests, add lags based on pacf
-df_nn_regional$DissNN_onelag <- lag(df_nn_regional$DissNitrateNitrite, n = 1L)
-
-lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Region + DissNN_onelag, data = df_nn_regional)
-
-pacf(residuals(lm_seasonal), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-plot(lm_regional)
-
-aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
-print(aov_regional)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
-print(test(emm_reg_reg)$contrasts)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_reg_WY)$contrasts)
-```
-
-## Conclusion:
-There is a signficiant difference between Drought and Wet/Neutral years, with Drought years having higher DissNitrateNitrite values (particularly over Wet years). Neutral and Wet were not signfiicantly different.
-
-# Regional Averages per Year (DissAmmonia)
-```{r}
-df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
-df_am_regional <- drt_add_yr_assign(df_am_regional)
-df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
-
-print('TEST THINGS')
-lm_regional <- lm(DissAmmonia ~ Drought + Region, data = df_am_regional)
-
-pacf(residuals(lm_regional), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_regional), type = 'Ljung'))
-
-print('')
-print('END TEST THINGS')
-print('')
-
-# failed tests, add lags based on pacf
-df_am_regional$DissAM_onelag <- lag(df_am_regional$DissAmmonia, n = 1L)
-
-lm_seasonal <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag, data = df_am_regional)
-
-pacf(residuals(lm_seasonal), na.action = na.pass)
-
-print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-plot(lm_regional)
-
-aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
-print(aov_regional)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
-print(test(emm_reg_reg)$contrasts)
-
-print('')
-print('*-*-*-*-*-*-*')
-print('')
-
-emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_reg_WY)$contrasts)
-```
-## Conclusion:
-There is a signficiant difference between Drought and Wet years for DissAmmonia, with Drought years beign higher. Neutral and Drought/Wet were not signfiicantly different.
-
-# Regional Averages per Year (DissOrthophos)
+# Regional Averages for the Entire Delta (DissOrthophos)
 ```{r}
 df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'region', month.na = 'relaxed')
 df_op_regional <- drt_add_yr_assign(df_op_regional)
@@ -320,20 +345,40 @@ plot(lm_regional)
 aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
 print(aov_regional)
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
+df_aov <- aov_as_df(aov_regional, 'DissOrthophos')
+df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'DI') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
+write_aov(df_aov, filepath = 'Water_Quality/results/aov_di.csv', space = TRUE, append = TRUE)
 
-emm_reg_reg <- emmeans(lm_regional, specs = pairwise ~ Region:Region, adjust = 'Tukey')
-print(test(emm_reg_reg)$contrasts)
+#plts
 
-print('')
-print('*-*-*-*-*-*-*')
-print('')
+plt_op_reg <- emm_plotter(
+  lm_regional,
+  df_op_regional,
+  analyte = 'DissOrthophos',
+  grouping = 'Drought',
+  fill = 'Drought',
+  fill_type = 'rect',
+  rect_gap = 0.02
+) +
+  theme_bw() +
+  drt_color_pal_drought() +
+  ylab('log(Dissolved Orthophosphate)')
 
-emm_reg_WY <- emmeans(lm_regional, specs = pairwise ~ Drought:Drought, adjust = 'Tukey')
-print(test(emm_reg_WY)$contrasts)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_reg.jpg'), plt_op_reg, width = 7, height = 4.5)
 ```
 
-## Conclusion:
-There is a signficiant difference between Drought and Wet/Neutral years for DissOrthophos, with Drought years being higher (particularly over Wet). Neutral and Drought/Wet were also signfiicantly different, with Neutral being higher than Wet.
+```{r}
+# save plots
+# dissam
+bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_reg, plt_am_seas, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_both.jpg'), bp_em_DissAmmonia_di_both, width = 8, height = 3.5)
+
+# dissnn
+bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_both.jpg'), bp_em_DissNitrateNitrite_di_both, width = 8, height = 3.5)
+
+# dissorthophos
+bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_reg, plt_op_seas, 'Drought')
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_both.jpg'), bp_em_DissOrthophos_di_both, width = 8, height = 3.5)
+```
+
