@@ -18,7 +18,7 @@ fmwt <- read.csv("data/FMWTindices.csv")
 # to the previous water year (so FMWT for Calendar Year 2020 is most sensitive to
 # water year 2020)
 
-yeartypes <- read_excel("data/Integrated data set.xlsx", sheet = "yearassignments")
+yeartypes <- read_csv("data/yearassignments.csv")
 
 fmwt <- left_join(fmwt, yeartypes) %>%
   filter(Year > 1969)

@@ -1,4 +1,4 @@
-#Let's take a look at Betsy's phytoplankton data
+#Let's take a look at Tiffany's phytoplankton data
 
 #Load a few packags to make things easier
 library(tidyverse)

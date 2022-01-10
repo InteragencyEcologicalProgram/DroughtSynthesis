@@ -370,6 +370,27 @@ ggplot(filter(SFH, Year == 2021), aes(x = Month, fill = as.factor(Microcystis)))
                     name = "Microcystis")+ ylab("Relative Frequency")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))
 
+
+###################################################################
+#version for the main drought report using Keith's color scheme
+
+HABs = mutate(HABs, Mic2 = case_when(
+  Microcystis ==1 ~ "Absent",
+  Microcystis %in% c(2,3) ~ "Low",
+  Microcystis %in% c(4,5) ~ "High"
+)) %>%
+  mutate(Mic2 = factor(Mic2, levels = c("Absent", "Low", "High"))) %>%
+  filter(!is.na(Microcystis))
+
+c("Gray70", "seagreen4", "seagreen1")
+
+ggplot(HABs, aes(x = Year, fill = Mic2)) +geom_bar(position = "fill")+ 
+  scale_fill_manual(values = c("Gray70", "seagreen4", "seagreen1"), 
+                    labels = c("None (1)", "Low (2-3)", "High (4-5)"),
+                    name = "Microcystis rating")+ ylab("Relative Frequency") +
+  theme_bw()
+
+
 ###################################################################################
 #box plots by stratum
 library(wql)

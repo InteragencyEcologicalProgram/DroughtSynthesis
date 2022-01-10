@@ -3,7 +3,7 @@
 library(waterYearType)
 library(tidyverse)
 library(smonitr)
-
+pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055")
 indecies = filter(water_year_indices, location != "San Joaquin Valley")
 i1820 = data.frame(WY = c(2018,2019,2020,2021), Index = c(7.14, 10.34, 6.0, 4.0), 
                    Yr_type = c("Below Normal", "Wet", "Dry", "Critical"), location = c(rep("Sacramento Valley", 4)))
@@ -15,15 +15,17 @@ WYs = read.csv("data/yearassignments.csv")
 WYs = mutate(WYs,Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
 
 ggplot(WYs)+
-  geom_tile(data = filter(WYs, Drought == "D"), aes(x = Year, y = 15, height = 0.5), fill = "black", color = "black")  +
-  geom_tile(data = filter(WYs, Drought == "W"), aes(x = Year, y = 15, height = 0.5), fill = "yellow", color = "yellow", alpha = 0.5)  +
+  geom_tile(data = filter(WYs, Drought == "D"), aes(x = Year, y = -1, height = 0.5), fill = "#FDE333", color = "#FDE333")  +
+  geom_tile(data = filter(WYs, Drought == "W"), aes(x = Year, y = -1, height = 0.5), fill = "#00588B", color = "#00588B")  +
+  geom_tile(data = filter(WYs, Drought == "N"), aes(x = Year, y = -1, height = 0.5), fill = "#53CC67", color = "#53CC67")  +
+  
   geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
- scale_fill_manual(values = c("firebrick", "firebrick1",  "darkorange","chartreuse3", "dodgerblue"), name = "Water Year Type")+
+ scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
   coord_cartesian(xlim = c(1906, 2020))+theme_bw()+
-  theme(legend.position = "bottom") +
+  theme(legend.position = "top") +
   ylab("Sacramento Valley Index")+
   xlab(NULL)+
-  annotate("text", x = 1960, y = 15.6, label = "Drought (black)/Wet Period (yellow)")
+  annotate("text", x = 1960, y = -2, label = "Drought (yellow)/Neutral(green)/Wet Period (blue)")
 
 
 

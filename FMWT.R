@@ -13,8 +13,9 @@ FMWT = read.csv("data/FMWTindices.csv") %>%
 #year types
 #but these are based on water year, whereas the FMWT is probably most senstative
 #to the previous water year
-yeartypes = read_excel("data/Integrated data set.xlsx", sheet = "yearassignments") %>%
+yeartypes = read.csv("data/yearassignments.csv") %>%
   mutate(YearX  = Year-1, Year = NULL)
+
 
 FMWT = left_join(FMWT, yeartypes) %>%
   filter(Year > 1969)
@@ -103,7 +104,7 @@ ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = ShortTerm))+
 
 ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
   facet_wrap(~Species+Season, scales = "free_y")+ theme_bw()+
-  scale_fill_viridis_d(name = "Year Type", , direction = -1)
+  scale_fill_viridis_d(name = "Year Type",  direction = -1)
 
 ggplot(recent, aes(x = Year, y = SmeltIndex)) + geom_col(aes(fill = ShortTerm))+
   facet_wrap(~Season, scales = "free_y")

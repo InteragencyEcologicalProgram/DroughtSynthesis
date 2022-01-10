@@ -203,31 +203,7 @@ ggplot(TNmeanSi, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = 
 #now let's try some models. 
 hist(TNsum$Catch, breaks = 50)
 hist(log(TNsum$Catch+1), breaks = 50)
-#GROSSS
 
-TNsum = mutate(TNsum, lnC = log(Catch + 1), lnCPUE = log(CPUE +1), rCPUE = round(CPUE),
-                 yearf = factor(Year, levels = c(2014,2015,2016,2017,2018,2019,2020,2021)))
-
-c1 = lmer(lnCPUE ~ yearf + (1|StationCode), data = TNsum)
-summary(c1)
-emmeans(c1, pairwise~ yearf)
-c1r = emmeans(c1, pairwise~ Regions)
-c122 =  emmeans(c1, pairwise~ Regions*yearf)
-test = emmeans(c1, "Regions", by = "yearf", type = "response")
-multcomp::cld(test)
-cld(c122)
-visreg(c1)
-plot(c122)
-
-c2 = glmmTMB(Catch ~ yearf + (1|Regions), offset = VolumeOfAllTows, zi = ~., family = "nbinom2", data = TNsum)
-summary(c2)
-
-starta = list(count = summary(c1)$coefficients$Estimate, zero = summary(c1)$coefficients)
-
-  c2 = hurdle(Catch ~ Regions, offset = VolumeOfAllTows, dist = "negbin", data = TNsum)
-
-  c3 = brm(rCPUE ~ Regions*yearf, family = zero_inflated_negbinomial(), data = TNsum, iter = 1000, chains = 2)
-#BLEH!!!!!
   c3 = brm(Catch ~ Regions*yearf, family = zero_inflated_negbinomial(), data = TNsum, iter = 2000, chains = 4)
   
 c3
@@ -396,9 +372,9 @@ DJmean2.1 = DJFMP2 %>%
   group_by(Year, Regions, CommonName2) %>%
   summarize(CPUE = mean(Count, na.rm = T))
 
-ggplot(DJmean2.1, aes(x = Regions, y= CPUE, fill = CommonName2)) + 
-  geom_col()+
-  facet_wrap(~Year)+
+ggplot(DJmean2.1, aes(x = Year, y= CPUE, fill = CommonName2)) + 
+  geom_col(position = "fill")+
+ # facet_wrap(~Year)+
   scale_fill_manual(values = mypal)
 
 
@@ -431,11 +407,39 @@ cent = filter(DJmean2, CommonName %in% c("largemouth bass", "redear sunfish",
 ggplot(cent, aes(x = Regions, y = CPUE, fill = CommonName))+ geom_col()+
   facet_wrap(~Year)
 
+#model of centrarchids
+centall = filter(DJFMP2, CommonName %in% c("largemouth bass", "redear sunfish",
+                                           "bluegill", "smallmouth bass", "black crappie")) %>%
+  group_by(Year, StationCode, Regions, SampleDate) %>%
+  summarize(Count = sum(Count))%>%
+  mutate(Yearf = factor(Year, levels = c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)))
+
+
+cent = brm(Count ~ Regions*Yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
+          data = centall, iter = 2000, chains = 4)
+
+summary(cent)
+conditional_effects(cent)
+
+###################################
+#beach seine models
+DJFMPsum = mutate(DJFMPsum, Yearf = factor(Year, levels = c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)))
+
+
+bs3 = brm(Catch ~ Regions*Yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
+         data = DJFMPsum, iter = 2000, chains = 4)
+
+bs3s = summary(bs3)
+plot(bs3)
+conditional_effects(bs3)
+write.csv(bs3s$fixed, "beachseine.csv")
+
+
 #######################
 #beach seine NMDS
 
 DJMat = DJFMP2 %>%
-  filter(Year %in% c(2014, 2015, 2017, 2019, 2020, 2021)) %>%
+ # filter(Year %in% c(2014, 2015, 2017, 2019, 2020, 2021)) %>%
   mutate(CommonName2 = case_when(
     CommonName %in% DJrare ~ "Other",
     TRUE ~ CommonName
@@ -448,6 +452,9 @@ DJMat = DJFMP2 %>%
   filter(!is.na(`No catch`)) %>%
  dplyr::select(-`No catch`)
 DJMat2 = dplyr::select(ungroup(DJMat), `largemouth bass`:`threadfin shad`)
+DJMat3 = DJMat2/rowSums(DJMat2)
+
+adonis(DJMat3~ Year*Regions, data = DJMat)
 
 source("PlotNMDS.R")
 DJMDS = metaMDS(DJMat2, k=3, trymax = 500)
