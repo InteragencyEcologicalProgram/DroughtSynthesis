@@ -197,6 +197,7 @@ ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 6.5, heigh
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="white") +
   geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Water Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
@@ -211,6 +212,7 @@ ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_ST.png", width= 6.5, h
 ## Year time series
 ggplot(chla_data_stats, aes(x= ds_year, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="white") +
   labs(x= "Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -230,6 +232,7 @@ ggsave(last_plot(), filename= "chla_filtered_TimeSeries_ST.png", width= 6.5, hei
 ## Yeartype and Regions
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="white") +
   labs(x= "Water Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -248,6 +251,7 @@ ggsave(last_plot(), filename= "chla_filtered_Region_ST.png", width= 6.5, height=
 ## Region and Season
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= Season), outlier.size= 1, outlier.color= "gray60") +
+  
   labs(x= "Water Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                 labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -264,10 +268,11 @@ ggsave(last_plot(), filename= "chla_filtered_SeasonRegion_ST.png", width= 6.5, h
 ## Year Type and Season
 ggplot(chla_data_stats, aes(x= Season, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, aes(group= ds_year_type), geom="point", shape=18, size=1.5, color="white", position= position_dodge(width= 0.75)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
-  scale_fill_manual(values= year.colors, name= "Water Year", labels= c("Wet", "Neutral", "Drought")) +
+  scale_fill_manual(values= year.colors, name= "Water Year") +
   annotation_logticks(side= "l") +
   facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
   #theme_doc +
@@ -290,8 +295,9 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   #facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
   #theme_doc +
   theme_bw(base_size = 12) +
-  theme(legend.position = c(0.77, 0.15), 
-        legend.direction = "vertical")
+  theme(legend.position = "top")
+  #theme(legend.position = c(0.77, 0.15), 
+  #      legend.direction = "vertical")
 ggsave(last_plot(), filename= "chla_filtered_Season_ST.png", width= 6.5, height= 4, dpi= 300,
        path= "Figures")
 
@@ -341,19 +347,5 @@ ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 6.5, heigh
        path= "Figures")
 
 
-
-#### STATISTICS ####
-fit_log10.1 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station),
-                   data= chla_data_stats)
-summary(fit_log10.1)
-plot(fit_log10.1)
-anova(fit_log10.1)
-
-emm_year <- emmeans(fit_log10.1, specs= "ds_year_type", pbkrtest.limit = nrow(chla_data_stats))
-pairs(emm_year)
-emm_Region <- emmeans(fit_log10.1, specs= "Region", pbkrtest.limit = nrow(chla_data_stats))
-pairs(emm_Region)
-emm_season <- emmeans(fit_log10.1, specs= "Season", pbkrtest.limit = nrow(chla_data_stats))
-pairs(emm_season)
 
 
