@@ -48,6 +48,11 @@ mean_YT <- chla_data_stats %>%
   summarize(mean_chla= mean(chlaAvg_log10),
             med_chla= median(chlaAvg_log10))
 
+mean_YT <- chla_data_stats %>% 
+  group_by(ds_year_type) %>% 
+  summarize(mean_chla= mean(chlaAvg_log10),
+            med_chla= median(chlaAvg_log10))
+
 mean_YT_R_S <- chla_data_stats %>% 
   group_by(ds_year_type, Region, Season) %>% 
   summarize(mean_chla= mean(chlaAvg_log10),
@@ -142,7 +147,7 @@ anova(fit_log10.2, type= 2, ddf= "Satterthwaite")
 load("Data/emm_year2_LT.Rdata")
 pairs(emm_year2)
 plot(emm_year2, comparisons= TRUE)
-pwpm(emm_year2)
+pwpp(emm_year2)
 
 # emmeans1 results for boxplots
 emm_year_results2 <- tibble(ds_year_type= c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
@@ -163,6 +168,23 @@ pairs(emm_Region2)
 #save(emm_season2, file= "Data/emm_season2.Rdata")
 load("Data/emm_season2.Rdata")
 pairs(emm_season2)
+
+#emm_YearType_RegionSeason2_LT <- emmeans(fit_log10.2, specs= c("ds_year_type", "Region", "Season"), pbkrtest.limit = nrow(chla_data_stats))
+#save(emm_YearType_RegionSeason2_LT, file= "Data/emm_YearType_RegionSeason2_LT.Rdata")
+pwpp(emm_YearType_RegionSeason2_LT)
+pairs(emm_YearType_RegionSeason2_LT)
+plot(emm_YearType_RegionSeason2_LT, comparison = TRUE, CI= FALSE)
+
+emmp_tib <- as_tibble(emm_YearType_RegionSeason2_LT@grid)
+
+pwpp(emm_YearType_RegionSeason2_LT[str_detect(emmp_tib$Region, "South-Central Delta"), ], by= "Season", sort= FALSE)
+pwpm(emm_YearType_RegionSeason2_LT[str_detect(emmp_tib$Region, "South-Central Delta"), ], by= "Season")
+
+
+chla_data_stats %>% 
+  filter(Region == "South-Central Delta") %>% 
+  group_by(ds_year_type, Region, Season) %>% 
+  summarize(mean_chla= mean(chlaAvg_log10))
 
 
 
@@ -202,8 +224,8 @@ ggsave(last_plot(), filename= "station_map_chla_filt_LT.png", width= 6.5, height
 
 ## Yeartype only
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
- geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
-  geom_point(data= mean_YT, aes(x= ds_year_type, y= mean_chla), color= "white", shape= 8, size= 4) +
+  geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="white") +
   geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
@@ -221,6 +243,7 @@ ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_LT.png", width= 6.5, h
 ## Year time series
 ggplot(chla_data_stats, aes(x= ds_year, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=1, color="white") +
   labs(x= "Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -239,6 +262,7 @@ ggsave(last_plot(), filename= "chla_filtered_TimeSeries_LT.png", width= 6.5, hei
 ## Yeartype and Regions
 ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=1, color="white") +
   labs(x= "Year type", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
@@ -282,7 +306,7 @@ ggplot(chla_data_stats, aes(x= Season, y= chlaAvg_log10)) +
   labs(x= "Season", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
   scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
                      labels= c("0.01", "0.1", "1", "10", "100")) +
-  scale_fill_manual(values= sacI.colors, name= "Water year", guide= "none") +
+  #scale_fill_manual(values= sacI.colors, name= "Water year", guide= "none") +
   annotation_logticks(side= "l") +
   facet_rep_wrap(~ Region, ncol= 2, repeat.tick.labels = TRUE) +
   guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
