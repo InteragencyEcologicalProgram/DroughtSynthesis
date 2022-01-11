@@ -215,7 +215,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= year.colors, 
-                    name= "Water year type", labels= c("Wet", "Neutral", "Drought")) +
+                    name= "Water Year") +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
@@ -232,12 +232,13 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= year.colors, 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+                    name= "Water Year") +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("none", "low", "high"), labels= c("None", "Low", "High")) +
   facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE, labeller= labeller(Region= as_labeller(region_labels))) +
-  theme_doc +
+##  theme_doc +
+  theme_bw(base_size= 12) +
   theme(legend.position= "top")
 ggsave(last_plot(), filename= "MCrating_probs_NoneLowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
        path= "Figures")
