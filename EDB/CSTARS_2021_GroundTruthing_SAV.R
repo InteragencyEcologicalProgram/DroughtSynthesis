@@ -7,6 +7,11 @@
 #Nick Rasmussen
 #nicholas.rasmussen@water.ca.gov
 
+#To do list
+#incorporate zeros representing absences into abundance calculations
+#do some stats comparing Big Break and Franks Tract
+#look at differences in WQ between sites, particularly salinity
+
 # Packages--------
 library(tidyverse) #suite of data science tools
 library(sf) #tools for making maps
@@ -42,6 +47,9 @@ sf_bbreak <- read_sf("EDB/Spatial_data_weeds/BigBreak_wgs84.shp")
 sf_ccourt <- read_sf("EDB/Spatial_data_weeds/Cliftoncourtarea_wgs84.shp")
 
 #format data set-----------
+
+#quick look at sample depth 
+hist(cstars$depth_to_sav_m)
 
 #website with EPSG codes for CRS
 #https://spatialreference.org/
@@ -195,7 +203,9 @@ weeds_ccourt <- cstars_format %>%
     ) + 
     theme_bw()+
     ggtitle("Franks Tract")
-)        
+)    
+#ggsave(file = paste0(sharepoint_path_read,"./FranksTract_CSTARS_SampleSites_2021.png"),type ="cairo-png",width=6, height=4.5,units="in",dpi=300)
+
 
 #create map showing Big Break SAV data points
 (sav_map_bb_only <- ggplot()+
@@ -210,7 +220,9 @@ weeds_ccourt <- cstars_format %>%
     ) + 
     theme_bw()+
     ggtitle("Big Break")
-)        
+)    
+#ggsave(file = paste0(sharepoint_path_read,"./BigBreak_CSTARS_SampleSites_2021.png"),type ="cairo-png",width=6, height=4.2,units="in",dpi=300)
+
           
 #look at Franks Tract samples-------
 
@@ -277,6 +289,13 @@ frbb <- bind_rows(weeds_bbreak,weeds_franks)
 #add the spp origin info 
 fbs <- left_join(frbb,org)
 
+#create version of data set with just Franks Tract to send to SePro
+fbs_frank <- fbs %>% 
+  filter(site=="Franks Tract")
+#write the file
+#write_csv(fbs_frank, file = paste0(sharepoint_path_read,"./CSTARS_2021_formatted_FranksTractOnly.csv"))
+
+
 #look at set of species
 taxnat<-fbs %>% 
   #removes geometry
@@ -305,7 +324,7 @@ fb_spp_cov <- fbs %>%
          ) %>% 
   glimpse()
 
-#plot species mean abundances by site
+#plot species mean abundances by site (faceted by site)
 (plot_spp_score_avg <-ggplot(fb_spp_cov, aes(x=species, y= rake_mean, fill=native))+
     geom_bar(stat = "identity") + 
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
@@ -317,6 +336,16 @@ fb_spp_cov <- fbs %>%
 #FT has lots of Najas and BB has none
 #FT has little Myriophyllum while BB has lots
 #BB has lots of P. richardsonii while FT has much less
+
+#plot species mean abundances by site (faceted by species)
+(plot_spp_score_avg2 <-ggplot(fb_spp_cov, aes(x=site, y= rake_mean, fill=site))+
+    geom_bar(stat = "identity") + 
+    geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
+    ylab("Mean percent of rake head covered") + xlab("Site") +
+    facet_wrap(~species,nrow = 2)+
+    theme(legend.position = "none")
+)
+#ggsave(file = paste0(sharepoint_path_read,"./FranksTract_BigBreak_SppAbundance_2021.png"),type ="cairo-png",width=8, height=7,units="in",dpi=300)
 
 #format df to create bar plot showing mean % rake cover of non-native spp by site
 fb_non <- fbs %>% 
@@ -375,6 +404,8 @@ fb_avg <- fb_cov %>%
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
     ylab("Mean percent of rake head covered") + xlab("Site")
     )
+#ggsave(file = paste0(sharepoint_path_read,"./FranksTract_BigBreak_TotalVegVolume_2021.png"),type ="cairo-png",width=2.5, height=3,units="in",dpi=300)
+
 
 #redo sampling maps with points indicating size of the sav sample---------
 
