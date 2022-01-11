@@ -5,13 +5,13 @@
 library(tidyverse)
 library(brms)
 #source("Scripts/Data_format.R")
-source("Scripts/ggplot_themes.R")
+source("Scripts/MyFunctionsAndThemes.R")
 
 ## Load data frames from Data_format.R
-load("Data/DS_dataframes.Rdata") 
+load("Data/DS_dataframesST.Rdata") 
 
 ## Transform original 1-5 scale to None, Low, High
-mc_data <- DS_data %>%
+mc_data <- DS_dataST %>%
   filter(!is.na(mc_rating)) %>%
   mutate(mc_mod= ifelse(mc_rating == 1, "none",
                         ifelse(mc_rating > 1 & mc_rating < 4, "low", "high")),
@@ -93,8 +93,8 @@ mc_data_stats <- mc_data_filt %>%
   ungroup()
 
 ## WRITE CSV FILES
-#mc_data_stats %>% 
-#   write_csv(., "Data/mcRating_data_stats.csv")
+mc_data_stats %>% 
+   write_csv(., "Data/mcRating_data_stats.csv")
  
 
 
@@ -199,10 +199,10 @@ fit_max_mc1 <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-#save(fit_max_mc1, file= "Data/fit_max_mc1.Rdata")
-load("Data/fit_max_mc1.Rdata")
+save(fit_max_mc1, file= "Data/fit_max_mc1b.Rdata")
+load("Data/fit_max_mc1b.Rdata")
 summary(fit_max_mc1)
-plot(fit_max_mc1)
+#plot(fit_max_mc1)
 
 
 ## Extract marginal effects
@@ -215,7 +215,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= year.colors, 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+                    name= "Water year type", labels= c("Wet", "Neutral", "Drought")) +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
