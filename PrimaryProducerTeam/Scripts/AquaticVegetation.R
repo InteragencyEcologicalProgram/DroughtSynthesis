@@ -35,7 +35,7 @@ wyt <- read_csv("PrimaryProducerTeam/Data/WaterYearAssignments.csv")
 
 #reduce water year df to just needed columns
 wyts <- wyt %>% 
-  select("Year","Yr_type")
+  select("Year","Yr_type", "Drought")
 
 #add water year assignments to veg data
 vegwy <- left_join(veg,wyts, by=c("year"="Year"))
@@ -48,15 +48,14 @@ vyl <- vegwy %>%
 
 #color scheme
 year.colors <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055")
+#year.colors <- c("D" = "#FDE333", "N" = "#53CC67","W" = "#00588B")
 
 #plot with SAV and FAV for both full delta and north + central delta
 ggplot(vyl, aes(x=year, y=area_perc)) +
   geom_bar(stat="identity", color = "black", aes(fill= WY)) +
   facet_rep_wrap(region~veg_type, ncol= 2) +
   labs(x= "Year", y= "Percent water area occupied") +
-  scale_fill_manual(values= year.colors
-                    #, guide= "none"
-                    ) +
+  scale_fill_manual(values= year.colors) +
   theme_doc +
   theme(legend.position = "top")
 #full delta plot looks same as north + central delta plot, so just use north + central data because there are more years of data
@@ -66,16 +65,44 @@ nc <- vyl %>%
   filter(region=="North + Central Delta")
 
 ggplot(nc, aes(x=year, y=area_perc)) +
-  geom_bar(stat="identity", color = "black", aes(fill= WY)) +
+  geom_bar(stat="identity", color = "black"
+           , aes(fill= WY)
+           #, aes(fill= Drought)
+           ) +
   facet_rep_wrap(~veg_type, ncol= 2) +
   labs(x= "Year", y= "Percent water area occupied") +
-  scale_fill_manual(values= year.colors
-                    #, guide= "none"
-  ) +
+  scale_fill_manual(values= year.colors) +
   theme_doc +
   theme(legend.position = "top")
-#ggsave(last_plot(), filename= "AquaticVegTimeSeries.png", width= 6.5, height= 6, dpi= 300,
-#       path= "Figures")
+#ggsave(last_plot(), filename= "AquaticVegTimeSeries.png", type ="cairo-png", width= 6.5, height= 4.25, dpi= 300)
+
+#make boxplot showing water year types
+#data are very limited
+
+#set order for WY types
+nc$WY <-factor(nc$WY, levels = c("Critical", "Dry","Below Normal", "Above Normal", "Wet"))
+
+ggplot(nc, aes(x= WY, y= area_perc)) +
+  geom_boxplot(aes(fill= WY), outlier.size= 1, outlier.color= "gray60") +
+  labs(x= "Year type", y= "Percent water area occupied") +
+  scale_fill_manual(values= year.colors
+                    ,guide="none") +
+  facet_rep_wrap(~ veg_type, ncol= 2, repeat.tick.labels = TRUE)+
+  theme_doc+
+  theme(axis.text.x = element_text(angle = 45
+                                   , vjust = 0.95
+                                   , hjust=1
+                                   )
+                                   )
+#ggsave(last_plot(), filename= "AquaticVeg_WY_Comp.png", type ="cairo-png", width= 6.5, height= 4.25, dpi= 300)
+
+#calculate means and SD by veg type and water year type
+vegavg <- nc %>% 
+  group_by(veg_type,WY) %>% 
+  summarize(mean = mean(area_perc),
+            sd = sd(area_perc) 
+            , .groups = 'drop'
+            ) 
 
 
 #look at data by region-----------------------
