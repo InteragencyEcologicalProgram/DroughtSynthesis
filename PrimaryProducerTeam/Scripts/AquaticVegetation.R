@@ -11,14 +11,74 @@
 #only four of those years have data for entire delta
 #data are only collected once per year
 #time of year of data collection varies a bit too
-
 #note: there is no data for partial regions. shruti already excluded those
+
+#Don't worry about regions. Just plot the annual data for SAV and FAV 
+#color bars by water year type
 
 #packages
 library(tidyverse)
 library(janitor)
 library(deltamapr)
 library(sf)
+
+#just plot data by year--------
+
+#script with formatting for plots
+source("PrimaryProducerTeam/Scripts/MyFunctionsAndThemes.R")
+
+#read in veg data
+veg <- read_csv("PrimaryProducerTeam/Data/AquaticVegCoverage_2004-2020.csv")
+
+#read in water year assignments
+wyt <- read_csv("PrimaryProducerTeam/Data/WaterYearAssignments.csv")
+
+#reduce water year df to just needed columns
+wyts <- wyt %>% 
+  select("Year","Yr_type")
+
+#add water year assignments to veg data
+vegwy <- left_join(veg,wyts, by=c("year"="Year"))
+
+#convert wide to long
+vyl <- vegwy %>% 
+  #filter(year>2010) %>% 
+  rename(WY = Yr_type) %>% 
+  pivot_longer(cols="SAV":"FAV", names_to="veg_type", values_to="area_perc") 
+
+#color scheme
+year.colors <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055")
+
+#plot with SAV and FAV for both full delta and north + central delta
+ggplot(vyl, aes(x=year, y=area_perc)) +
+  geom_bar(stat="identity", color = "black", aes(fill= WY)) +
+  facet_rep_wrap(region~veg_type, ncol= 2) +
+  labs(x= "Year", y= "Percent water area occupied") +
+  scale_fill_manual(values= year.colors
+                    #, guide= "none"
+                    ) +
+  theme_doc +
+  theme(legend.position = "top")
+#full delta plot looks same as north + central delta plot, so just use north + central data because there are more years of data
+
+#plot with SAV and FAV for just north + central delta
+nc <- vyl %>% 
+  filter(region=="North + Central Delta")
+
+ggplot(nc, aes(x=year, y=area_perc)) +
+  geom_bar(stat="identity", color = "black", aes(fill= WY)) +
+  facet_rep_wrap(~veg_type, ncol= 2) +
+  labs(x= "Year", y= "Percent water area occupied") +
+  scale_fill_manual(values= year.colors
+                    #, guide= "none"
+  ) +
+  theme_doc +
+  theme(legend.position = "top")
+#ggsave(last_plot(), filename= "AquaticVegTimeSeries.png", width= 6.5, height= 6, dpi= 300,
+#       path= "Figures")
+
+
+#look at data by region-----------------------
 
 #Define path on SharePoint site for data
 sharepoint_path <- normalizePath(
@@ -106,7 +166,7 @@ ggplot(R_EDSM_Subregions_Mahardja)+
   theme_bw()+
   theme(legend.position="none")
 
-#data analysis ----------------
+#data analysis
 
 #water year type categories
 #Wet years: 2011, 2017, 2019
