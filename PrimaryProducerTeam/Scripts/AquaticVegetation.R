@@ -22,12 +22,12 @@ library(janitor)
 library(deltamapr)
 library(sf)
 
-#just plot data by year--------
+#just plot deltawide data by year--------
 
 #script with formatting for plots
 source("PrimaryProducerTeam/Scripts/MyFunctionsAndThemes.R")
 
-#read in veg data
+#read in delta wide veg data
 veg <- read_csv("PrimaryProducerTeam/Data/AquaticVegCoverage_2004-2020.csv")
 
 #read in water year assignments
@@ -103,6 +103,46 @@ vegavg <- nc %>%
             sd = sd(area_perc) 
             , .groups = 'drop'
             ) 
+
+#plot franks tract data by year--------------
+
+#read in Franks Tract data
+ft <- read_csv("PrimaryProducerTeam/Data/FranksTract_AreaSummary_hectares.csv")
+
+#do some formatting with FT df
+ftf <- ft %>%
+  rowwise() %>% 
+  mutate(
+    #calculate total area by summing all categories
+    total = sum(c_across(soil:shadow))
+    #calculate FAV as water hyacinth + water primrose
+    ,fav = hyacinth+primrose
+    ) %>%  
+  select(Year,total,sav,fav) %>% 
+  rename(SAV=sav, FAV=fav) %>% 
+  pivot_longer(cols="SAV":"FAV", names_to="veg_type", values_to="area_ha") %>% 
+  mutate(area_perc=area_ha/total) %>% 
+  select(Year,veg_type,area_perc)
+
+#add water year type to FT df
+ftwy <- left_join(ftf,wyts)
+
+ftwyf <- ftwy %>% 
+  rename(WY=Yr_type)
+
+#plot
+ggplot(ftwyf, aes(x=Year, y=area_perc)) +
+  geom_bar(stat="identity", color = "black"
+           , aes(fill= WY)
+           #, aes(fill= Drought)
+  ) +
+  facet_rep_wrap(~veg_type, ncol= 2) +
+  labs(x= "Year", y= "Percent water area occupied") +
+  scale_fill_manual(values= year.colors) +
+  theme_doc +
+  theme(legend.position = "top")
+#ggsave(last_plot(), filename= "AquaticVegTimeSeries_FranksTract.png", type ="cairo-png", width= 6.5, height= 4.25, dpi= 300)
+
 
 
 #look at data by region-----------------------
