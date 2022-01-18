@@ -67,3 +67,232 @@ ggplot(Nuts2, aes(x = Index, y = chla, color = Drought)) + geom_line()
 ggplot(Nuts2, aes(x = Drought, y = chla, fill = Drought)) + geom_boxplot()
 ggplot(filter(Nuts, Drought != "N", !is.na(Drought)), 
        aes(x = Drought, y = log(Chla), fill = Drought)) + geom_boxplot() + facet_wrap(~Season)
+
+
+######################################################
+#This is a mess and I don't know what I'm doing but here goes
+masterplot = read_excel("data/master plot.xlsx", sheet = "organized for data vis")
+masterplot = masterplot %>%
+  filter(Comparison != "Critical: Other year types") %>%
+  mutate(Strength2 = case_when(
+    direction == "Decrease" ~ Strength*-1,
+    TRUE ~ Strength
+  ), Group = factor(Group, levels = unique(Group))) %>%
+  arrange(Group, Strength2) %>% 
+  mutate(Metric = factor(Metric, levels = unique(Metric)))
+
+data = masterplot
+
+nObsType <- nlevels(as.factor(masterplot$Metric))
+data$ID <- rep( seq(1, nrow(data)/nObsType) , each=nObsType)
+
+# Get the name and the y position of each label
+label_data <- data %>%
+  mutate(ID = 1:nrow(data),
+         Y = case_when(direction == "Decrease" ~0,
+                       TRUE ~ Strength +1),
+           Metric = case_when(
+             Group == "Space1" ~ "",
+             Group == "Space2"~ "",
+             Group == "Space3"~ "",
+             TRUE~ as.character(Metric)
+           ))
+
+number_of_bar <- nrow(label_data)
+angle <- 90 - 360 * (label_data$ID-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data$hjust <- ifelse( angle < -90, 1, 0)
+label_data$angle <- ifelse(angle < -90, angle+180, angle)
+empty_bar = 2
+# prepare a data frame for base lines
+base_data <- data %>% 
+  mutate(ID = 1:nrow(data)) %>%
+  group_by(Group) %>% 
+  summarize(start=min(ID), end=max(ID) - empty_bar) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+
+# prepare a data frame for grid (scales)
+grid_data <- base_data
+grid_data$end <- grid_data$end[ c( nrow(grid_data), 1:nrow(grid_data)-1)] + 1
+grid_data$start <- grid_data$start - 1
+grid_data <- grid_data[-1,]
+
+# Make the plot
+p <- ggplot(data) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Strength2,  alpha = Rsquared, fill = Strength2),  stat="identity") +
+scale_fill_viridis()+
+ # ylim(-150,max(label_data$ID, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    axis.line.x = element_line(size = 2),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    plot.margin = unit(rep(-1,4), "cm") 
+  ) +
+  
+  geom_hline(yintercept = 0)+
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=ID, y=Y, label=Metric, hjust=hjust), 
+            color="black", fontface="bold",alpha=0.6, size=5, angle= label_data$angle, inherit.aes = FALSE ) +
+  annotate("text", x = 0, y =-10, label = " ")
+
+p
+
+
+p2 <- ggplot(data) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Coefficient,  alpha = Rsquared, fill = Coefficient),  stat="identity") +
+  scale_fill_viridis()+
+  # ylim(-150,max(label_data$ID, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    axis.line.x = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    #plot.margin = unit(rep(-1,4), "cm") 
+  ) +
+  geom_hline(yintercept = 0)+
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=ID, y=Coefficient, label=Metric, hjust=hjust), 
+            color="black", fontface="bold",alpha=0.6, size=5, angle= label_data$angle, inherit.aes = FALSE ) +
+  annotate("text", x = 0, y =-2, label = " ")
+
+p2
+
+
+p3 <- ggplot(filter(data, Metric != "Lower Trophic", Metric != "Water Quality")) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Coefficient,  fill = Coefficient),  stat="identity") +
+  scale_fill_viridis()+
+  # ylim(-150,max(label_data$ID, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    legend.position =  NULL,
+    axis.line.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+   # plot.margin = unit(rep(-1,4), "cm") 
+  ) +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=ID, y=0, label=Metric), hjust = 0,
+            color="black", fontface="bold",alpha=0.6, size=4, angle= 90, inherit.aes = FALSE )
+
+p3
+
+
+# Make the plot
+p4 <- ggplot(data) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Strength,   fill = direction),  stat="identity") +
+  scale_fill_manual(values = c("skyblue","darkorange"), 
+                    labels = c("Decrease \nwith Drought", "Increase \nwith Drought"),name = NULL)+
+  # ylim(-150,max(label_data$ID, na.rm=T)) +
+
+  
+  geom_hline(yintercept = 0)+
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data, aes(x=ID, y=2, label=Metric, hjust=hjust), 
+            color="black", fontface="bold",alpha=0.6, size=5, angle= label_data$angle, inherit.aes = FALSE ) +
+  annotate("text", x = 0, y =-2, label = " ")+
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "bottom"#,
+   # plot.margin = unit(rep(-.5,4), "cm") 
+  ) 
+p4
+
+# Make the plot
+data2 = filter(arrange(data, Strength2), Metric != "Lower Trophic", Metric != "Water Quality")  %>%
+  mutate(Metric = factor(Metric, levels = c("Outflow", "Chlorophyll-a", "Suisun Zooplankton", "South Zooplankton",
+                                            "Temperature", "Secchi", "Nitrate+Nitrite", 
+                                            "Potamocorula grazing rate",
+                                            "Salinity", "Microcystis")))
+p5 <- ggplot(data2) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Strength2,   fill = direction),  stat="identity") +
+  scale_fill_manual(values = c("skyblue","darkorange"), name = NULL, guide = NULL)+
+  # ylim(-150,max(label_data$ID, na.rm=T)) +
+  theme_minimal() +
+  theme(
+    axis.line.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank()
+  ) + ylab("Strength of Drought Impact (qualitative)")+
+  
+  geom_hline(yintercept = 0)+
+  
+  # Add labels on top of each bar
+  geom_text(data=data2, aes(x=Metric, y=.5, label=Metric), hjust = 0,
+            color="black", fontface="bold",alpha=0.6, size=5, angle= 90, inherit.aes = FALSE ) 
+
+p5
+
+#Maybe a version where I group by increase/decrease...
+
+
+# Make the plot
+data3 = masterplot %>%
+  filter(Comparison != "Critical: Other year types", Group != "Space3") %>%
+  mutate(Strength2 = case_when(
+    direction == "Decrease" ~ Strength*-1,
+    TRUE ~ Strength
+  ), Group = factor(direction)) %>%
+  arrange(Strength2) %>% 
+  mutate(Metric = factor(Metric, levels = unique(Metric)))
+
+data3$ID <- 1:nrow(data3)
+
+# Get the name and the y position of each label
+label_data3 <- data3  %>%
+  mutate(Metric2 = case_when(Metric == "Lower Trophic"~ "",
+                         Metric == "Water Quality" ~ "" ,
+                         TRUE ~ as.character(Metric)))
+
+number_of_bar <- nrow(label_data3)
+angle <- 90 - 360 * (label_data3$ID-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data3$hjust <- ifelse( angle < -90, 1, 0)
+label_data3$angle <- ifelse(angle < -90, angle+180, angle)
+
+
+p6 <- ggplot(data3) +      
+  
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=Strength,   fill = direction),  stat="identity") +
+  scale_fill_manual(values = c("skyblue","darkorange"), 
+                    labels = c("Decrease \nwith Drought", "Increase \nwith Drought"),name = NULL)+
+  # ylim(-150,max(label_data$ID, na.rm=T)) +
+  
+  
+  geom_hline(yintercept = 0)+
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_data3, aes(x=ID, y=2, label=Metric2, hjust=hjust), 
+            color="black", fontface="bold",alpha=0.6, size=5, angle= label_data3$angle, inherit.aes = FALSE ) +
+  annotate("text", x = 0, y =-2, label = " ")+
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "bottom"#,
+    # plot.margin = unit(rep(-.5,4), "cm") 
+  ) 
+p6
+
+
+

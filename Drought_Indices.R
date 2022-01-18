@@ -18,22 +18,22 @@ library(RCurl) #read csv files from GitHub
 #palmer drought severity index (05)
 #note that these links will need to be updated over time because the date changes as files are updated
 #https://www.ncei.noaa.gov/pub/data/cirs/climdiv/
-pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211206"
+pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #palmer hydrological drought index (06)
-phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211206"
+phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #palmer "Z" index (07)
-zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211206"
+zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #modified palmer drought severity index (08)
-pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211206"
+pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20220108"
                    ,header=F
                    )
 
