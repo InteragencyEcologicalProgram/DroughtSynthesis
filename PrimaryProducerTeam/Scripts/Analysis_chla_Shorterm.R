@@ -209,6 +209,22 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
 ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
 
+
+## Yeartype Only, true scale, chla > 5ug/L
+ggplot(filter(chla_data_stats, chlaAvg > 5), aes(x= ds_year_type, y= chlaAvg)) +
+  geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="white") +
+  labs(x= "Water Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  #scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+  #                   labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_fill_manual(values= year.colors, guide= "none") +
+  #annotation_logticks(side= "l") +
+  #theme_doc
+  theme_bw(base_size = 12)
+ggsave(last_plot(), filename= "chla_filtered5ug_YearTypeOnly_ST.png", width= 6.5, height= 8, dpi= 300,
+       path= "Figures")
+
+
 ## Year time series
 ggplot(chla_data_stats, aes(x= ds_year, y= chlaAvg_log10)) +
   geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
