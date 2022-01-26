@@ -122,6 +122,14 @@ Station_Region_count <- mc_data_stats %>%
   count(Region)
 sum(Station_Region_count$n)
 
+## Percentage of each MC index level
+mc_data_stats %>% 
+  group_by(ds_year_type) %>% 
+  count(mc_max) %>% 
+  mutate(prop= n/sum(n),
+         N= sum(n)) %>% 
+  write_csv("Data/mc_rating_percentages.csv")
+
 #### DATA FIGURES ####
 
 ## Facet labels
@@ -155,15 +163,15 @@ ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6,
 
 ## MC-rating by Region
 ggplot(mc_data_stats, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_max), position= "dodge") +
-  labs(x= "Year type", y= "Number of observations") +
+  geom_bar(aes(fill= mc_max), position= position_dodge(preserve = "single")) +
+  labs(x= "Water Year", y= "Number of observations") +
   scale_y_continuous(expand= c(0, 0)) +
-  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
                     name= expression(paste(italic("Microcystis "), "Rating")),
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_wrap(~Region, nrow= 2, labeller= labeller(Region= as_labeller(region_labels))) +
-  theme_doc +
+  theme_bw(base_size= 12) +
+  #theme_doc +
   #theme(legend.position = "top")
   theme(legend.position = c(0.85, 0.2))
 ggsave(last_plot(), filename= "MCrating_Region.png", width= 6.5, height= 4, dpi= 300,
