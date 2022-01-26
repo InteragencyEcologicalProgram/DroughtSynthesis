@@ -1,5 +1,12 @@
 # -- Replace RLs --
-replace_rl <- function(df_wq, val, seed = 42) {
+replace_rl <- function(df_wq, val, check_rl_col = FALSE, seed = 42) {
+  # check that RL col is only = and <
+  if(check_rl_col) {
+    if (!(all(c('<', '=') %in% unique(col_sign)))) {
+      stop('Sign column includes variables other than "<" or "=". Set check_rl_col = FALSE if intentional.')
+    }
+  }
+  
   # define variables
   col_val <- paste0('df_wq$', val)
   col_sign <- paste0('df_wq$', val, '_Sign')

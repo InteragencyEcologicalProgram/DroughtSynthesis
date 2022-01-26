@@ -26,12 +26,28 @@ Integrated_data = left_join(Integrated_data_set, zoopsBPUE_seasonal) %>%
   left_join(Fish)
 
 #Chlorophyll data from KEith
-#STILL NEED TO GET THIS
+Chl = read_csv("data/chla_data_stats_LT2.csv")
+#ok, beautiful! do some averaging
+Chl2 = group_by(Chl, Region, Season, month, ds_year) %>%
+  summarize(Chla = mean(chlaAvg)) %>%
+  group_by( Region, Season, ds_year) %>%
+  summarize(Chla = mean(Chla)) %>%
+  group_by(Season, ds_year) %>%
+  summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
+  rename(YearAdj = ds_year)
 
+Chl2reg = group_by(Chl, Region, Season, month, ds_year) %>%
+  summarize(Chla = mean(chlaAvg)) %>%
+  group_by( Region, Season, ds_year) %>%
+  summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
+  rename(Year = ds_year) %>%
+  left_join(yrs)
+
+Integrated = left_join(Integrated_data, Chl2)
 
   
-#log-transform zooplankton and clorophyll and fish
-Int = mutate(Integrated_data, logDS = log(SmeltIndex +1), logShad = log(AmShadIndex +1), 
+#log-transform zooplankton and fish
+Int = mutate(Integrated, logDS = log(SmeltIndex +1), logShad = log(AmShadIndex +1), 
              logSB = log(Sbindex+1), logLFS = log(LongfinIndex+1), logzoopB = log(ZoopBPUE)) 
 
 #transition the data set from wide to long. 
@@ -43,9 +59,16 @@ ggplot(filter(IntLong, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxp
   facet_grid(Metric~Season, scales = "free_y")
 
 #Huh. Chlorophyll goes up
-Chla = filter(IntLong, Metric == "logChla", Drought != "N")
+Chla = filter(IntLong, Metric == "logChl", Drought != "N")
 ggplot(Chla, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season)
 ggplot(filter(Chla, Season == "Fall"), aes(x = Drought, y = Value)) + geom_boxplot()
+ggplot(filter(Chl2reg, Drought != "N"), aes(x = Drought, y = logChl)) + geom_boxplot()+ facet_wrap(Region~Season)
+
+#quick model of chlorophyll
+m = glm(logChl~ Drought*Season+Region +Season, data = Chl2reg)
+summary(m)
+emmeans(m, pairwise ~ Drought|Season, adjust = "sidak")
+#wow, there are really no broad-scale patterns with Chlorophyll
 
 zoo = filter(IntLong, Metric == "logzoopB")
 ggplot(zoo, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season)
@@ -259,6 +282,7 @@ AnnIm3 =  Int %>%
 m = glm(Temperature~ Drought+Season, data = AnnIm3)
 m2 = glm(Temperature~ Drought, data = AnnIm3)
 summary(m)
+library(car)
 Anova(m)
 library(visreg)
 visreg(m)
@@ -271,27 +295,33 @@ library(rsq)
 rsq.partial(m, adj = T)
 rsq.partial(m, m2, adj = TRUE)
 
-test = Rsquar(AnnIm3, vars = names(AnnIm3)[6:23])
+test = Rsquar(AnnIm3, vars = names(AnnIm3)[6:25])
 AnnIm4 = mutate(test, colr = case_when(
   Ps > 0.05 ~ "grey",
   Ps < 0.05 & Est >0 ~ "blue",
   Ps < 0.05 & Est < 0 ~ "red"
-)) %>%
+),
+sig = case_when(
+  Ps > 0.05 ~ "grey",
+  Ps < 0.05 ~ "blue"
+)
+  ) %>%
   filter(!Metrics %in% c("logzooC", "SpCndSurface", "TotPhos", "Secchi", "X2", "Sbindex", "ZoopBPUE", 
-                         "SmeltIndex", "LongfinIndex", "AmShadIndex"))
+                         "SmeltIndex", "LongfinIndex", "AmShadIndex", "Chla"))
 
 
 AnnIm4 = mutate(AnnIm4, Metrics = factor(Metrics, levels =  c("Export", "Outflow",
                                      "Turbidity","Salinity",  "Temperature", "TempSummer",
-                                     "logzoopB", "logSB", "logDS", "logLFS", "logShad"), 
+                                     "logzoopB", "logSB", "logDS", "logLFS", "logShad", "logChl"), 
                 labels = 
                   c("Exports",  "Outflow","Turbidity", 
                     "Salinity", "Temperature", "Summer Temperature",
                     
                     "Zooplankton", "Age-Zero Striped Bass", 
-                    "Delta Smelt", "Longfin Smelt", "American Shad")))
+                    "Delta Smelt", "Longfin Smelt", "American Shad", "Chlorophyll")))
 
 
+#plot of R2
 ggplot(filter(AnnIm4, !Metrics %in% c("Temperature", "Zoops")), aes(x=Metrics)) +
   geom_col(aes(y = Rs, fill = colr))+
   geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
@@ -304,7 +334,7 @@ ggplot(filter(AnnIm4, !Metrics %in% c("Temperature", "Zoops")), aes(x=Metrics)) 
   scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank())
 
 
-
+#plot of coefficients
 ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metrics)) +
   geom_col(aes(y = Est, fill = colr))+
   geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
@@ -316,6 +346,20 @@ ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metri
   scale_y_continuous( name = "Drought Impact Level (Coeficient)") + 
   scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank(), legend.position = c(0.85,0.85))
 
+#let's try varying alpha by R2
+ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metrics)) +
+  geom_col(aes(y = Est, fill = sig, alpha = Rs))+
+  geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
+            position = position_dodge2(width = 1, preserve = "single"))+
+  theme_bw()+
+  scale_fill_manual(values = c("blue", "black"), 
+                    labels = c("p<0.05", "non-significant"),
+                    name = "Significance")+
+  scale_alpha(range = c(0.3, 1), name = "R-squared")+
+  scale_y_continuous( name = "Drought Impact Level (Coeficient)") + 
+  scale_x_discrete(name = NULL) + 
+  theme(axis.text.x = element_blank(), 
+        legend.position = c(0.85,0.8))
 
 
 ########################################################

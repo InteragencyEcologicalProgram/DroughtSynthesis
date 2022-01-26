@@ -278,9 +278,9 @@ AlljelliesMean = group_by(AlljelliesTot, Year, Yr_type, Region, Season, ShortTer
 
 ##################################################################################
 #graphs
-#Alljellies = read_csv( "AllJelly_18SEP2021.csv")
-#AlljelliesMean = read_csv("MeanJelliesRegionMonth_18Sep2021.csv")
-#AlljelliesTot = read_csv( "AllJelly_totalCatch_30DEC2021.csv")
+Alljellies = read_csv( "AllJelly_18SEP2021.csv")
+AlljelliesMean = read_csv("MeanJelliesRegionMonth_18Sep2021.csv")
+AlljelliesTot = read_csv( "AllJelly_totalCatch_30DEC2021.csv")
 #let's explore!
 ggplot(filter(AlljelliesMean, Year == 2017), aes(x = Month, y = meanJellies)) +
   geom_col()+ facet_grid(Region~Year)
@@ -293,10 +293,10 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
   geom_col()+ facet_wrap(~Region)
 
-
+pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055") 
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
   geom_col(aes(fill = Yr_type), position = "dodge")+
-  scale_fill_viridis_d()+
+  scale_fill_manual(values = pal_yrtype)+
  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
   ylab("Mean monthly jellyfish CPUE") + theme_bw()+
   facet_wrap(~Region)
@@ -323,7 +323,7 @@ ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
 Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
 
 ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
-  scale_fill_viridis_d(guide = NULL, direction = -1)+
+  scale_fill_manual(guide = NULL, values = pal_drought)+
   geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
   scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
   ylab("Mean monthly jellyfish CPUE (log-transformed)")

@@ -463,8 +463,28 @@ hist(short_term_clams2$Biomass)
 hist(short_term_clams2$Grazing)
 
 write_csv(short_term_clams2, "short_term_biomass_grazing.csv")
+short_term_clams2 = read_csv("data/short_term_biomass_grazing_clams.csv")
 
 #calculate monthly mean biomass and grazing rate
 mean_biomass_grazing<-short_term_clams2%>%group_by(Region, Year, Month, SpeciesID)%>%summarize(monthly_avg_biomass=mean(Biomass, na.rm=TRUE), monthly_avg_grazing=mean(Grazing, na.rm=TRUE))
 write_csv(mean_biomass_grazing, "short_term_biomass_grazing_metrics.csv")
 
+
+#####################################33
+#short term trends plot
+yeartypes = read.csv("data/yearassignments.csv")
+short_term = left_join(mean_biomass_grazing, yeartypes) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+ggplot(short_term, aes(x = as.factor(Year), y = log(monthly_avg_biomass+1), fill = ShortTerm)) + geom_boxplot() +
+  facet_grid(~SpeciesID)
+ggplot(short_term, aes(x = as.factor(Year), y = monthly_avg_biomass, fill = Yr_type)) + geom_boxplot() +
+  facet_grid(~SpeciesID) +
+  scale_fill_viridis_d(direction = -1, name = "Year Type")+
+  ylab("Average biomass (g/m2)")+
+  xlab("Year")+theme_bw()
+
+ggplot(short_term, aes(x = as.factor(Year), y = monthly_avg_grazing, fill = Yr_type)) + geom_boxplot() +
+  facet_grid(~SpeciesID) +
+  scale_fill_viridis_d(direction = -1, name = "Year Type")+
+  ylab("Grazing Rate")+
+  xlab("Year")+theme_bw()

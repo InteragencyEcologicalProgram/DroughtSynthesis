@@ -23,10 +23,23 @@ From Dave's Drought package
 ```{r}
 # raw data
 df_wq <- raw_nutr_1975_2021
+df_wq$DissAmmonia_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
+df_wq$DissNitrateNitrite_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
+df_wq$DissOrthophos_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
 
-df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia')
-df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite')
-df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
+# remove outlier vals
+df_wq <- df_wq %>% filter(
+  !c(DissAmmonia_Sign == '<' & DissAmmonia >= .2),
+  !c(DissOrthophos_Sign == '<' & DissOrthophos > .15),
+  !c(DissNitrateNitrite_Sign == '<' & DissNitrateNitrite >= 3)
+  )
+
+# set seed
+seed <- 42
+
+df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia', check_rl_col = FALSE, seed = seed)
+df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite', check_rl_col = FALSE, seed = seed)
+df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos', check_rl_col = FALSE, seed = seed)
 ```
 
 # Dissolved Ammonia
@@ -35,6 +48,8 @@ df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos')
 df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'season', month.na = 'relaxed')
 df_am_seasonal <- drt_add_yr_assign(df_am_seasonal)
 df_am_seasonal$DissAmmonia <- log10(df_am_seasonal$DissAmmonia)
+df_am_seasonal$Season <- factor(df_am_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_am_seasonal <- df_am_seasonal %>% arrange(., YearAdj, Season)
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissAmmonia ~ Drought + Season, data = df_am_seasonal)
@@ -90,6 +105,8 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_sea.jpg'), plt_
 df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'region', month.na = 'relaxed')
 df_am_regional <- drt_add_yr_assign(df_am_regional)
 df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
+df_am_regional$Region <- factor(df_am_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_am_regional <- df_am_regional %>% arrange(., Region, YearAdj)
 
 print('TEST THINGS')
 lm_regional <- lm(DissAmmonia ~ Drought + Region, data = df_am_regional)
@@ -103,9 +120,13 @@ print('END TEST THINGS')
 print('')
 
 # failed tests, add lags based on pacf
-df_am_regional$DissAM_onelag <- lag(df_am_regional$DissAmmonia, n = 1L)
+df_am_regional <- df_am_regional %>%
+  group_by(Region) %>%
+  mutate(DissAM_onelag = dplyr::lag(DissAmmonia, n = 1, default = NA),
+         DissAM_twolag = dplyr::lag(DissAmmonia, n = 2, default = NA)) %>%
+  ungroup()
 
-lm_regional <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag, data = df_am_regional)
+lm_regional <- lm(DissAmmonia ~ Drought + Region + DissAM_onelag + DissAM_twolag, data = df_am_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -148,6 +169,8 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_reg.jpg'), plt_
 df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'season', month.na = 'relaxed')
 df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
 df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
+df_nn_seasonal$Season <- factor(df_nn_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_nn_seasonal <- df_nn_seasonal %>% arrange(., YearAdj, Season)
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season, data = df_nn_seasonal)
@@ -161,8 +184,9 @@ print('')
 
 # failed tests, add lags based on pacf
 df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
+df_nn_seasonal$DissNN_twolag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 2L)
 
-lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag, data = df_nn_seasonal)
+lm_seasonal <- lm(DissNitrateNitrite ~ Drought + Season + DissNN_onelag + DissNN_twolag, data = df_nn_seasonal)
 
 pacf(residuals(lm_seasonal), na.action = na.pass)
 
@@ -173,7 +197,7 @@ print('')
 
 plot(lm_seasonal)
 
-aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
+aov_seasonal <- Anova(lm_seasonal, type = 'II')
 print(aov_seasonal)
 
 df_aov <- aov_as_df(aov_seasonal, 'DissNitrateNitrite')
@@ -203,6 +227,8 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_sea.jpg'
 df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_type = 'region', month.na = 'relaxed')
 df_nn_regional <- drt_add_yr_assign(df_nn_regional)
 df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
+df_nn_regional$Region <- factor(df_nn_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_nn_regional <- df_nn_regional %>% arrange(., Region, YearAdj)
 
 print('TEST THINGS')
 lm_regional <- lm(DissNitrateNitrite ~ Drought + Region, data = df_nn_regional)
@@ -216,7 +242,10 @@ print('END TEST THINGS')
 print('')
 
 # failed tests, add lags based on pacf
-df_nn_regional$DissNN_onelag <- lag(df_nn_regional$DissNitrateNitrite, n = 1L)
+df_nn_regional <- df_nn_regional %>%
+  group_by(Region) %>%
+  mutate(DissNN_onelag = dplyr::lag(DissNitrateNitrite, n = 1, default = NA)) %>%
+  ungroup()
 
 lm_regional <- lm(DissNitrateNitrite ~ Drought + Region + DissNN_onelag, data = df_nn_regional)
 
@@ -260,6 +289,8 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_reg.jpg'
 df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'season', month.na = 'relaxed')
 df_op_seasonal <- drt_add_yr_assign(df_op_seasonal)
 df_op_seasonal$DissOrthophos <- log10(df_op_seasonal$DissOrthophos)
+df_op_seasonal$Season <- factor(df_op_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_op_seasonal <- df_op_seasonal %>% arrange(., YearAdj, Season)
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissOrthophos ~ Drought + Season, data = df_op_seasonal)
@@ -316,6 +347,8 @@ ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_sea.jpg'), pl
 df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 'region', month.na = 'relaxed')
 df_op_regional <- drt_add_yr_assign(df_op_regional)
 df_op_regional$DissOrthophos <- log10(df_op_regional$DissOrthophos)
+df_op_regional$Region <- factor(df_op_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_op_regional <- df_op_regional %>% arrange(., Region, YearAdj)
 
 print('TEST THINGS')
 lm_regional <- lm(DissOrthophos ~ Drought + Region, data = df_op_regional)
@@ -329,9 +362,12 @@ print('END TEST THINGS')
 print('')
 
 # failed tests, add lags based on pacf
-df_op_regional$DissOrthophos_onelag <- lag(df_op_regional$DissOrthophos, n = 1L)
+df_op_regional <- df_op_regional %>%
+  group_by(Region) %>%
+  mutate(DissOP_onelag = dplyr::lag(DissOrthophos, n = 1, default = NA)) %>%
+  ungroup()
 
-lm_regional <- lm(DissOrthophos ~ Drought + Region  + DissOrthophos_onelag, data = df_op_regional)
+lm_regional <- lm(DissOrthophos ~ Drought + Region  + DissOP_onelag, data = df_op_regional)
 
 pacf(residuals(lm_regional), na.action = na.pass)
 
@@ -364,6 +400,7 @@ plt_op_reg <- emm_plotter(
   drt_color_pal_drought() +
   ylab('log(Dissolved Orthophosphate)')
 
+plt_op_reg
 ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_reg.jpg'), plt_op_reg, width = 7, height = 4.5)
 ```
 

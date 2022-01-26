@@ -65,6 +65,7 @@ stas1 = st_join(stas, regions, join=st_intersects)%>% # Add subregions
   st_drop_geometry() %>% # Drop sf geometry column since it's no longer needed
   dplyr::select(StationCode, Regions)
   
+#get rid of things we don't need
 TNS2 = left_join(stas1, Townet)  %>%
   dplyr::select(-`Tows Completed`,-`Temperature Top`, -`Temperature Bottom`,          
                 -`Conductivity Top`, -`Conductivity Bottom`, -`Tide Code`,                   
@@ -98,24 +99,27 @@ TNSd = filter(TNSd, !Species %in% filter(species, tot == 0)$Species) %>%
   summarize(Catch = sum(Catch), CPUE = sum(CPUE))
 
 
+#what's going on with the gobies?
 TNSd %>%
   filter(Species == "Tridentiger spp")%>%
 ggplot(aes(x = Regions, y = log(CPUE+1))) +
   geom_boxplot() 
 
 
-
+#check out prawns
 TNSd %>%
   filter(Species == "Siberian prawn")%>%
   ggplot(aes(x = Regions, y = CPUE)) +
   geom_boxplot() + facet_wrap(~Year) +
   coord_cartesian(ylim = c(0, 0.005))
 
+#now let's look at total catch of everything
 TNsum = group_by(TNSd, Year, Regions, StationCode, VolumeOfAllTows) %>%
   summarize(CPUE = sum(CPUE), Catch = sum(Catch))
 
 ggplot(TNsum, aes(x = Regions, y= Catch)) + geom_boxplot()
 
+#average total catch by year and region
 TNmean = group_by(TNsum, Year, Regions) %>%
   summarize(CPUE = mean(Catch, na.rm = T), SD = sd(Catch, na.rm = T), SE = SD/sqrt(n())) %>%
   left_join(yeartypes)
@@ -168,7 +172,7 @@ ggplot(TNmeanSf, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = 
   facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
   scale_fill_manual(values = c(mypal, "red", "green"))
 
-#Actually, that looks pretty similar. 
+#Actually, that looks pretty similar tot the version with the inverts
 
 ####################################################################
 #inverts only
@@ -201,50 +205,32 @@ ggplot(TNmeanSi, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = 
   scale_fill_manual(values = c(mypal, "red", "green"))
 #############################################################################################
 #now let's try some models. 
+#I tried using glmmTMB and some other types of models, and they really don't like the 
+#low catch in the South Delta. THings kept breaking
+
 hist(TNsum$Catch, breaks = 50)
 hist(log(TNsum$Catch+1), breaks = 50)
-#GROSSS
 
-TNsum = mutate(TNsum, lnC = log(Catch + 1), lnCPUE = log(CPUE +1), rCPUE = round(CPUE),
-                 yearf = factor(Year, levels = c(2014,2015,2016,2017,2018,2019,2020,2021)))
-
-c1 = lmer(lnCPUE ~ yearf + (1|StationCode), data = TNsum)
-summary(c1)
-emmeans(c1, pairwise~ yearf)
-c1r = emmeans(c1, pairwise~ Regions)
-c122 =  emmeans(c1, pairwise~ Regions*yearf)
-test = emmeans(c1, "Regions", by = "yearf", type = "response")
-multcomp::cld(test)
-cld(c122)
-visreg(c1)
-plot(c122)
-
-c2 = glmmTMB(Catch ~ yearf + (1|Regions), offset = VolumeOfAllTows, zi = ~., family = "nbinom2", data = TNsum)
-summary(c2)
-
-starta = list(count = summary(c1)$coefficients$Estimate, zero = summary(c1)$coefficients)
-
-  c2 = hurdle(Catch ~ Regions, offset = VolumeOfAllTows, dist = "negbin", data = TNsum)
-
-  c3 = brm(rCPUE ~ Regions*yearf, family = zero_inflated_negbinomial(), data = TNsum, iter = 1000, chains = 2)
-#BLEH!!!!!
   c3 = brm(Catch ~ Regions*yearf, family = zero_inflated_negbinomial(), data = TNsum, iter = 2000, chains = 4)
   
 c3
 plot(c3)
 
+#with station as a random effect
 c3 = brm(Catch ~ Regions*yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
          data = TNsum, iter = 2000, chains = 4)
 
 c3s = summary(c3)
 plot(c3)
 conditional_effects(c3)
+
+#export results table
 write.csv(c3s$fixed, "TownNetModel.csv")
 
 #I need to check for salmon, smelt, sturgeon
   
 
-
+#pivot and add in zeros
 TNSs = filter(TNS2, Year >2013) %>%
   pivot_longer(cols = `Age-0 Striped Bass`:last_col(), names_to = "Species", values_to = "Catch") %>%
   mutate(CPUE = Catch/VolumeOfAllTows, CPUE = case_when(is.na(CPUE) ~ 0,
@@ -253,6 +239,7 @@ TNSS = filter(TNSs, Species %in% c("Chinook Salmon", "Delta Smelt",
                                    "Longfin Smelt", "Green Sturgeon", "Steelhead"))  %>%
   droplevels()
 
+#plot special status species
 ggplot(TNSS, aes(x = Year, y = CPUE))+ geom_point()+
   facet_grid(Species~Regions)
 
@@ -296,7 +283,7 @@ adonis(TNMat3~ as.factor(Year)+Regions, data = TNMat)
 
 #so only a very, very small perportion of hte variance. 
 
-#one hypothesis ws there might be an increase in black bas sin the central delta
+#one hypothesis ws there might be an increase in black bas and centrarchids sin the central delta
 
 Centr = filter(TNSd2, Species %in% c("Bluegill", "Centrarchids (Unid)", "Largemouth Bass")) %>%
   group_by(Year, Survey, Station, Regions) %>%
@@ -396,9 +383,9 @@ DJmean2.1 = DJFMP2 %>%
   group_by(Year, Regions, CommonName2) %>%
   summarize(CPUE = mean(Count, na.rm = T))
 
-ggplot(DJmean2.1, aes(x = Regions, y= CPUE, fill = CommonName2)) + 
-  geom_col()+
-  facet_wrap(~Year)+
+ggplot(DJmean2.1, aes(x = Year, y= CPUE, fill = CommonName2)) + 
+  geom_col(position = "fill")+
+ # facet_wrap(~Year)+
   scale_fill_manual(values = mypal)
 
 
@@ -431,11 +418,39 @@ cent = filter(DJmean2, CommonName %in% c("largemouth bass", "redear sunfish",
 ggplot(cent, aes(x = Regions, y = CPUE, fill = CommonName))+ geom_col()+
   facet_wrap(~Year)
 
+#model of centrarchids
+centall = filter(DJFMP2, CommonName %in% c("largemouth bass", "redear sunfish",
+                                           "bluegill", "smallmouth bass", "black crappie")) %>%
+  group_by(Year, StationCode, Regions, SampleDate) %>%
+  summarize(Count = sum(Count))%>%
+  mutate(Yearf = factor(Year, levels = c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)))
+
+
+cent = brm(Count ~ Regions*Yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
+          data = centall, iter = 2000, chains = 4)
+
+summary(cent)
+conditional_effects(cent)
+
+###################################
+#beach seine models
+DJFMPsum = mutate(DJFMPsum, Yearf = factor(Year, levels = c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)))
+
+
+bs3 = brm(Catch ~ Regions*Yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
+         data = DJFMPsum, iter = 2000, chains = 4)
+
+bs3s = summary(bs3)
+plot(bs3)
+conditional_effects(bs3)
+write.csv(bs3s$fixed, "beachseine.csv")
+
+
 #######################
 #beach seine NMDS
 
 DJMat = DJFMP2 %>%
-  filter(Year %in% c(2014, 2015, 2017, 2019, 2020, 2021)) %>%
+ # filter(Year %in% c(2014, 2015, 2017, 2019, 2020, 2021)) %>%
   mutate(CommonName2 = case_when(
     CommonName %in% DJrare ~ "Other",
     TRUE ~ CommonName
@@ -448,6 +463,9 @@ DJMat = DJFMP2 %>%
   filter(!is.na(`No catch`)) %>%
  dplyr::select(-`No catch`)
 DJMat2 = dplyr::select(ungroup(DJMat), `largemouth bass`:`threadfin shad`)
+DJMat3 = DJMat2/rowSums(DJMat2)
+
+adonis(DJMat3~ Year*Regions, data = DJMat)
 
 source("PlotNMDS.R")
 DJMDS = metaMDS(DJMat2, k=3, trymax = 500)

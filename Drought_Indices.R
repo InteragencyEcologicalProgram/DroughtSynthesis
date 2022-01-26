@@ -6,6 +6,8 @@ library(tidyverse)
 library(lubridate) #working with date-time
 library(PerformanceAnalytics) #plotting correlations
 library(RCurl) #read csv files from GitHub
+library(waterYearType) #DWR water years
+library(zoo) #used to assign dates to wate years rather than calendar years
 
 #to do
 #could calculate mean values for the two relevant divisions
@@ -18,22 +20,22 @@ library(RCurl) #read csv files from GitHub
 #palmer drought severity index (05)
 #note that these links will need to be updated over time because the date changes as files are updated
 #https://www.ncei.noaa.gov/pub/data/cirs/climdiv/
-pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20211206"
+pdsi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pdsidv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #palmer hydrological drought index (06)
-phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20211206"
+phdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-phdidv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #palmer "Z" index (07)
-zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20211206"
+zndx <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-zndxdv-v1.0.0-20220108"
                    ,header=F
                    )
 
 #modified palmer drought severity index (08)
-pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20211206"
+pmdi <- read.table(file="https://www.ncei.noaa.gov/pub/data/cirs/climdiv/climdiv-pmdidv-v1.0.0-20220108"
                    ,header=F
                    )
 
@@ -99,8 +101,6 @@ dayflow_m<-dayflow %>%
   group_by(year_month) %>%
   summarize(OUT_mean = mean(OUT))
 
-
-
 #plots-------------
 
 #make faceted plot showing each index for each division
@@ -130,7 +130,41 @@ sach_m<-sach %>%
          month = month(date)) %>% 
   unite(year_month,year:month,sep="-",remove=T) 
 
-#combine data sets
+#add a column to sach_m df that categorizes month by water year (Oct 1-Sept 30)
+sach_m$WY <- as.integer(as.yearmon(sach_m$date) - 9/12 + 1)
+
+#add DWR water year categories to df
+wyear <- water_year_indices %>% 
+  filter(location=="Sacramento Valley" & WY > 1905) %>% 
+  select("WY","Index","Yr_type")
+
+#combine palmer and DWR water year dfs
+sac_wy <- left_join(wyear,sach_m)
+
+#calculate standard units of palmer indices
+#(monthly value-long term mean)/ standard deviation of mean
+#focus just on Sac river division (402) and PHDI
+#water year (Oct 1-Sept 30) is more useful than calendar year
+sach_std <- sac_wy %>% 
+    mutate(
+      #calculates long term mean
+    phdi_ltmean = mean(value)
+    #calculates long term standard deviation
+    ,phdi_sd =sd(value)
+    #calculates standard units 
+    ,phdi_std = (value-phdi_ltmean)/phdi_sd
+    ) 
+
+#create boxplot of Sac PHDI categorized by WY type
+ggplot(sach_std, aes(x=Yr_type, y=value))+
+  geom_boxplot()
+
+#create boxplot of Sac PHDI in standardized units categorized by WY type
+ggplot(sach_std, aes(x=Yr_type, y=phdi_std))+
+  geom_boxplot()
+
+
+#combine palmer and dayflow data sets
 comb <- left_join(dayflow_m,sach_m)
 plot(comb$OUT_mean~comb$value)
 cor.test(comb$OUT_mean,comb$value) #cor=0.5253882

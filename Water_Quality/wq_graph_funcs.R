@@ -259,7 +259,7 @@ emm_plotter <-
     
     if (fill_type == 'rect' & !is.na(fill)) {
       x_max <- max(as.numeric(as.factor(pull(df_data, .data[[grouping]]))), na.rm = TRUE)
-      
+
       if (grouping == fill) {
         df_shading <- data.frame(
           xmin = seq(from = 0.5, to = x_max, by = 1),
@@ -272,7 +272,7 @@ emm_plotter <-
           xmin = seq(from = 0.5, to = x_max, by = 1),
           xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
           ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
-          Fill = pull(df_data, .data[[fill]])
+          Fill = (df_data %>% select(.data[[grouping]], .data[[fill]]) %>% unique())[2] %>% rename(Fill = .data[[fill]])
         )
       }
       
@@ -319,7 +319,7 @@ quad_year_plts <- function(plt_lt_di, plt_st_yr, plt_lt_avg, plt_st_avg, type, t
   plt_lt_di <- plt_lt_di +
     xlab(paste0('Drought (', type, 'al Averages)')) +
     theme(
-      axis.text.x = element_text(angle = angle, hjust = 1),
+      axis.text.x = element_text(angle = angle),
       legend.position = 'none',
       text = element_text(size = txt_size)
     )
@@ -328,23 +328,23 @@ quad_year_plts <- function(plt_lt_di, plt_st_yr, plt_lt_avg, plt_st_avg, type, t
     ylab(NULL) +
     xlab(paste0('Year (', type, 'al Averages)')) +
     theme(
-      axis.text.x = element_text(angle = angle, hjust = 1),
+      axis.text.x = element_text(angle = angle),
       legend.position = 'none',
       text = element_text(size = txt_size)
     )
   
   plt_lt_avg <- plt_lt_avg +
-    xlab(paste(type, '(Long Term)')) +
+    xlab(paste(type, '(Long-Term)')) +
     theme(
-      axis.text.x = element_text(angle = angle, hjust = 1),
+      axis.text.x = element_text(angle = angle),
       legend.position = 'none',
       text = element_text(size = txt_size)
     )
   
   plt_st_avg <- plt_st_avg +
-    ylab(NULL) + xlab(paste(type, '(Short Term)')) +
+    ylab(NULL) + xlab(paste(type, '(Short-Term)')) +
     theme(
-      axis.text.x = element_text(angle = angle, hjust = 1),
+      axis.text.x = element_text(angle = angle),
       legend.position = 'none',
       text = element_text(size = txt_size)
     )
