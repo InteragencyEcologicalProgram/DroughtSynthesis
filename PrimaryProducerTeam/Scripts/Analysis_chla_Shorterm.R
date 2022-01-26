@@ -92,6 +92,9 @@ Year_type_summary <- chla_data_stats %>%
   group_by(Source, month, Region, SubRegion) %>%
   count(ds_year_type)
 
+chla_data_stats %>%
+  count(ds_year)
+
 
 #### STATISTICS ####
 #rm(DS_chlaLT, DS_regions, DS_waterways, chla_data_filt_list, chla_data_filt)
@@ -111,8 +114,8 @@ load("Data/emm_year1_ST.Rdata")
 pairs(emm_year1)
 plot(emm_year1, comparison= TRUE)
 
-
-
+## Look at residuals and region
+boxplot(residuals(fit_log10.1) ~ chla_data_stats$Region)
 
 ## Model 2: chla ~ year type + Season + Region
 fit_log10.2 <- lmer(chlaAvg_log10 ~ ds_year_type + Season + Region + (1|Station),
