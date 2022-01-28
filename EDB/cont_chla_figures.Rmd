@@ -1,0 +1,350 @@
+---
+title: "EDB: Continuous Chlorophyll Figures"
+author: "Dave Bosworth"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document: 
+    code_folding: hide
+    toc: true
+    toc_float:
+      collapsed: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Purpose
+
+Create some time-series and boxplot figures of the daily averages and medians of the continuous chlorophyll data for 2020 and 2021 for the **February 2022** Emergency Drought Barrier report.
+
+# Global code and functions
+
+```{r load packages, message = FALSE, warning = FALSE}
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(rlang)
+library(patchwork)
+```
+
+# Import and Prepare Data
+
+```{r import data, message = FALSE}
+# Import daily averages and medians of the continuous chlorophyll data
+df_cont_chla_orig <- read_csv("EDB/cont_chla_daily_values.csv")
+
+# Import discrete chlorophyll data for OSJ, FAL, and D19
+df_d_chla_orig <- read_csv("EDB/d_chla_fal_osj_d19.csv")
+```
+
+```{r prepare data}
+# Prepare data for all figures
+df_cont_chla_clean <- df_cont_chla_orig  %>% 
+  # Don't include stations outside of the EDB regions for now, and only include Apr-Dec for 2020 and 2021
+  filter(
+    Region != "Outside",
+    Year %in% 2020:2021,
+    month(Date) %in% 4:12
+  ) %>% 
+  # Limit the stations included in the figures
+  filter(!Station %in% c("ORI", "WCI")) %>% 
+  # Reassign FAL to the Central Delta region
+  mutate(Region = if_else(Station == "FAL", "Central Delta", Region)) %>% 
+  # Assign factor order to Region
+  mutate(Region = factor(Region, levels = c("Sacramento", "San Joaquin", "Central Delta")))
+  
+# Continue to prepare data for the time-series figures
+df_cont_chla_ts <- df_cont_chla_clean %>% 
+  # Fill in missing dates with NA values for geom_line to not interpolate data gaps
+  group_by(Station, Region, Year) %>% 
+  complete(Date = seq.Date(min(Date), max(Date), by = "1 day")) %>%
+  ungroup() 
+
+# Continue to prepare data for the boxplot figures
+df_cont_chla_bp <- df_cont_chla_clean %>% 
+  # Add a variable for Season
+  mutate(
+    Month = month(Date, label = TRUE),
+    Season = factor(
+      case_when(
+        Month %in% c("Apr", "May", "Jun") ~ "Spring",
+        Month %in% c("Jul", "Aug", "Sep") ~ "Summer",
+        Month %in% c("Oct", "Nov", "Dec") ~ "Fall"
+      ),
+      levels = c("Spring", "Summer", "Fall")
+    )
+  )
+  
+# Convert data into nested dataframe to apply time-series plotting function by Region
+ndf_cont_chla_ts <- df_cont_chla_ts %>% 
+  nest(df_data = -Region) %>% 
+  arrange(Region)
+
+# Create a tibble of the EDB time periods to add shaded rectangles to the time-series plots
+df_edb_dates <- 
+  tibble(
+    Year = 2020:2021,
+    EDB_const_st = ymd(c(NA_Date_, "2021-06-03")),
+    EDB_const_end = ymd(c(NA_Date_, "2021-06-23")),
+    EDB_end = ymd(c(NA_Date_, "2022-01-01"))
+  )
+
+# Create a tibble to define consistent min and max values for the y-axes of the time-series plots
+df_ts_ylim <- df_cont_chla_clean %>% 
+  summarize(across(starts_with("Chla_"), list(min = ~ floor(min(.x)), max = ~ ceiling(max(.x)))))
+
+# Prepare 2021 discrete chlorophyll data for FAL, OSJ, and D19 to be added to time-series plots
+  # of continuous data
+df_d_chla_clean <- df_d_chla_orig %>% 
+  filter(Date >= "2021-04-01") %>% 
+  mutate(Station = if_else(Station == "D19", "FRK", Station))
+```
+
+# Create Figures
+
+```{r plot functions}
+# Create a list for custom formatting of EDB plots
+edb_theme <- list(
+  theme_light(),
+  theme(
+    strip.text = element_text(color = "black"),
+    panel.grid.minor = element_blank()
+  )
+)
+
+# Function for time-series plots of continuous chlorophyll data by Region
+ts_plot_region <- function(df, region_var, data_var) {
+  
+  # Define color palettes based on region designation
+  color_pal <- switch (as.character(region_var),
+    "San Joaquin" = scale_color_viridis_d(option = "plasma", end = 0.8),
+    "Central Delta" = scale_color_viridis_d(option = "plasma", end = 0.8),
+    Sacramento = scale_color_viridis_d(option = "viridis", end = 0.8)
+  )
+  
+  # Convert data_var to a string to be used in conditionals
+  data_var_str <- as_name(ensym(data_var))
+  
+  # Define min and max limits for the y-axes based on data_var
+  y_min <- if (data_var_str == "Chla_avg") df_ts_ylim$Chla_avg_min else df_ts_ylim$Chla_med_min
+  y_max <- if (data_var_str == "Chla_avg") df_ts_ylim$Chla_avg_max else df_ts_ylim$Chla_med_max
+  
+  # Define y-axis label
+  if (region_var == "San Joaquin") {
+    if (data_var_str == "Chla_avg") {
+      y_label <- "Daily Average Chlorophyll (µg/L)"
+    } else {
+      y_label <- "Daily Median Chlorophyll (µg/L)"
+    }
+  } else {
+    y_label <- NULL
+  }
+  
+  # Define x-axis label
+  x_label <- if (region_var == "Central Delta") "Date" else NULL
+  
+  # Create plot
+  p <- df %>% 
+    ggplot(aes(x = Date, y = {{ data_var }}, color = Station)) +
+    geom_line() +
+    facet_wrap(vars(Year), nrow = 1, scales = "free_x") +
+    ggtitle(region_var) +
+    edb_theme +
+    # Add shaded rectangles for EDB time periods
+    geom_rect(
+      aes(xmin = EDB_const_st, xmax = EDB_const_end, ymin = -Inf, ymax = Inf),
+      data = df_edb_dates,
+      inherit.aes = FALSE,
+      alpha = 0.2,
+      fill = "steelblue"
+    ) +
+    geom_rect(
+      aes(xmin = EDB_const_end, xmax = EDB_end, ymin = -Inf, ymax = Inf),
+      data = df_edb_dates,
+      inherit.aes = FALSE,
+      alpha = 0.2,
+      fill = "grey30"
+    ) +
+    color_pal +
+    scale_y_continuous(name = y_label, limits = c(y_min, y_max)) +
+    scale_x_date(
+      name = x_label,
+      breaks = breaks_pretty(10),
+      labels = label_date_short(format = c(NA, "%b", NA, NA)),
+      expand = expansion(mult = 0.035)
+    )
+  
+  return(p)
+}
+```
+
+```{r create ts figures}
+# Daily averages
+plt_ts_avg <- ndf_cont_chla_ts %>% 
+  mutate(plt_ts = map2(df_data, Region, .f = ts_plot_region, data_var = Chla_avg)) %>% 
+  pull(plt_ts) %>% 
+  wrap_plots(ncol = 1)
+
+# Daily medians
+plt_ts_med <- ndf_cont_chla_ts %>% 
+  mutate(plt_ts = map2(df_data, Region, .f = ts_plot_region, data_var = Chla_med)) %>% 
+  pull(plt_ts) %>% 
+  wrap_plots(ncol = 1)
+```
+
+## Time-series Figures
+
+### Daily Averages
+
+The light blue shading represents when barrier was under construction, and the grey shading represents when the barrier was complete and in place.
+
+```{r print daily avg ts figure, fig.height = 10, fig.width = 8, warning = FALSE}
+plt_ts_avg
+```
+
+### Daily Medians
+
+The light blue shading represents when barrier was under construction, and the grey shading represents when the barrier was complete and in place.
+
+```{r print daily med ts figure, fig.height = 10, fig.width = 8, warning = FALSE}
+plt_ts_med
+```
+
+### Discrete and Continuous Comparison
+
+The light blue shading represents when barrier was under construction, and the grey shading represents when the barrier was complete and in place.
+
+```{r ts figure disc and cont comp, fig.height = 6, fig.width = 5, warning = FALSE}
+plt_ts_d_cont <- df_cont_chla_ts %>% 
+  # Only include FAL, OSJ, and FRK for 2021
+  filter(
+    Year == 2021,
+    Station %in% c("FAL", "OSJ", "FRK")
+  ) %>% 
+  ggplot(aes(x = Date, y = Chla_med)) +
+  geom_line() +
+  facet_wrap(
+    vars(Station), 
+    ncol = 1,
+    labeller = labeller(Station = c("FAL" = "FAL", "OSJ" = "OSJ", "FRK" = "FRK (D19)"))
+  ) +
+  edb_theme +
+  scale_x_date(
+    breaks = breaks_pretty(10),
+    labels = label_date_short(),
+    expand = expansion(mult = 0.02)
+  ) +
+  ylab("Chlorophyll (µg/L)") +
+  # Add discrete chlorophyll points
+  geom_point(
+    data = df_d_chla_clean,
+    aes(x = Date, y = Chla),
+    shape = 21,
+    size = 2,
+    color = "grey30",
+    fill = "green"
+  ) +
+  # Add shaded rectangles for EDB time periods
+  geom_rect(
+    aes(xmin = EDB_const_st, xmax = EDB_const_end, ymin = -Inf, ymax = Inf),
+    data = df_edb_dates,
+    inherit.aes = FALSE,
+    alpha = 0.2,
+    fill = "steelblue"
+  ) +
+  geom_rect(
+    aes(xmin = EDB_const_end, xmax = EDB_end, ymin = -Inf, ymax = Inf),
+    data = df_edb_dates,
+    inherit.aes = FALSE,
+    alpha = 0.2,
+    fill = "grey30"
+  ) 
+
+plt_ts_d_cont
+```
+
+## Boxplot Figures
+
+### By Season
+
+```{r boxplot by season, fig.width = 8}
+plt_bp_seas <- df_cont_chla_bp %>% 
+  ggplot(aes(x = Region, y = Chla_med, fill = Season)) +
+  geom_boxplot() +
+  facet_wrap(vars(Year)) +
+  edb_theme +
+  ylab("Daily Median Chlorophyll (µg/L)") +
+  scale_fill_viridis_d(option = "plasma")
+
+plt_bp_seas
+```
+
+### By Year
+
+```{r boxplot by year}
+plt_bp_yr <- df_cont_chla_bp %>% 
+  mutate(Year = as.character(Year)) %>% 
+  ggplot(aes(x = Region, y = Chla_med, fill = Year)) +
+  geom_boxplot() +
+  edb_theme +
+  ylab("Daily Median Chlorophyll (µg/L)") +
+  scale_fill_viridis_d(end = 0.8)
+
+plt_bp_yr
+```
+
+# Export Figures for Report
+
+All figures for the February 2022 report exported here were moved to the EDB SharePoint site.
+
+```{r export rpt figures, eval = FALSE}
+# Export daily average time-series figure
+ggsave(
+  "EDB/cont_chla_ts_daily_avg.jpg",
+  plot = plt_ts_avg,
+  width = 6.5,
+  height = 8.25,
+  units = "in"
+)
+
+# Export daily median time-series figure
+ggsave(
+  "EDB/cont_chla_ts_daily_med.jpg",
+  plot = plt_ts_med,
+  width = 6.5,
+  height = 8.25,
+  units = "in"
+)
+
+# Export discrete and continuous time-series comparison figure
+ggsave(
+  "EDB/cont_d_chla_ts_comp.jpg",
+  plot = plt_ts_d_cont,
+  width = 4.5,
+  height = 5,
+  units = "in"
+)
+
+# Export boxplot by season figure
+ggsave(
+  "EDB/cont_chla_bp_season.jpg",
+  plot = plt_bp_seas,
+  width = 6.5,
+  height = 4,
+  units = "in"
+)
+
+# Export boxplot by year figure
+ggsave(
+  "EDB/cont_chla_bp_yr.jpg",
+  plot = plt_bp_yr,
+  width = 5,
+  height = 4,
+  units = "in"
+)
+```
+
