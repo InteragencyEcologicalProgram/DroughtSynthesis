@@ -247,8 +247,8 @@ p_m_sec_seas_y<-tukey_plotter(m_sec_seas_y, secchidata_seasonal, "Season", "Year
 ggsave(
   plot = p_m_sec_seas_y, 
   filename = "Water_Quality/Sec_season_year_model.png", 
-  height = 9, 
-  width = 8, 
+  height = 10, 
+  width = 9, 
   units = "in"
 )
 
@@ -393,8 +393,8 @@ p_m_sec_reg_y_log<-tukey_log_plotter(m_sec_reg_y_log, logsecchidata_regional, "R
 ggsave(
   plot = p_m_sec_reg_y_log,
   filename = "Water_Quality/LogSec_region_year_model.png",
-  height = 9,
-  width = 8,
+  height = 10,
+  width = 9,
   units = "in"
 )
 
