@@ -9,7 +9,6 @@ require(multcompView)
 require(emmeans)
 require(stringr)
 require(readr)
-save_dir<-file.path("C:", "Users", "tsalman", "Documents", "Drought Synthesis", "FLOATDroughtSecchi", "Outputs")
 
 #prepare model plotter and tukey plotter functions
 model_plotter<-function(model, data){
@@ -60,17 +59,17 @@ tukey_plotter<-function(model, data, data_type, model_type){
   
   p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[data_type]], y=Secchi), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sec+(max(data$Secchi)-min(data$Secchi))/20), size=6)+
-    ylab("Secchi (cm)")+
-    theme_bw(base_size=16)
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sec+(max(data$Secchi)-min(data$Secchi))/20))+
+    ylab("Secchi Depth (cm)")+
+    theme_bw()
   
   p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[model_type]], y=Secchi), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sec+(max(data$Secchi)-min(data$Secchi))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25, size=6)+
-    ylab("Secchi (cm)")+
-    theme_bw(base_size=16)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sec+(max(data$Secchi)-min(data$Secchi))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25)+
+    ylab("Secchi Depth (cm)")+
+    theme_bw()+
   
   {if(model_type=="Year_fac"){
     list(geom_tile(data=data, 
@@ -112,17 +111,17 @@ tukey_log_plotter<-function(model, data, data_type, model_type){
   
   p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[data_type]], y=log_Secchi), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sec+(max(data$log_Secchi)-min(data$log_Secchi))/20), size=6)+
-    ylab("Log Secchi (cm)")+
-    theme_bw(base_size=16)
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sec+(max(data$log_Secchi)-min(data$log_Secchi))/20))+
+    ylab("log(Secchi Depth [cm])")+
+    theme_bw()
   
   p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[model_type]], y=log_Secchi), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sec+(max(data$log_Secchi)-min(data$log_Secchi))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25, size=6)+
-    ylab("Log Secchi (cm)")+
-    theme_bw(base_size=16)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sec+(max(data$log_Secchi)-min(data$log_Secchi))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25)+
+    ylab("log(Secchi Depth [cm])")+
+    theme_bw()+
     {if(model_type=="Year_fac"){
       list(geom_tile(data=data, 
                      aes(x=Year_fac, y=min(log_Secchi)-(max(log_Secchi)-min(log_Secchi))/20, 
@@ -181,10 +180,6 @@ model_plotter(m_sec_seas_d, secchidata_seasonal)
 #`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 #histogram somewhat non-normal, try log transformation of secchi
-m_sec_seas_d<-aov(log(Secchi) ~ Drought + Season, data=secchidata_seasonal)
-model_plotter(m_sec_seas_d, secchidata_seasonal)
-
-#better, transform and add log_Secchi data to base seasonal secchi data
 logsecchidata_seasonal<-lt_seasonal%>%
   filter(!is.na(Secchi))%>%
   mutate(log_Secchi=log(Secchi), Season=factor(Season, levels=c("Winter", "Spring", "Summer", "Fall")),
@@ -195,21 +190,6 @@ m_sec_seas_d_log<-aov(log_Secchi ~ Drought + Season, data=logsecchidata_seasonal
 
 model_plotter(m_sec_seas_d_log, secchidata_seasonal)
 #log def seems to be the better way to go
-
-#check results seasonal secchi drought
-m_sec_seas_d_Anova<-Anova(m_sec_seas_d, type=2)
-m_sec_seas_d_Anova
-
-#Anova Table (Type II tests) seasonal secchi drought
-#
-#Response: Secchi
-#Sum Sq  Df F value    Pr(>F)    
-#Drought    17446   2  25.562 2.285e-10 ***
-#  Season     20348   3  19.877 5.186e-11 ***
-#  Residuals  54940 161                      
-#---
-#  Signif. codes:  
-#  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 #check results of log transformed seasonal secchi drought
 m_sec_seas_d_log_Anova<-Anova(m_sec_seas_d_log, type=2)
@@ -227,10 +207,15 @@ m_sec_seas_d_log_Anova
 
 #post-hoc test seasonal log secchi drought
 p_m_sec_seas_d_log<-tukey_log_plotter(m_sec_seas_d_log, logsecchidata_seasonal, "Season", "Drought")
-ggsave(plot=p_m_sec_seas_d_log, filename=file.path(save_dir, "LogSec_season_drought_model.png"), device="png", height=10, width=7, units="in")
+ggsave(
+  plot = p_m_sec_seas_d_log,
+  filename = "Water_Quality/LogSec_season_drought_model.png",
+  height = 7,
+  width = 6,
+  units = "in"
+)
 
 p_m_sec_seas_d_log
-
 
 
 #Year
@@ -259,9 +244,15 @@ m_sec_seas_y_Anova
 
 #post-hoc test seasonal secchi year
 p_m_sec_seas_y<-tukey_plotter(m_sec_seas_y, secchidata_seasonal, "Season", "Year_fac")
-ggsave(plot=p_m_sec_seas_y, filename=file.path(save_dir, "Sec_season_year_model.png"), device="png", height=12, width=15, units="in")
-p_m_sec_seas_y
+ggsave(
+  plot = p_m_sec_seas_y, 
+  filename = "Water_Quality/Sec_season_year_model.png", 
+  height = 9, 
+  width = 8, 
+  units = "in"
+)
 
+p_m_sec_seas_y
 
 #save seasonal secchi anova outputs
 anovas<-bind_rows(
@@ -270,7 +261,7 @@ anovas<-bind_rows(
   mutate(as_tibble(m_sec_seas_y_Anova, rownames = "Parameter"), model="Seasonal_Year")
 )%>%
   mutate(`Pr(>F)`=if_else(`Pr(>F)`<0.001, "< 0.001", as.character(round(`Pr(>F)`, 4))))%>%
-  write_csv(file.path(save_dir, "Sec_seas_anovas.csv"))
+  write_csv("Water_Quality/Sec_seas_anovas.csv")
 
 #REGIONAL
 
@@ -311,7 +302,7 @@ model_plotter(m_sec_reg_d, secchidata_regional)
 #`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 #check results regional secchi drought
-m_reg_d_Anova<-Anova(m_reg_d, type=2)
+m_reg_d_Anova<-Anova(m_sec_reg_d, type=2)
 m_reg_d_Anova
 
 #Anova Table (Type II tests) regional secchi drought
@@ -354,7 +345,14 @@ m_sec_reg_d_log_Anova
 
 #post-hoc test regional secchi drought
 p_m_sec_reg_d_log<-tukey_log_plotter(m_sec_reg_d_log, logsecchidata_regional, "Region", "Drought")
-ggsave(plot=p_m_sec_reg_d_log, filename=file.path(save_dir, "Log_Sec_region_drought_model.png"), device="png", height=6, width=7, units="in")
+ggsave(
+  plot = p_m_sec_reg_d_log,
+  filename = "Water_Quality/LogSec_region_drought_model.png",
+  height = 7, 
+  width = 6, 
+  units = "in"
+)
+
 p_m_sec_reg_d_log
 
 
@@ -375,25 +373,6 @@ model_plotter(m_sec_reg_y_log, secchidata_regional)
 
 m_sec_reg_y_log<-aov(log_Secchi ~ Year_fac + Region, data=logsecchidata_regional)
 
-#check results regional secchi year
-m_sec_reg_y_Anova<-Anova(m_sec_reg_y, type=2)
-m_sec_reg_y_Anova
-
-#Anova Table (Type II tests) regional secchi year
-
-#Response: Secchi
-#Sum Sq  Df F value    Pr(>F)    
-#Year_fac   74996  46  4.4091 8.202e-13 ***
-#  Region    125198   4 84.6465 < 2.2e-16 ***
-#  Residuals  62491 169                      
-#---
-#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-#post hoc test regional secchi year
-p_m_sec_reg_y<-tukey_plotter(m_sec_reg_y, secchidata_regional, "Region", "Year_fac")
-ggsave(plot=p_m_sec_reg_y, filename=file.path(save_dir, "Sec_region_year_model.png"), device="png", height=12, width=15, units="in")
-p_m_sec_reg_y
-
 #check results regional log secchi year
 m_sec_reg_y_log_Anova<-Anova(m_sec_reg_y_log, type=2)
 m_sec_reg_y_log_Anova
@@ -411,7 +390,14 @@ m_sec_reg_y_log_Anova
 
 #post hoc test regional log secchi year
 p_m_sec_reg_y_log<-tukey_log_plotter(m_sec_reg_y_log, logsecchidata_regional, "Region", "Year_fac")
-ggsave(plot=p_m_sec_reg_y_log, filename=file.path(save_dir, "Log_Sec_region_year_model.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = p_m_sec_reg_y_log,
+  filename = "Water_Quality/LogSec_region_year_model.png",
+  height = 9,
+  width = 8,
+  units = "in"
+)
+
 p_m_sec_reg_y_log
 
 
@@ -421,7 +407,7 @@ anovas<-bind_rows(
   mutate(as_tibble(m_sec_reg_y_log_Anova, rownames = "Parameter"), model="Regional_Year")
 )%>%
   mutate(`Pr(>F)`=if_else(`Pr(>F)`<0.001, "< 0.001", as.character(round(`Pr(>F)`, 4))))%>%
-  write_csv(file.path(save_dir, "Sec_reg_anovas.csv"))
+  write_csv("Water_Quality/Sec_reg_anovas.csv")
 
 
 #2020/2021 COMPARISON PLOTS
@@ -444,9 +430,17 @@ p_2021_d<-ggplot(raw_data, aes(x=Drought_20_21, y=Secchi, fill=Drought))+
   geom_boxplot()+
   drt_color_pal_drought()+
   xlab("Drought")+
-  ylab("Secchi (cm)")+
+  ylab("Secchi Depth (cm)")+
   theme_bw()
-ggsave(plot=p_2021_d, filename=file.path(save_dir, "Sec_drought_20_21.png"), device="png", height=4, width=5, units="in")
+
+ggsave(
+  plot = p_2021_d,
+  filename = "Water_Quality/Sec_drought_20_21.png",
+  height = 4,
+  width = 5,
+  units = "in"
+)
+
 p_2021_d
 
 #Does that change regionally or seasonally?
@@ -456,7 +450,7 @@ p_2021_d_rs<-ggplot(raw_data, aes(x=Drought_20_21, y=Secchi, fill=Drought))+
   facet_grid(Season~Region, scales = "free_y")+
   xlab("Drought")+
   ylab("Secchi (cm)")+
-  theme_bw(base_size = 16)+
+  theme_bw()+
   theme(axis.text.x=element_text(angle = 45, hjust=1))
 ggsave(plot=p_2021_d_rs, filename=file.path(save_dir, "Sec_drought_rs_20_21.png"), device="png", height=8, width=10, units="in")
 p_2021_d_rs
@@ -479,7 +473,7 @@ p_2021_yt_rs<-ggplot(raw_data, aes(x=YearType_20_21, y=Secchi, fill=YearType))+
   facet_grid(Season~Region, scales = "free_y")+
   xlab("Year type")+
   ylab("Secchi (cm)")+
-  theme_bw(base_size = 16)+
+  theme_bw()+
   theme(axis.text.x=element_text(angle=45, hjust=1))
 ggsave(plot=p_2021_yt_rs, filename=file.path(save_dir, "Sec_yeartype_rs_20_21.png"), device="png", height=8, width=12, units="in")
 p_2021_yt_rs
