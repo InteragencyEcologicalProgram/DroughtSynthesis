@@ -5,16 +5,17 @@ library(sf)
 source("Scripts/MyFunctionsAndThemes.R")
 
 ## Program Sources of Data
+## discretewq: https://github.com/sbashevkin/discretewq
 # DOP= Directed Outflows Project (US Bureau of Reclamation)
 # EMP= Environmental Monitoring Program
 # FMWT= Fall Midwater Trawl
 # NCRO= DWR North Central Regional Office
 # STN= Summer Townet Survey
-# SDO= ?? 
+# SDO= Stockton Deep Water Shipping Channel Dissolved Oxygen Monitoring
 # USBR= US Bureau of Reclamation
-# USGS-SFBRMP= US Geologiacl Survey San Francisco Research Monitoring Projct
+# USGS-SFBRMP= US Geological Survey San Francisco Research Monitoring Projct
 # USGS-CAWSC= US Geological Survey CA Water Science Center
-
+  
 
 # EPSG codes
 # NAD83 / UTM 10N = 26910, https://spatialreference.org/ref/epsg/nad83-utm-zone-10n/
