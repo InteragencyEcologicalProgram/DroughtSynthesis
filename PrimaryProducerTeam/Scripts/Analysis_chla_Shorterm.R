@@ -188,8 +188,8 @@ ggplot() +
   coord_sf() +
   facet_wrap(~Source, nrow= 2) +
   theme_map +
-  theme(legend.position = "right")
-#theme(legend.position = c(0.8, 0.2))
+  theme(legend.position = "right") +
+  theme(legend.position = c(0.75, 0.225))
 ggsave(last_plot(), filename= "station_map_chla_filtered.png", width= 6.5, height= 5, dpi= 600,
        path= "Figures")
 
@@ -211,6 +211,22 @@ ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg_log10)) +
   theme_bw(base_size = 12)
 ggsave(last_plot(), filename= "chla_filtered_YearTypeOnly_ST.png", width= 6.5, height= 8, dpi= 300,
        path= "Figures")
+
+ggplot(chla_data_stats, aes(x= ds_year_type, y= chlaAvg)) +
+  geom_boxplot(aes(fill= ds_year_type), outlier.size= 1, outlier.color= "gray60") +
+  stat_summary(fun=mean, geom="point", shape=18, size=2, color="red") +
+  #geom_text(data= emm_year_results2, aes(x= ds_year_type, y= chlaAvg_log10, label= emm_group)) +
+  geom_point(aes(x= "Neutral", y= 8.91), color= "blue") +
+  labs(x= "Water Year", y= expression(paste("Chlorophyll-a (", mu, "g/L)"))) +
+  scale_y_log10() +
+  #scale_y_continuous(breaks= c(-2, -1, 0, 1, 2),
+  #                   labels= c("0.01", "0.1", "1", "10", "100")) +
+  scale_fill_manual(values= year.colors, guide= "none") +
+  annotation_logticks(side= "l") +
+  #theme_doc
+  theme_bw(base_size = 12)
+
+
 
 
 ## Yeartype Only, true scale, chla > 5ug/L
