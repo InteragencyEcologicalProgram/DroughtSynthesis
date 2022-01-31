@@ -10,11 +10,25 @@ library(multcomp)
 library(emmeans)
 library(stringr)
 library(readr)
+library(scales)
 
 # install.packages("devtools")
-devtools::install_github("mountaindboz/DroughtData")
+# devtools::install_github("mountaindboz/DroughtData")
 
-save_dir<-file.path("C:/Users/estumpne/Documents/R/DroughtData-master_0_4/DroughtData-master/output")
+# Define file path on the Drought Synthesis SharePoint for where to store figures and other output
+drt_syn_abs_sp_path <- function(fp_rel = NULL) {
+  fp_drt_syn <- "California Department of Water Resources/Drought Synthesis - Documents"
+  
+  if (is.null(fp_rel)) {
+    fp_abs <- normalizePath(file.path(Sys.getenv('USERPROFILE'), fp_drt_syn))
+  } else {
+    fp_abs <- normalizePath(file.path(Sys.getenv('USERPROFILE'), fp_drt_syn, fp_rel))
+  }
+  
+  return(fp_abs)
+}
+
+save_dir <- drt_syn_abs_sp_path("WQ_Team/Report_2022-02_Figures")
 
 #load data
 
@@ -74,17 +88,17 @@ tukey_plotter_out_yr<-function(model, data, data_type, model_type){
 
   p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[data_type]], y=log_Outflow), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_out+(max(data$log_Outflow)-min(data$log_Outflow))/20), size=6)+
-    ylab("log_Outflow (cfs)")+
-    theme_bw(base_size=16)
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_out+(max(data$log_Outflow)-min(data$log_Outflow))/20))+
+    ylab("log(Outflow [cfs])")+
+    theme_bw()
 
   p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[model_type]], y=log_Outflow), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_out+(max(data$log_Outflow)-min(data$log_Outflow))/20), angle=if_else(model_type=="YearAdj", 90, 0), hjust=if_else(model_type=="YearAdj", "left", NA_character_), vjust=0.25, size=6)+
-    ylab("log_Outflow (cfs)")+
-    theme_bw(base_size=16)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_out+(max(data$log_Outflow)-min(data$log_Outflow))/20), angle=if_else(model_type=="YearAdj", 90, 0), hjust=if_else(model_type=="YearAdj", "left", NA_character_), vjust=0.25)+
+    ylab("log(Outflow [cfs])")+
+    theme_bw()+
     {if(model_type=="YearAdj"){
       list(geom_tile(data=data,
                      aes(x=YearAdj, y=min(log_Outflow)-(max(log_Outflow)-min(log_Outflow))/20,
@@ -187,7 +201,13 @@ out_year_tukey <-tukey_plotter_out_yr(m_out_year, seasonal_out, "Season", "YearA
 
 out_year_tukey
 
-ggsave(plot=out_year_tukey, filename=file.path(save_dir, "log_out_season_year_model.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = out_year_tukey,
+  filename = file.path(save_dir, "LogOut_season_year_model.png"),
+  height = 10,
+  width = 9,
+  units = "in"
+)
 
 # ANOVA for outflow by Drought + Season
 
@@ -241,7 +261,13 @@ out_drought_tukey <-tukey_plotter_out_yr(m_out_dr, seasonal_out, "Season", "Drou
 
 out_drought_tukey
 
-ggsave(plot=out_drought_tukey, filename=file.path(save_dir, "Fig_36.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = out_drought_tukey,
+  filename = file.path(save_dir, "LogOut_season_drought_model.png"),
+  height = 7,
+  width = 6,
+  units = "in"
+)
 
 #save all Anova output
 
@@ -269,8 +295,6 @@ anovas <- anovas %>% relocate(Metric, .before = Parameter)%>%
 #adding drought_20_21 and yeartype_20_21 columns
 raw_out <- raw_hydro_1975_2021
 
-raw_out <- left_join(raw_out, lt_seasonal, by = "YearAdj", "Season")
-
 raw_out_2<-raw_out%>%
   filter(!is.na(Outflow))%>%
   left_join(lt_seasonal%>%distinct(YearAdj, SVIndex, YearType, Drought),by="YearAdj")%>%
@@ -278,24 +302,50 @@ raw_out_2<-raw_out%>%
 
 # graph how 2021 compares to Drought, Normal, and Wet periods?
 
-out_2021_d<-ggplot(raw_out_2, aes(x=Drought_20_21, y=Outflow, fill=Drought))+geom_boxplot()+drt_color_pal_drought()+xlab("Drought")+ylab("Outflow (cfs)")+scale_y_log10(
-  breaks = scales::trans_breaks("log10", function(x) 10^x),
-  labels = scales::trans_format("log10", scales::math_format(10^.x))
-) +theme_bw()
+out_2021_d <- ggplot(raw_out_2, aes(x = Drought_20_21, y = Outflow, fill = Drought)) +
+  geom_boxplot() +
+  drt_color_pal_drought() +
+  xlab("Drought") +
+  ylab("Outflow (cfs)") +
+  scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "l") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank())
 
 out_2021_d
 
-ggsave(plot=out_2021_d, filename=file.path(save_dir, "Fig_35.png"), device="png", height=4, width=5, units="in")
+ggsave(
+  plot = out_2021_d,
+  filename = file.path(save_dir, "Out_drought_20_21.png"),
+  height = 4,
+  width = 5,
+  units = "in"
+)
 
 #Does the comparison of 2020 & 2021 to other water year types change seasonally?
 
-out_2021_d_s<-ggplot(raw_out_2, aes(x=Drought_20_21, y=Outflow, fill=Drought))+geom_boxplot()+drt_color_pal_drought()+facet_grid(~Season, scales = "free_y")+xlab("Drought")+ylab("Outflow (cfs)")+scale_y_log10(
-  breaks = scales::trans_breaks("log10", function(x) 10^x),
-  labels = scales::trans_format("log10", scales::math_format(10^.x))
-)+theme_bw(base_size = 16)+theme(axis.text.x=element_text(angle = 45, hjust=1))
-
+out_2021_d_s <- ggplot(raw_out_2, aes(x = Drought_20_21, y = Outflow, fill = Drought)) +
+  geom_boxplot() +
+  drt_color_pal_drought() +
+  facet_grid(~Season, scales = "free_y") +
+  xlab("Drought") +
+  ylab("Outflow (cfs)") +
+  scale_y_log10(labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  annotation_logticks(sides = "l") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank(),
+    legend.position = "top"
+  )
 
 out_2021_d_s
 
-ggsave(plot=out_2021_d_s, filename=file.path(save_dir, "Fig_37.png"), device="png", height=8, width=10, units="in")
+ggsave(
+  plot = out_2021_d_s,
+  filename = file.path(save_dir, "Out_drought_20_21_seas.png"),
+  height = 5.5,
+  width = 6.5,
+  units = "in"
+)
 
