@@ -29,27 +29,27 @@ library(lubridate)
 library(scales)
 library(rlang)
 library(patchwork)
+# Install the EDBdata package version 0.2.0 to use the data displayed in the
+  # figures of the February 2022 version of the EDB report. Update EDBdata to >=
+  # v0.2.1 to update the figures for a future version of the report. This will
+  # update the daily averages and medians of the two USGS stations - MDM and SJJ.
+# install.packages("devtools")
+# devtools::install_github("mountaindboz/EDBdata", ref = "v0.2.0")
+library(EDBdata)
 ```
 
 # Import and Prepare Data
 
 ```{r import data, message = FALSE}
-# Import daily averages and medians of the continuous chlorophyll data
-df_cont_chla_orig <- read_csv("EDB/cont_chla_daily_values.csv")
-
 # Import discrete chlorophyll data for OSJ, FAL, and D19
 df_d_chla_orig <- read_csv("EDB/d_chla_fal_osj_d19.csv")
 ```
 
 ```{r prepare data}
 # Prepare data for all figures
-df_cont_chla_clean <- df_cont_chla_orig  %>% 
-  # Don't include stations outside of the EDB regions for now, and only include Apr-Dec for 2020 and 2021
-  filter(
-    Region != "Outside",
-    Year %in% 2020:2021,
-    month(Date) %in% 4:12
-  ) %>% 
+df_cont_chla_clean <- cont_chla_daily  %>% 
+  # Only include Apr-Dec
+  filter(month(Date) %in% 4:12) %>% 
   # Limit the stations included in the figures
   filter(!Station %in% c("ORI", "WCI")) %>% 
   # Reassign FAL to the Central Delta region

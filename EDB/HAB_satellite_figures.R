@@ -47,7 +47,7 @@ ci_cat_levels <-
   )
 
 # Prepare HAB satellite data for stacked area plot
-df_hab_sat_plt <- sat_ci_count_fr_mil %>%
+df_hab_sat_plt <- hab_sat_fr_mil %>%
   # Restructure data to long format
   select(-Invalid_or_missing) %>% 
   pivot_longer(
