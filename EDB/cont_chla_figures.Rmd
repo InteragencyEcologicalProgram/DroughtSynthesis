@@ -36,13 +36,19 @@ library(patchwork)
 # install.packages("devtools")
 # devtools::install_github("mountaindboz/EDBdata", ref = "v0.2.0")
 library(EDBdata)
+library(here)
+```
+
+```{r check dir}
+# Check if we are in the correct working directory
+i_am("EDB/cont_chla_figures.Rmd")
 ```
 
 # Import and Prepare Data
 
 ```{r import data, message = FALSE}
 # Import discrete chlorophyll data for OSJ, FAL, and D19
-df_d_chla_orig <- read_csv("EDB/d_chla_fal_osj_d19.csv")
+df_d_chla_orig <- read_csv(here("EDB/d_chla_fal_osj_d19.csv"))
 ```
 
 ```{r prepare data}
@@ -304,7 +310,7 @@ All figures for the February 2022 report exported here were moved to the EDB Sha
 ```{r export rpt figures, eval = FALSE}
 # Export daily average time-series figure
 ggsave(
-  "EDB/cont_chla_ts_daily_avg.jpg",
+  here("EDB/cont_chla_ts_daily_avg.jpg"),
   plot = plt_ts_avg,
   width = 6.5,
   height = 8.25,
@@ -313,7 +319,7 @@ ggsave(
 
 # Export daily median time-series figure
 ggsave(
-  "EDB/cont_chla_ts_daily_med.jpg",
+  here("EDB/cont_chla_ts_daily_med.jpg"),
   plot = plt_ts_med,
   width = 6.5,
   height = 8.25,
@@ -322,7 +328,7 @@ ggsave(
 
 # Export discrete and continuous time-series comparison figure
 ggsave(
-  "EDB/cont_d_chla_ts_comp.jpg",
+  here("EDB/cont_d_chla_ts_comp.jpg"),
   plot = plt_ts_d_cont,
   width = 4.5,
   height = 5,
@@ -331,7 +337,7 @@ ggsave(
 
 # Export boxplot by season figure
 ggsave(
-  "EDB/cont_chla_bp_season.jpg",
+  here("EDB/cont_chla_bp_season.jpg"),
   plot = plt_bp_seas,
   width = 6.5,
   height = 4,
@@ -340,7 +346,7 @@ ggsave(
 
 # Export boxplot by year figure
 ggsave(
-  "EDB/cont_chla_bp_yr.jpg",
+  here("EDB/cont_chla_bp_yr.jpg"),
   plot = plt_bp_yr,
   width = 5,
   height = 4,

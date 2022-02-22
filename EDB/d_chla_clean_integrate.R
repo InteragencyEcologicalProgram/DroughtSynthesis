@@ -9,6 +9,11 @@
 library(tidyverse)
 library(readxl)
 library(lubridate)
+library(here)
+
+# Check if we are in the correct working directory
+i_am("EDB/d_chla_clean_integrate.R")
+
 
 # 1. Import Data ----------------------------------------------------------
 
@@ -76,5 +81,5 @@ df_chla_d19_clean <- df_chla_d19_orig %>%
 df_chla_all <- bind_rows(df_chla_fal_osj_clean, df_chla_d19_clean)
 
 # Export Data
-df_chla_all %>% write_csv("EDB/d_chla_fal_osj_d19.csv")
+df_chla_all %>% write_csv(here("EDB/d_chla_fal_osj_d19.csv"))
 
