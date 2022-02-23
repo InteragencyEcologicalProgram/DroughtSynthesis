@@ -20,6 +20,7 @@ library(curl)
 library(glue)
 library(stars)
 library(patchwork)
+library(here)
 
 # Create a vector for the factor labels of the Cyano Index categories
 ci_cat_labels <-
@@ -30,6 +31,9 @@ ci_cat_labels <-
     "High", 
     "Very High"
   )
+
+# Check if we are in the correct working directory
+i_am("EDB/HAB_satellite_figures.R")
 
 
 # 2. Area Plot ------------------------------------------------------------
@@ -47,7 +51,7 @@ ci_cat_levels <-
   )
 
 # Prepare HAB satellite data for stacked area plot
-df_hab_sat_plt <- sat_ci_count_fr_mil %>%
+df_hab_sat_plt <- hab_sat_fr_mil %>%
   # Restructure data to long format
   select(-Invalid_or_missing) %>% 
   pivot_longer(
@@ -108,7 +112,7 @@ plt_hab_sat <- df_hab_sat_plt %>%
 
 # Export plot as a .jpg
 ggsave(
-  "EDB/CI_category_area_plot.jpg",
+  here("EDB/CI_category_area_plot.jpg"),
   plot = plt_hab_sat,
   width = 6.5,
   height = 5.5,
@@ -127,7 +131,7 @@ download <- FALSE
 # Download HAB satellite data to local computer if necessary
 if (download == TRUE) {
   # Define subfolder directory to store .tif files
-  dir_hab_sat <- "EDB/Spatial_data"
+  dir_hab_sat <- here("EDB/Spatial_data")
   
   # Function to download and unzip harmful algal bloom (HAB) satellite data (cyanobacteria abundance)
     # from the https://fhab.sfei.org/ website
@@ -149,7 +153,7 @@ if (download == TRUE) {
 }
 
 # Define file path that contains HAB satellite data
-fp_hab_sat <- "EDB/Spatial_data"
+fp_hab_sat <- here("EDB/Spatial_data")
 
 # Import HAB satellite data for the beginning, peak, and end of the cyano bloom in Franks Tract in 2021:
 # Create a nested data frame to prepare the HAB satellite data for maps
@@ -166,7 +170,7 @@ df_hab_sat <-
   select(-fp)
 
 # Import shapefile for Franks Tract and Mildred Island
-sf_franks_mildred <- read_sf("EDB/Spatial_data/Franks_Mildred.shp")
+sf_franks_mildred <- read_sf(here("EDB/Spatial_data/Franks_Mildred.shp"))
 
 # Transform crs of Franks-Mildred and WW_Delta shapefiles to the crs of the HAB satellite data
 crs_hab_sat <- st_crs(df_hab_sat$strs_prx_obj[[1]])
@@ -266,7 +270,7 @@ map_hab_sat_c <- wrap_plots(map_hab_sat$hab_map, ncol = 1, guides = "collect")
 
 # Export map as a .jpg
 ggsave(
-  "EDB/CI_category_map_2021.jpg",
+  here("EDB/CI_category_map_2021.jpg"),
   plot = map_hab_sat_c,
   width = 6.5,
   height = 8.25,

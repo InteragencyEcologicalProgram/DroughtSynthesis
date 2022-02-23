@@ -9,7 +9,6 @@ require(multcompView)
 require(emmeans)
 require(stringr)
 require(readr)
-save_dir<-file.path("C:", "Users", "tsalman", "Documents", "Drought Synthesis", "FLOATDroughtSalinity", "Outputs")
 
 #prepare model plotter and tukey plotter functions
 model_plotter<-function(model, data){
@@ -60,17 +59,17 @@ tukey_plotter<-function(model, data, data_type, model_type){
   
   p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[data_type]], y=Salinity), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sal+(max(data$Salinity)-min(data$Salinity))/20), size=6)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sal+(max(data$Salinity)-min(data$Salinity))/20))+
     ylab("Salinity (PSU)")+
-    theme_bw(base_size=16)
+    theme_bw()
   
   p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[model_type]], y=Salinity), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_sal+(max(data$Salinity)-min(data$Salinity))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25, size=6)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_sal+(max(data$Salinity)-min(data$Salinity))/20), angle=if_else(model_type=="Year_fac", 90, 0), hjust=if_else(model_type=="Year_fac", "left", NA_character_), vjust=0.25)+
     ylab("Salinity (PSU)")+
-    theme_bw(base_size=16)+
+    theme_bw()+
   
   {if(model_type=="Year_fac"){
     list(geom_tile(data=data, 
@@ -146,7 +145,13 @@ m_sal_seas_d_Anova
 
 #post hoc test seasonal salinity drought
 p_m_sal_seas_d<-tukey_plotter(m_sal_seas_d, salinitydata_seasonal, "Season", "Drought")
-ggsave(plot=p_m_sal_seas_d, filename=file.path(save_dir, "Sal_season_drought_model.png"), device="png", height=10, width=7, units="in")
+ggsave(
+  plot = p_m_sal_seas_d,
+  filename = "Water_Quality/Sal_season_drought_model.png",
+  height = 7,
+  width = 6,
+  units = "in"
+)
 
 p_m_sal_seas_d
 
@@ -176,7 +181,14 @@ m_sal_seas_y_Anova
 
 #post-hoc test seasonal salinity year
 p_m_sal_seas_y<-tukey_plotter(m_sal_seas_y, salinitydata_seasonal, "Season", "Year_fac")
-ggsave(plot=p_m_sal_seas_y, filename=file.path(save_dir, "Sal_season_year_model.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = p_m_sal_seas_y,
+  filename = "Water_Quality/Sal_season_year_model.png",
+  height = 10,
+  width = 9, 
+  units = "in"
+)
+
 p_m_sal_seas_y
 
 
@@ -187,7 +199,7 @@ anovas<-bind_rows(
   mutate(as_tibble(m_sal_seas_y_Anova, rownames = "Parameter"), model="Seasonal_Year")
 )%>%
   mutate(`Pr(>F)`=if_else(`Pr(>F)`<0.001, "< 0.001", as.character(round(`Pr(>F)`, 4))))%>%
-  write_csv(file.path(save_dir, "Sal_seas_anovas.csv"))
+  write_csv("Water_Quality/Sal_seas_anovas.csv")
 
 #REGIONAL
 
@@ -246,7 +258,14 @@ m_sal_reg_d_Anova
 
 #post-hoc test regional salinity drought
 p_m_sal_reg_d<-tukey_plotter(m_sal_reg_d, salinitydata_regional, "Region", "Drought")
-ggsave(plot=p_m_sal_reg_d, filename=file.path(save_dir, "Sal_region_drought_model.png"), device="png", height=6, width=7, units="in")
+ggsave(
+  plot = p_m_sal_reg_d,
+  filename = "Water_Quality/Sal_region_drought_model.png",
+  height = 7,
+  width = 6,
+  units = "in"
+)
+
 p_m_sal_reg_d
 
 #Year
@@ -275,7 +294,14 @@ m_sal_reg_y_Anova
 
 #post hoc test regional salinity year
 p_m_sal_reg_y<-tukey_plotter(m_sal_reg_y, salinitydata_regional, "Region", "Year_fac")
-ggsave(plot=p_m_sal_reg_y, filename=file.path(save_dir, "Sal_region_year_model.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = p_m_sal_reg_y,
+  filename = "Water_Quality/Sal_region_year_model.png",
+  height = 10,
+  width = 9,
+  units = "in"
+)
+
 p_m_sal_reg_y
 
 #save regional salinity anova outputs
@@ -284,7 +310,7 @@ anovas<-bind_rows(
   mutate(as_tibble(m_sal_reg_y_Anova, rownames = "Parameter"), model="Regional_Year")
 )%>%
   mutate(`Pr(>F)`=if_else(`Pr(>F)`<0.001, "< 0.001", as.character(round(`Pr(>F)`, 4))))%>%
-  write_csv(file.path(save_dir, "Sal_reg_anovas.csv"))
+  write_csv("Water_Quality/Sal_reg_anovas.csv")
 
 
 # Compare 2021 salinity to prior years
@@ -308,7 +334,15 @@ p_2021_d<-ggplot(raw_data, aes(x=Drought_20_21, y=Salinity, fill=Drought))+
   xlab("Drought")+
   ylab("Salinity (PSU)")+
   theme_bw()
-ggsave(plot=p_2021_d, filename=file.path(save_dir, "Sal_drought_20_21.png"), device="png", height=4, width=5, units="in")
+
+ggsave(
+  plot = p_2021_d,
+  filename = "Water_Quality/Sal_drought_20_21.png",
+  height = 4,
+  width = 5,
+  units = "in"
+)
+
 p_2021_d
 
 #Does that change regionally or seasonally?
@@ -318,7 +352,7 @@ p_2021_d_rs<-ggplot(raw_data, aes(x=Drought_20_21, y=Salinity, fill=Drought))+
   facet_grid(Season~Region, scales = "free_y")+
   xlab("Drought")+
   ylab("Salinity (PSU)")+
-  theme_bw(base_size = 16)+
+  theme_bw()+
   theme(axis.text.x=element_text(angle = 45, hjust=1))
 ggsave(plot=p_2021_d_rs, filename=file.path(save_dir, "Sal_drought_rs_20_21.png"), device="png", height=8, width=10, units="in")
 p_2021_d_rs
@@ -341,7 +375,7 @@ p_2021_yt_rs<-ggplot(raw_data, aes(x=YearType_20_21, y=Salinity, fill=YearType))
   facet_grid(Season~Region, scales = "free_y")+
   xlab("Year type")+
   ylab("Salinity (PSU)")+
-  theme_bw(base_size = 16)+
+  theme_bw()+
   theme(axis.text.x=element_text(angle=45, hjust=1))
 ggsave(plot=p_2021_yt_rs, filename=file.path(save_dir, "Sal_yeartype_rs_20_21.png"), device="png", height=8, width=12, units="in")
 p_2021_yt_rs

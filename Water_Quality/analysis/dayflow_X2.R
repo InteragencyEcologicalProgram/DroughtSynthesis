@@ -11,7 +11,20 @@ library(emmeans)
 library(stringr)
 library(readr)
 
-save_dir<-file.path("C:/Users/estumpne/Documents/R/DroughtData-master_0_4/DroughtData-master/output")
+# Define file path on the Drought Synthesis SharePoint for where to store figures and other output
+drt_syn_abs_sp_path <- function(fp_rel = NULL) {
+  fp_drt_syn <- "California Department of Water Resources/Drought Synthesis - Documents"
+  
+  if (is.null(fp_rel)) {
+    fp_abs <- normalizePath(file.path(Sys.getenv('USERPROFILE'), fp_drt_syn))
+  } else {
+    fp_abs <- normalizePath(file.path(Sys.getenv('USERPROFILE'), fp_drt_syn, fp_rel))
+  }
+  
+  return(fp_abs)
+}
+
+save_dir <- drt_syn_abs_sp_path("WQ_Team/Report_2022-02_Figures")
 
 #load data
 
@@ -71,17 +84,17 @@ tukey_plotter_X2<-function(model, data, data_type, model_type){
 
   p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[data_type]], y=X2), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20), size=6)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20))+
     ylab("X2 (km)")+
-    theme_bw(base_size=16)
+    theme_bw()
 
   p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
     geom_boxplot(data=data, aes(x=.data[[model_type]], y=X2), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20), angle=if_else(model_type=="YearAdj", 90, 0), hjust=if_else(model_type=="YearAdj", "left", NA_character_), vjust=0.25, size=6)+
+    geom_pointrange(color="red", position=position_nudge(x=0.1), size = 0.3)+
+    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20), angle=if_else(model_type=="YearAdj", 90, 0), hjust=if_else(model_type=="YearAdj", "left", NA_character_), vjust=0.25)+
     ylab("X2 (km)")+
-    theme_bw(base_size=16)+
+    theme_bw()+
     {if(model_type=="YearAdj"){
       list(geom_tile(data=data,
                      aes(x=YearAdj, y=min(X2)-(max(X2)-min(X2))/20,
@@ -180,63 +193,15 @@ X2_year_tukey <-tukey_plotter_X2(m_X2_year, seasonal_X2, "Season", "YearAdj")
 
 X2_year_tukey
 
-ggsave(plot=X2_year_tukey, filename=file.path(save_dir, "Fig_46.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = X2_year_tukey,
+  filename = file.path(save_dir, "X2_season_year_model.png"),
+  height = 10,
+  width = 9,
+  units = "in"
+)
 
 # ANOVA for X2 by Drought + Season
-
-#call Sam's tukey function for X2 drought
-
-tukey_plotter_X2_dr<-function(model, data, data_type, model_type){
-
-  tuk<-emmeans(model, list(data=data_type, model=model_type))
-
-  tuk_data<-as_tibble(cld(tuk$data, sort=FALSE, Letters = letters))%>%
-    mutate(.group=str_remove_all(.group, fixed(" ")))%>%
-    left_join(data%>%
-                group_by(across(all_of(data_type)))%>%
-                summarise(max_x2=max(X2), .groups="drop"),
-              by=data_type)
-
-  tuk_model<-as_tibble(cld(tuk$model, sort=FALSE, Letters = letters))%>%
-    mutate(.group=str_remove_all(.group, fixed(" ")))%>%
-    left_join(data%>%
-                group_by(across(all_of(model_type)))%>%
-                summarise(max_x2=max(X2), .groups="drop"),
-              by=model_type)
-
-  p_data<-ggplot(tuk_data, aes(x=.data[[data_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
-    geom_boxplot(data=data, aes(x=.data[[data_type]], y=X2), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20), size=6)+
-    ylab("X2")+
-    theme_bw(base_size=16)
-
-  p_model<-ggplot(tuk_model, aes(x=.data[[model_type]], y=emmean, ymin=lower.CL, ymax=upper.CL, label=.group))+
-    geom_boxplot(data=data, aes(x=.data[[model_type]], y=X2), inherit.aes = FALSE)+
-    geom_pointrange(color="red", position=position_nudge(x=0.1))+
-    geom_text(aes(y=max_x2+(max(data$X2)-min(data$X2))/20), angle=if_else(model_type=="Drought", 90, 0), hjust=if_else(model_type=="Drought", "left", NA_character_), vjust=0.25, size=6)+
-    ylab("X2")+
-    theme_bw(base_size=16)
-
-  {if(model_type=="YearAdj"){
-    list(geom_tile(data=data,
-                   aes(x=YearAdj, y=min(X2)-(max(X2)-min(X2))/20,
-                       fill=Drought, height=(max(X2)-min(X2))/20),
-                   inherit.aes = FALSE),
-         xlab("Year"),
-         theme(axis.text.x=element_text(angle=90, vjust=0.5)),
-         scale_y_continuous(expand = expansion(mult=c(0,0.1))),
-         drt_color_pal_drought())
-  }}
-
-  out<-p_data/p_model+plot_annotation(tag_levels="A")
-
-  if(model_type=="YearAdj"){
-    out<-out+plot_layout(heights = c(0.8, 1))
-  }
-
-  return(out)
-}
 
 m_X2_dr <- aov(X2 ~ Drought + Season, data = seasonal_X2)
 
@@ -285,7 +250,13 @@ X2_drought_tukey <-tukey_plotter_X2(m_X2_dr, seasonal_X2, "Season", "Drought")
 
 X2_drought_tukey
 
-ggsave(plot=X2_drought_tukey, filename=file.path(save_dir, "Fig_45.png"), device="png", height=12, width=15, units="in")
+ggsave(
+  plot = X2_drought_tukey,
+  filename = file.path(save_dir, "X2_season_drought_model.png"),
+  height = 7,
+  width = 6,
+  units = "in"
+)
 
 #save all Anova output
 anovas<-bind_rows(
@@ -307,19 +278,44 @@ raw_X2 <- raw_hydro_1975_2021 %>% filter(!is.na(X2)) %>% left_join(lt_seasonal %
 
 # graph how 2021 X2 compares to Drought, Normal, and Wet periods?
 
-X2_2021_d<-ggplot(raw_X2, aes(x=Drought_20_21, y=X2, fill=Drought))+geom_boxplot()+drt_color_pal_drought()+xlab("Drought")+ylab("X2")+theme_bw()
+X2_2021_d <- ggplot(raw_X2, aes(x = Drought_20_21, y = X2, fill = Drought)) +
+  geom_boxplot() +
+  drt_color_pal_drought() +
+  xlab("Drought") +
+  ylab("X2 (km)") +
+  theme_bw()
 
 X2_2021_d
 
-ggsave(plot=X2_2021_d, filename=file.path(save_dir, "Fig_44.png"), device="png", height=4, width=5, units="in")
+ggsave(
+  plot = X2_2021_d,
+  filename = file.path(save_dir, "X2_drought_20_21.png"),
+  height = 4,
+  width = 5,
+  units = "in"
+)
 
 #Does the X2 comparison of 2020 & 2021 to other water year types change seasonally?
 
-X2_2021_d_s<-ggplot(raw_X2, aes(x=Drought_20_21, y=X2, fill=Drought))+geom_boxplot()+drt_color_pal_drought()+facet_grid(~Season, scales = "free_y")+xlab("Drought")+ylab("X2")+theme_bw(base_size = 16)+theme(axis.text.x=element_text(angle = 45, hjust=1))
+X2_2021_d_s <- ggplot(raw_X2, aes(x = Drought_20_21, y = X2, fill = Drought)) +
+  geom_boxplot() +
+  drt_color_pal_drought() +
+  facet_grid(~Season, scales = "free_y") +
+  xlab("Drought") +
+  ylab("X2 (km)") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  )
 
 X2_2021_d_s
 
-ggsave(plot=X2_2021_d_s, filename=file.path(save_dir, "Fig_45.png"), device="png", height=8, width=10, units="in")
-
-
+ggsave(
+  plot = X2_2021_d_s,
+  filename = file.path(save_dir, "X2_drought_20_21_seas.png"),
+  height = 5.5,
+  width = 6.5,
+  units = "in"
+)
 
