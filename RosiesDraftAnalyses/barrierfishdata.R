@@ -28,10 +28,10 @@ library(multcompView)
 library(DHARMa)
 library(brms)
 library(pscl)
-
+library(readxl)
 library(RColorBrewer)
 mypal = c(brewer.pal(8, "Dark2"), brewer.pal(8, "Set2"), brewer.pal(12, "Set3"), "black", "grey")
-
+yeartypes = read_csv("data/yearassignments.csv")
 
 
 #Grab the latest TNS datat from the webs
@@ -93,8 +93,10 @@ species = group_by(TNSd, Species) %>%
 TNSd = filter(TNSd, !Species %in% filter(species, tot == 0)$Species) %>%
   mutate(Species = case_when(
     Species %in% filter(species, tot == 1)$Species ~ "Other",
+    Species %in% c("Unknown Damaged (UNID)", "Unknown Fish (UNID)", "Unknown Invertebrate (UNID)", "Trid_SB0 (UNID)") ~ "Unknown",
     TRUE ~ Species
   )) %>%
+  mutate(Species = str_replace(Species, "(UNID)",""), Species = str_replace(Species, "(Unid)",""), Species = str_replace(Species, "()","")) %>%
   group_by(StationCode, Regions, Year, Survey, SampDate, Species, VolumeOfAllTows) %>%
   summarize(Catch = sum(Catch), CPUE = sum(CPUE))
 
@@ -128,7 +130,9 @@ TNmean = group_by(TNsum, Year, Regions) %>%
 ########PLOT FOR REPORT
 ggplot(TNmean, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = ShortTerm))+
   geom_errorbar(aes(ymin = CPUE-SE, ymax = CPUE+SE))+
-  facet_wrap(~Year)+ylab("Mean total Fish/1000m3")
+  facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
+  scale_fill_manual(name = "Year Type", values = c("darkorange", "tan", "skyblue"))+
+  theme_bw()
 
 
 #Means by species
@@ -137,9 +141,12 @@ TNmeanS = group_by(TNSd, Year, Regions, Species) %>%
   summarize(CPUE = mean(Catch, na.rm = T), SD = sd(Catch, na.rm = T), SE = SD/sqrt(n())) %>%
   left_join(yeartypes)
 
-ggplot(TNmeanS, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = Species), position = "fill")+
+ggplot(TNmeanS, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = Species))+
   facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
-  scale_fill_manual(values = c(mypal, "red", "green"))
+  scale_fill_manual(values = c(mypal, "red", "green"))+
+  theme_bw()+
+  theme(legend.position = "bottom")
+
 
 #Huh, i guess the increased catch was driven mainly by Maeoteus. Probalby take the invebrates out. 
 ######################################################################################################
@@ -161,7 +168,7 @@ TNmeanfo = group_by(TNsumfo, Year, Regions) %>%
 ########PLOT FOR REPORT
 ggplot(TNmeanfo, aes(x = Regions, y= CPUE, group = Year)) + geom_col(aes(fill = ShortTerm))+
   geom_errorbar(aes(ymin = CPUE-SE, ymax = CPUE+SE))+
-  facet_wrap(~Year)+ylab("Mean total Fish/1000m3")
+  facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+ theme_bw()
 
 
 TNmeanSf = group_by(TNfishonly, Year, Regions, Species) %>%
@@ -250,7 +257,9 @@ TNmeanSS = group_by(TNSS, Year, Regions, Species) %>%
 
 ggplot(TNmeanSS, aes(x = Regions, y= CPUE)) + geom_col(aes(fill = Species), position = "dodge")+
   facet_wrap(~Year)+ylab("Mean total Fish/1000m3")+
-  scale_fill_manual(values = c(mypal, "red", "green"))
+  scale_fill_manual(values = c(mypal, "red", "green"))+
+  theme_bw()+
+  theme(legend.position = "bottom")
 
 #No listed fish in the central Delta region. A few longfin in the sacramento region
 ###########################################################
@@ -383,10 +392,13 @@ DJmean2.1 = DJFMP2 %>%
   group_by(Year, Regions, CommonName2) %>%
   summarize(CPUE = mean(Count, na.rm = T))
 
-ggplot(DJmean2.1, aes(x = Year, y= CPUE, fill = CommonName2)) + 
-  geom_col(position = "fill")+
- # facet_wrap(~Year)+
-  scale_fill_manual(values = mypal)
+ggplot(DJmean2.1, aes(x = Regions, y= CPUE, fill = CommonName2)) + 
+  geom_col()+
+ facet_wrap(~Year)+
+  scale_fill_manual(values = mypal, name = "Species")+
+  theme_bw()+
+  theme(legend.position = "bottom")
+  
 
 
 #special status species
@@ -404,7 +416,9 @@ ggplot(DJS, aes(x = Year, y = Count))+ geom_point()+
 
 ggplot(DJS2, aes(x = Regions, y = CPUE, fill = CommonName)) + 
   geom_col(position = "dodge")+
-  facet_wrap(~Year)
+  facet_wrap(~Year)+
+  theme_bw()+
+  theme(legend.position = "bottom")
 #A few Chinook in teh San Joaquin and Sacramento The only
 #listed fish in 2021 was a chinook in hte Sacramento area
 
@@ -416,7 +430,10 @@ cent = filter(DJmean2, CommonName %in% c("largemouth bass", "redear sunfish",
   droplevels()
 
 ggplot(cent, aes(x = Regions, y = CPUE, fill = CommonName))+ geom_col()+
-  facet_wrap(~Year)
+  facet_wrap(~Year)+
+  scale_fill_manual(values = mypal, name = "Species")+
+  theme_bw()+
+  theme(legend.position = "bottom")
 
 #model of centrarchids
 centall = filter(DJFMP2, CommonName %in% c("largemouth bass", "redear sunfish",
@@ -429,6 +446,7 @@ centall = filter(DJFMP2, CommonName %in% c("largemouth bass", "redear sunfish",
 cent = brm(Count ~ Regions*Yearf+ (1|StationCode), family = zero_inflated_negbinomial(), 
           data = centall, iter = 2000, chains = 4)
 
+cent
 summary(cent)
 conditional_effects(cent)
 
@@ -481,6 +499,7 @@ test = filter(DJMat, Year == 2017, StationCode == "SJ001S")
 
 ####################################################
 #salvaage
+library(readxl)
 yeartypes = read.csv("data/yearassignments.csv")
 
 
@@ -517,7 +536,8 @@ recentmean = group_by(recents, Year, Month, Species) %>%
 ggplot(recentmean, aes(x = Year, y = Catch, fill = ShortTerm)) + geom_col()+
   facet_wrap(~Species, scales = "free_y")+ ylab('Total Catch')+
   xlab("Year (June-November)")+
-  scale_fill_discrete(name = "Year Type")
+  scale_fill_manual(name = "Year Type", values = c("darkorange", "tan", "skyblue"))+
+  theme_bw()
 
 #wow, did we really get delt smelt in 2021?
 

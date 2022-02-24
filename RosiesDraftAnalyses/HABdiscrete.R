@@ -97,7 +97,10 @@ DOP = filter(DOP, !is.na(hab_score)) %>%
          )
 
 HABs = bind_rows(HABs1, DOP)
+#save the combined visual index data
+save(HABs, file = "HABs.RData")
 
+#look at how chlorophyll measured by the YSI compares to grab samples, just for fun.
 lm = lm(ChlA_YSI ~ Chlorophyll, data = DOP)
 summary(lm)
 ggplot(DOP, aes(x = Chlorophyll, y = ChlA_YSI)) +
@@ -127,6 +130,8 @@ foo = filter(HABssf, Source == "STN", Year == 2021)
 ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = HABssf)+
   geom_sf_label(data = HABssf, aes(label = Station), 
                 position = "jitter", label.size = 0.05)
+
+############################################################################
 #crop it to the area right around the barrier
 BarHABs = st_crop(HABssf, regions)
 
@@ -486,10 +491,11 @@ SFH2 = mutate(HWR, HABPA = case_when(
   filter(Year >2013)
 
 #year types
-yeartypes = read_excel("data/Integrated data set.xlsx", sheet = "yearassignments")
+yeartypes = read_csv("data/yearassignments.csv")
 
 SFHwflow = left_join(SFH2, yeartypes)
 #now a glm (binomial)
+
 
 bn1 = glm(HABPA ~ Month + Yearf+Stratum, data = SFH2, family = "binomial")
 summary(bn1)

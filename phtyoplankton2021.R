@@ -328,7 +328,59 @@ ggplot(filter(cyanosX, Genus != "Eucapsis"), aes(x = StationCode, y = CellsperML
 ##############################################################################################
 #try and combine 2021 with older data
 
-OlderEMP = read_csv("EMP_1975_2020_phyto.csv") %>%
+OlderEMP = read_csv("EMP_1975_2020_phyto.csv") %>%Regions<-read_csv("RosiesDraftAnalyses/Rosies_regions2.csv")
+
+## Load Delta Shapefile from Brian
+Delta<-deltamapr::R_EDSM_Subregions_Mahardja_FLOAT%>%
+  filter(SubRegion%in%unique(Regions$SubRegion))%>%  #Filter to regions of interest
+  dplyr::select(SubRegion)
+
+Regs = unique(Regions[,c(1,5)])
+Delta = merge(Delta, Regs) %>%
+  st_transform(crs = 4326)
+
+
+
+Habs2 =   st_join(HABssf, Delta) %>%
+  st_drop_geometry() %>%
+  filter(!is.na(Region), !is.na(Microcystis)) %>% 
+  mutate(Yearf = as.factor(Year),
+         Month2 = factor(Month, levels = c(6,7,8,9,10),
+                         labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    
+
+
+
+SFH2a = mutate(Habs2, HABord = case_when(
+  Microcystis == 1 ~ "absent",
+  Microcystis %in% c(2,3) ~ "Low",
+  Microcystis %in% c(4,5) ~ "High")) %>%
+  mutate(HABord = factor(HABord, levels = c("absent", "Low", "High"), ordered = T)) %>%
+  filter(Year >2013)
+
+#now an orgered logistic regression
+library(MASS)
+library(car)
+ord2 = polr(HABord ~Yearf, data = SFH2a, Hess = T)
+summary(ord2)
+Anova(ord2)
+pairs = emmeans(ord1, pairwise ~ Yearf)$contrasts
+write.csv(pairs, "visualdata_alldelta.csv")
+pr <- profile(ord1)
+confint(pr)
+plot(pr)
+pairs(pr)
+
+(ctable <- coef(summary(ord1)))
+## calculate and store p values
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+
+## combined table
+(ctable <- cbind(ctable, "p value" = p))
+(ci <- confint(ord1))
+exp(cbind(OR = coef(ord1), ci))
+
+emp = filter(HABs, Source == "EMP", !is.na(Microcystis), Year == 2015)
+table(emp$Month)
   mutate(SampleTime = as_datetime(SampleTime))
 names(OlderEMP) 
 names(EMP2021)
@@ -341,6 +393,7 @@ EMPall = bind_rows(OlderEMP, EMP2021) %>%
 ##################################################################################################
 #Start running from here!!
 #write.csv(EMPall, "EMP_phyto_data.csv", row.names = F)
+
 types = read_excel("data/HABs/Phyto Classification.xlsx")
 types = group_by(types, Genus, `Algal Type`) %>%
   summarize(N = n()) %>%

@@ -197,3 +197,14 @@ ggplot(nutssummary, aes(x = Year, y = Resultm, fill = Analyte)) + geom_bar(stat 
 ggplot(nutssummary, aes(x = Year, y = Resultm)) + geom_bar(stat = "identity", alpha = 0.5)+
   geom_errorbar(aes(ymin = min, ymax = max)) +
   facet_grid(Analyte~season, scales = "free_y")
+
+library(DroughtData)
+library(discretewq)
+
+morenuts = raw_nutr_2013_2021
+
+Chlorophyll = wq(Sources = c("EMP", 
+                       "SDO", "Suisun", 
+                       "Baystudy", "USBR", "USGS", "YBFMP"),
+                 Start_year = 2013) %>%
+  filter(!is.na(Chlorophyll))

@@ -73,7 +73,7 @@ visreg(nb4)
 #just some basic summary plots of indecies by season and year for the short-term analyses
 yeartypes = read.csv("data/yearassignments.csv")
 
-Integrated_data_set <- read_excel("data/Integrated data set.xlsx", na = "NA")
+Integrated_data_set <- read_excel("data/Integrated data set2.xlsx", na = "NA")
 recent = filter(Integrated_data_set, Year > 2010) %>%
   dplyr::select(-Index)%>%
   mutate(SmeltIndex = as.numeric(SmeltIndex),
@@ -92,6 +92,7 @@ recent2 = pivot_longer(recent, cols = c(Sbindex, AmShadIndex, SmeltIndex, Longfi
 ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = ShortTerm))+
   facet_grid(Species~Season, scales = "free_y")
 
+
 ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
   scale_fill_viridis_d( direction = -1)+
   facet_grid(Season~Species, scales = "free_y") +
@@ -99,12 +100,18 @@ ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
 
 ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = ShortTerm))+
   facet_wrap(~Species+Season, scales = "free_y")+ theme_bw()+
-  scale_fill_viridis_d(name = "Year Type", direction = -1)
+  ylab("Index")+
+  scale_fill_viridis_d(name = "Year Type", direction = -1)+
+  theme(legend.position = "bottom")
 
+
+pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055") 
 
 ggplot(recent2, aes(x = Year, y = IndexX)) + geom_col(aes(fill = Yr_type))+
   facet_wrap(~Species+Season, scales = "free_y")+ theme_bw()+
-  scale_fill_viridis_d(name = "Year Type",  direction = -1)
+  ylab("Index")+
+  scale_fill_manual(name = "Year Type",  values = pal_yrtype)+
+theme(legend.position = "bottom")
 
 ggplot(recent, aes(x = Year, y = SmeltIndex)) + geom_col(aes(fill = ShortTerm))+
   facet_wrap(~Season, scales = "free_y")

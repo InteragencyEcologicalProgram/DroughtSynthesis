@@ -12,3 +12,6 @@ timeline = filter(timeline, Category != "NA")
 
 gg_vistime(timeline, col.event = "ShortName", 
            col.start = "Start", col.end = "End", col.group = "Category", col.color = "color", linewidth = 15)
+
+gg_vistime(timeline, col.event = "ShortName", 
+           col.start = "Start", col.end = "End", col.group = "Cat2", col.color = "color", linewidth = 15)

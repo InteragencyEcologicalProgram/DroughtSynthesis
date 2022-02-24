@@ -1,5 +1,9 @@
 library(tidyverse)
 library(lubridate)
+library(sf)
+library(readxl)
+library(DroughtData)
+
 Toxins = read_csv("data/HABs/ToxinDataDWR2.csv") %>%
   mutate(Date = mdy(Date))
 Toxins2 = pivot_wider(Toxins, id_cols = c(Date, Station), names_from = Analyte, 
@@ -8,7 +12,7 @@ Toxins2 = pivot_wider(Toxins, id_cols = c(Date, Station), names_from = Analyte,
 ggplot(Toxins2, aes(x = Date, y = MC, color = Station)) + geom_line(size = 1) + geom_point()+
   scale_color_brewer(palette = "Set1")+ ylab("Microcystins (ug/L)") + theme_bw()
 
-library(readxl)
+
 hab_samples <- read_excel("data/HABs/DWR_DFD_Cyanotoxin_results_2021 - JG.xlsx")
 unique(hab_samples$`PTOX Species`)
 habs = mutate(hab_samples, Species = case_when(
@@ -55,3 +59,24 @@ toxin3 = group_by(hab_samples, Station, Analyte, Date) %>%
   ))
 
 ggplot(toxin3, aes(x = Date, y = result)) + geom_line()
+
+##############################################################
+#look at data from CEDEN
+ceden = read_csv("data/HABs/ceden_data_20220208093111.xls.csv")
+str(ceden)
+
+cdensf = st_as_sf(ceden, coords = c("TargetLongitude","TargetLatitude"), crs = st_crs(4326))
+
+regions = R_EDSM_Strata_1718P1%>%
+  st_transform(crs = st_crs(4326))
+
+cdensf = st_join(cdensf, regions)  
+cdensfin = st_intersection(cdensf, regions)  
+
+ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = regions)+
+  geom_sf(data = cdensfin)
+#UGH not helpful What am I doing wrong?
+
+#just filter by counties instead.
+
+cedensub = filter(ceden, county %in% c("Contra Costa", "San Joaquin", "Solano", "Sacramento"))
