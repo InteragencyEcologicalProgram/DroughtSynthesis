@@ -1,0 +1,380 @@
+---
+title: "EDB Phyto Data Overview"
+author: "Dave Bosworth"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document: 
+    code_folding: hide
+    toc: true
+    toc_float:
+      collapsed: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(knitr.kable.NA = "-")
+```
+
+# Purpose
+
+Preliminary data exploration of the phytoplankton data for 2014 - 2021 for the Emergency Drought Barrier report.
+
+# Global code and functions
+
+```{r load packages, message = FALSE, warning = FALSE}
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(knitr)
+# install.packages("devtools")
+# devtools::install_github("mountaindboz/EDBdata")
+library(EDBdata)
+```
+
+# Sampling Effort Counts
+
+## Stations and Years
+
+```{r count stations years}
+# See if the sampling effort changed at stations between years
+phyto_edb %>%
+  count(Year, Region, Station) %>%
+  arrange(Year) %>%
+  pivot_wider(names_from = Year, values_from = n) %>%
+  arrange(Region, Station) %>% 
+  kable()
+```
+
+## Months and Years
+
+```{r count months years}
+# See if the sampling effort changed between months and years
+phyto_edb %>%
+  mutate(Month = month(DateTime, label = TRUE)) %>%
+  count(Year, Month) %>%
+  arrange(Month) %>%
+  pivot_wider(names_from = Month, values_from = n) %>%
+  arrange(Year) %>% 
+  kable()
+```
+
+## Stations, Months, and Years
+
+```{r count stations months years}
+# Overall view of sampling effort - stations, months, and years
+phyto_edb %>%
+  mutate(Month = month(DateTime, label = TRUE)) %>%
+  count(Year, Month, Region, Station) %>%
+  arrange(Month) %>%
+  pivot_wider(names_from = Month, values_from = n) %>%
+  complete(Year, nesting(Region, Station)) %>% 
+  arrange(Region, Station, Year) %>% 
+  kable()
+```
+
+# Exploratory Plots
+
+```{r general preparation}
+# Prepare phyto data for all plots
+phyto_edb_c <- phyto_edb %>% 
+  mutate(
+    Year = as.character(Year),
+    Region = factor(Region, levels = c("Sacramento", "San Joaquin", "Central Delta"))
+  )
+```
+
+## Total Density
+
+Calculate total organisms per mL for each station and sampling date
+
+```{r prepare total density, message = FALSE}
+# Calculate total density of organisms for each station and sampling date
+phyto_total_all <- phyto_edb_c %>% 
+  group_by(Station, Region, Year, Date) %>% 
+  summarize(TotalDens = sum(OrganismsPerMl)) %>% 
+  ungroup()
+
+# Create a list of common ggplot elements for the boxplots
+lst_phyto_boxplt <- list(
+  scale_y_continuous(
+    name = "Total Organisms per mL", 
+    labels = label_comma()
+  ),
+  theme_bw()
+)
+```
+
+### Boxplots by Year
+
+```{r boxplot total density by year}
+phyto_total_all %>% 
+  ggplot(aes(x = Year, y = TotalDens)) +
+  geom_boxplot() +
+  lst_phyto_boxplt
+```
+
+### Boxplots by Region
+
+Here are the region designations to better interpret the jitter points in the plot:
+
+* Sacramento: D22, D24, D4, NZ068
+* San Joaquin: D12, D16, D26
+* Central Delta: C9, D19, D28A
+
+```{r boxplot total density by region}
+phyto_total_all %>%
+  ggplot(aes(x = Region, y = TotalDens)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(aes(color = Station), width = 0.3) +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.95)
+```
+
+### Boxplots by Year and Region
+
+```{r boxplot total density by year region}
+phyto_total_all %>% 
+  ggplot(aes(x = Year, y = TotalDens, color = Region)) +
+  geom_boxplot() +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  theme(legend.position = "top")
+```
+
+2014, 2015, 2020, and 2021 are difficult to see. Let's look at just those.
+
+```{r boxplot total density by year region dry years}
+phyto_total_all %>% 
+  filter(Year %in% c("2014", "2015", "2020", "2021")) %>% 
+  ggplot(aes(x = Year, y = TotalDens, color = Region)) +
+  geom_boxplot() +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9)
+```
+
+Let's break these boxplots apart by season. Since we are interested in the impact of the Barrier, we should consider that in how we define our seasons.
+
+* Both 2021 and 2015 barriers were in place June - November
+* 2021 barrier was also in place in December
+* Notch in 2021 barrier January - April 2022
+* Maybe we'll use the following for our season definitions:
+	* Summer: June - August
+	* Fall: September - December
+	* Spring: January - May
+
+```{r add seasons}
+phyto_total_all_seas <- phyto_total_all %>% 
+  mutate(
+    Month = month(Date),
+    Season = factor(
+      case_when(
+        Month %in% c(1:5) ~ "Spring",
+        Month %in% c(6:8) ~ "Summer",
+        Month %in% c(9:12) ~ "Fall"
+      ),
+      levels = c("Spring", "Summer", "Fall")
+    )
+  )
+```
+
+### Boxplots by Season
+
+```{r boxplot total density by season}
+phyto_total_all_seas %>% 
+  ggplot(aes(x = Season, y = TotalDens)) +
+  geom_boxplot() +
+  lst_phyto_boxplt
+```
+
+### Boxplots by Year and Season
+
+```{r boxplot total density by year season}
+phyto_total_all_seas %>% 
+  ggplot(aes(x = Year, y = TotalDens, color = Season)) +
+  geom_boxplot() +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  theme(legend.position = "top")
+```
+
+Again, 2014, 2015, 2020, and 2021 are difficult to see. Let's look at just those.
+
+```{r boxplot total density by year season dry years}
+phyto_total_all_seas %>% 
+  filter(Year %in% c("2014", "2015", "2020", "2021")) %>%
+  ggplot(aes(x = Year, y = TotalDens, color = Season)) +
+  geom_boxplot() +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9)
+```
+
+### Boxplots by Region and Season
+
+```{r boxplot total density by region season}
+phyto_total_all_seas %>% 
+  ggplot(aes(x = Region, y = TotalDens, color = Season)) +
+  geom_boxplot() +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9)
+```
+
+### Boxplots by Year, Region, and Season
+
+```{r boxplot total density by year region season, fig.height = 9, fig.width = 8}
+phyto_total_all_seas %>% 
+  ggplot(aes(x = Season, y = TotalDens, color = Region)) +
+  geom_boxplot() +
+  facet_wrap(vars(Year)) +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  theme(legend.position = "top")
+```
+
+Again, let's look at just 2014, 2015, 2020, and 2021.
+
+```{r boxplot total density by year region season dry years}
+phyto_total_all_seas %>% 
+  filter(Year %in% c("2014", "2015", "2020", "2021")) %>%
+  ggplot(aes(x = Season, y = TotalDens, color = Region)) +
+  geom_boxplot() +
+  facet_wrap(vars(Year)) +
+  lst_phyto_boxplt +
+  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  theme(legend.position = "top")
+```
+
+## Relative Density by Algal Type
+
+Calculate total organisms per mL for each station, sampling date, and algal type
+
+```{r prepare total density by algal type, message = FALSE}
+# Calculate total density of organisms for each station, sampling date, and algal type
+phyto_total_algalt <- phyto_edb_c %>% 
+  mutate(
+    Month = month(Date),
+    Season = factor(
+      case_when(
+        Month %in% c(1:5) ~ "Spring",
+        Month %in% c(6:8) ~ "Summer",
+        Month %in% c(9:12) ~ "Fall"
+      ),
+      levels = c("Spring", "Summer", "Fall")
+    ),
+    Month = month(Date, label = TRUE)
+  ) %>% 
+  group_by(Station, Region, Year, Season, Month, Date, AlgalType) %>% 
+  summarize(TotalDens = sum(OrganismsPerMl)) %>% 
+  ungroup()
+
+# Create a list of common ggplot elements for the relative density barplots
+lst_phyto_rd_barplt <- list(
+  scale_y_continuous(
+    name = "Relative Density",
+    labels = label_percent()
+  ),
+  scale_fill_discrete(name = "Algal Type"),
+  theme_bw()
+)
+```
+
+### Barplot by Year
+
+```{r barplot rel density by year, message = FALSE}
+phyto_total_algalt %>%
+  group_by(Year, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Year, y = AvgDens, fill = AlgalType)) +
+  geom_col(position = "fill") +
+  lst_phyto_rd_barplt
+```
+
+### Barplot by Region
+
+```{r barplot rel density by region, message = FALSE}
+phyto_total_algalt %>%
+  group_by(Region, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Region, y = AvgDens, fill = AlgalType)) +
+  geom_col(position = "fill") +
+  lst_phyto_rd_barplt
+```
+
+### Barplot by Season
+
+```{r barplot rel density by season, message = FALSE}
+phyto_total_algalt %>%
+  group_by(Season, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Season, y = AvgDens, fill = AlgalType)) +
+  geom_col(position = "fill") +
+  lst_phyto_rd_barplt
+```
+
+### Barplot by Month
+
+```{r barplot rel density by month, message = FALSE}
+phyto_total_algalt %>%
+  group_by(Month, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Month, y = AvgDens, fill = AlgalType)) +
+  geom_col(position = "fill") +
+  lst_phyto_rd_barplt
+```
+
+Cyanobacteria dominate all grouping variables. Let's see what happens when we remove this Algal Type.
+
+```{r remove cyano from total density}
+phyto_total_algalt_nocyan <- phyto_total_algalt %>% filter(AlgalType != "Cyanobacterium")
+```
+
+### Barplot by Year and Region
+
+```{r barplot rel density by year region no cyano, message = FALSE, fig.height = 6}
+phyto_total_algalt_nocyan %>%
+  group_by(Year, Region, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Region, y = AvgDens, fill = AlgalType)) +
+  geom_col(color = "grey50", position = "fill") +
+  facet_wrap(vars(Year)) +
+  lst_phyto_rd_barplt +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+```
+
+### Barplot by Year and Season
+
+```{r barplot rel density by year season no cyano, message = FALSE}
+phyto_total_algalt_nocyan %>%
+  group_by(Year, Season, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Season, y = AvgDens, fill = AlgalType)) +
+  geom_col(color = "grey50", position = "fill") +
+  facet_wrap(vars(Year)) +
+  lst_phyto_rd_barplt
+```
+
+### Barplot by Year, Region, and Season
+
+```{r barplot rel density by year region season no cyano, message = FALSE, fig.height = 9, fig.width = 7}
+phyto_total_algalt_nocyan %>%
+  group_by(Year, Region, Season, AlgalType) %>%
+  summarize(AvgDens = mean(TotalDens)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Season, y = AvgDens, fill = AlgalType)) +
+  geom_col(color = "grey50", position = "fill") +
+  facet_grid(
+    cols = vars(Region),
+    rows = vars(Year)
+  ) +
+  lst_phyto_rd_barplt +
+  theme(legend.position = "top")
+```
+

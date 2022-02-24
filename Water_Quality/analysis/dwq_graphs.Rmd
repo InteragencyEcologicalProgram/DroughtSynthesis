@@ -15,8 +15,6 @@ source('Water_Quality/wq_graph_funcs.R')
 # read in data
 df_wq <- raw_nutr_1975_2021
 df_wq <- drt_add_yr_assign(df_wq)
-# df_wq$YearType[df_wq$YearType == 'Below Normal'] <- 'Below Norm'
-# df_wq$YearType[df_wq$YearType == 'Above Normal'] <- 'Above Norm'
 df_wq <- df_wq %>%
     mutate(across(c(Drought, YearType), list(`20_21`=~case_when(YearAdj==2021 ~ "2021", 
                                                               YearAdj==2020 ~ "2020", 
@@ -24,6 +22,18 @@ df_wq <- df_wq %>%
          across(c(YearType, YearType_20_21), ~factor(.x, levels=c("2020", "2021", "Critical", "Dry", "Below Normal", "Above Normal", "Wet"))),
          Region=factor(Region, levels=c("Suisun Marsh", "Suisun Bay", "Confluence", "SouthCentral", "North")),
          Season=factor(Season, levels=c("Winter", "Spring", "Summer", "Fall")))
+
+# df_wq$YearType[df_wq$YearType == 'Below Normal'] <- 'Below Norm'
+# df_wq$YearType[df_wq$YearType == 'Above Normal'] <- 'Above Norm'
+```
+
+```{r}
+# remove outlier vals
+df_wq <- df_wq %>% filter(
+  !c(DissAmmonia_Sign == '<' & DissAmmonia >= .2),
+  !c(DissOrthophos_Sign == '<' & DissOrthophos > .15),
+  !c(DissNitrateNitrite_Sign == '<' & DissNitrateNitrite >= 3)
+  )
 ```
 
 ```{r}
@@ -40,7 +50,7 @@ for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
   plt_bp <- plt_bp +
     drt_color_pal_yrtype() +
     theme_bw() +
-    theme(legend.position = 'top') +
+    theme(legend.position = 'top', axis.text.x = element_text(angle = 13, vjust = 0.5)) +
     ylab(paste(full_name,'(mg/L)')) +
     xlab('Year/Drought') +
     ylim(0,ylim_cut)

@@ -23,10 +23,23 @@ From Dave's Drought package
 ```{r}
 # raw data
 df_wq <- raw_nutr_2013_2021
+df_wq$DissAmmonia_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
+df_wq$DissNitrateNitrite_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
+df_wq$DissOrthophos_Sign[df_wq$DissAmmonia_Sign == '< (estimated)'] <- '<'
 
-df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia', seed = 42)
-df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite', seed = 42)
-df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos', seed = 42)
+# remove outlier vals
+df_wq <- df_wq %>% filter(
+  !c(DissAmmonia_Sign == '<' & DissAmmonia >= .2),
+  !c(DissOrthophos_Sign == '<' & DissOrthophos > .15),
+  !c(DissNitrateNitrite_Sign == '<' & DissNitrateNitrite >= 3)
+  )
+
+# set seed
+seed <- 42
+
+df_wq$DissAmmonia <- replace_rl(df_wq, 'DissAmmonia', seed = seed)
+df_wq$DissNitrateNitrite <- replace_rl(df_wq, 'DissNitrateNitrite', seed = seed)
+df_wq$DissOrthophos <- replace_rl(df_wq, 'DissOrthophos', seed = seed)
 df_wq <- filter(df_wq, Region != 'Suisun Marsh')
 ```
 
@@ -37,6 +50,8 @@ df_am_seasonal <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 's
 df_am_seasonal <- drt_add_yr_assign(df_am_seasonal)
 df_am_seasonal$DissAmmonia <- log10(df_am_seasonal$DissAmmonia)
 df_am_seasonal$YearAdj <- as.factor(df_am_seasonal$YearAdj)
+df_am_seasonal$Season <- factor(df_am_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_am_seasonal <- df_am_seasonal %>% arrange(., YearAdj, Season)
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissAmmonia ~ YearAdj + Season, data = df_am_seasonal)
@@ -91,6 +106,8 @@ df_am_regional <- drt_avg_data(df = df_wq, data_var = DissAmmonia, avg_type = 'r
 df_am_regional <- drt_add_yr_assign(df_am_regional)
 df_am_regional$DissAmmonia <- log10(df_am_regional$DissAmmonia)
 df_am_regional$YearAdj <- as.factor(df_am_regional$YearAdj)
+df_am_regional$Region <- factor(df_am_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_am_regional <- df_am_regional %>% arrange(., Region, YearAdj)
 
 print('TEST THINGS')
 lm_regional <- lm(DissAmmonia ~ YearAdj + Region, data = df_am_regional)
@@ -150,7 +167,7 @@ plt_am_reg_reg <- emm_plotter(
   theme_bw() +
   ylab('log(Dissolved Ammonia)')
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_reg_reg.jpg'), plt_op_reg_reg, width = 4.5, height = 3)
+ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_reg_reg.jpg'), plt_am_reg_reg, width = 4.5, height = 3)
 ```
 
 # DissNitrateNitrite
@@ -160,6 +177,9 @@ df_nn_seasonal <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_ty
 df_nn_seasonal <- drt_add_yr_assign(df_nn_seasonal)
 df_nn_seasonal$DissNitrateNitrite <- log10(df_nn_seasonal$DissNitrateNitrite)
 df_nn_seasonal$YearAdj <- as.factor(df_nn_seasonal$YearAdj)
+df_nn_seasonal$Season <- factor(df_nn_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_nn_seasonal <- df_nn_seasonal %>% arrange(., YearAdj, Season)
+
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissNitrateNitrite ~ YearAdj + Season, data = df_nn_seasonal)
@@ -171,8 +191,15 @@ print('')
 print('END TEST THINGS')
 print('')
 
-print('PASSED')
+# failed tests, add lags based on pacf
+df_nn_seasonal$DissNN_onelag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 1L)
+df_nn_seasonal$DissNN_twolag <- lag(df_nn_seasonal$DissNitrateNitrite, n = 2L)
 
+lm_seasonal <- lm(DissNitrateNitrite ~ YearAdj + Season + DissNN_onelag + DissNN_twolag, data = df_nn_seasonal)
+
+pacf(residuals(lm_seasonal), na.action = na.pass)
+
+print(stats::Box.test(residuals(lm_seasonal), type = 'Ljung'))
 print('')
 print('*-*-*-*-*-*-*')
 print('')
@@ -214,6 +241,9 @@ df_nn_regional <- drt_avg_data(df = df_wq, data_var = DissNitrateNitrite, avg_ty
 df_nn_regional <- drt_add_yr_assign(df_nn_regional)
 df_nn_regional$DissNitrateNitrite <- log10(df_nn_regional$DissNitrateNitrite)
 df_nn_regional$YearAdj <- as.factor(df_nn_regional$YearAdj)
+df_nn_regional$Region <- factor(df_nn_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_nn_regional <- df_nn_regional %>% arrange(., Region, YearAdj)
+
 
 print('TEST THINGS')
 lm_regional <- lm(DissNitrateNitrite ~ YearAdj + Region, data = df_nn_regional)
@@ -270,6 +300,8 @@ df_op_seasonal <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 
 df_op_seasonal <- drt_add_yr_assign(df_op_seasonal)
 df_op_seasonal$DissOrthophos <- log10(df_op_seasonal$DissOrthophos)
 df_op_seasonal$YearAdj <- as.factor(df_op_seasonal$YearAdj)
+df_op_seasonal$Season <- factor(df_op_seasonal$Season, levels = c('Winter', 'Spring', 'Summer', 'Fall'))
+df_op_seasonal <- df_op_seasonal %>% arrange(., YearAdj, Season)
 
 print('TEST THINGS')
 lm_seasonal <- lm(DissOrthophos ~ YearAdj + Season, data = df_op_seasonal)
@@ -323,6 +355,8 @@ df_op_regional <- drt_avg_data(df = df_wq, data_var = DissOrthophos, avg_type = 
 df_op_regional <- drt_add_yr_assign(df_op_regional)
 df_op_regional$DissOrthophos <- log10(df_op_regional$DissOrthophos)
 df_op_regional$YearAdj <- as.factor(df_op_regional$YearAdj)
+df_op_regional$Region <- factor(df_op_regional$Region, levels = c('Suisun Bay', 'Confluence', 'SouthCentral', 'North'))
+df_op_regional <- df_op_regional %>% arrange(., Region, YearAdj)
 
 print('TEST THINGS')
 lm_regional <- lm(DissOrthophos ~ YearAdj + Region, data = df_op_regional)
@@ -340,8 +374,7 @@ print('PASSED')
 print('')
 print('*-*-*-*-*-*-*')
 print('')
-
-# plot(lm_regional)
+plot(lm_regional)
 
 aov_regional <- Anova(lm_regional, type = 'II', test.statistic = 'F')
 print(aov_regional)

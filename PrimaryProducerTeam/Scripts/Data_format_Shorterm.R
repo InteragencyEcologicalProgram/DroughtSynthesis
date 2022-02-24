@@ -5,16 +5,17 @@ library(sf)
 source("Scripts/MyFunctionsAndThemes.R")
 
 ## Program Sources of Data
+## discretewq: https://github.com/sbashevkin/discretewq
 # DOP= Directed Outflows Project (US Bureau of Reclamation)
 # EMP= Environmental Monitoring Program
 # FMWT= Fall Midwater Trawl
 # NCRO= DWR North Central Regional Office
 # STN= Summer Townet Survey
-# SDO= ?? 
+# SDO= Stockton Deep Water Shipping Channel Dissolved Oxygen Monitoring
 # USBR= US Bureau of Reclamation
-# USGS-SFBRMP= US Geologiacl Survey San Francisco Research Monitoring Projct
+# USGS-SFBRMP= US Geological Survey San Francisco Research Monitoring Projct
 # USGS-CAWSC= US Geological Survey CA Water Science Center
-
+  
 
 # EPSG codes
 # NAD83 / UTM 10N = 26910, https://spatialreference.org/ref/epsg/nad83-utm-zone-10n/
@@ -89,21 +90,21 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
 # CHL06 is the 5micron chla
 # FL016 - Katy thinks this one is associated with an old 5 micron lab code, I have to research it though because it is associated with chla for 9 samples, 3 of those were not submitted for 5micron.
 
-usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
-
-
-usgs_chla <- usgs_chla_raw %>%
-  select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (ug/L)`, `M Chla (ug/L)`) %>%
-  filter(`M Chla (ug/L)` == "00050") %>% # Only keep 0.7 micron chla values
-  select(-`M Chla (ug/L)`) %>%
-  rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, 
-         Datetime= sample_strt_dt, 
-         chla= `Chla (ug/L)`) %>%
-  filter(!is.na(chla)) %>%
-  mutate(Date= ymd(Date),
-         Datetime= ymd_hm(Datetime),
-         Source= "USGS-CAWSC")
-
+# usgs_chla_raw <- read_csv('Data/USGS_DiscreteStationDataFinal_20210909_CS.csv')
+# 
+# 
+# usgs_chla <- usgs_chla_raw %>%
+#   select(field_ID, dec_lat_va, dec_long_va, sample_strt_dt, `Date format change`, `Chla (ug/L)`, `M Chla (ug/L)`) %>%
+#   filter(`M Chla (ug/L)` == "00050") %>% # Only keep 0.7 micron chla values
+#   select(-`M Chla (ug/L)`) %>%
+#   rename(Station= field_ID, Latitude= dec_lat_va, Longitude= dec_long_va, Date= `Date format change`, 
+#          Datetime= sample_strt_dt, 
+#          chla= `Chla (ug/L)`) %>%
+#   filter(!is.na(chla)) %>%
+#   mutate(Date= ymd(Date),
+#          Datetime= ymd_hm(Datetime),
+#          Source= "USGS-CAWSC")
+# 
 
 
 
@@ -154,7 +155,7 @@ emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
 
 ## Combine data and filter to the Short Term Synthesis time period 2011-present
 DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
-  full_join(., usgs_chla) %>%
+  #full_join(., usgs_chla) %>%
   full_join(., filter(habs_add, !(year == 2021 & Source == "EMP"))) %>%
   full_join(., emp_2021) %>% 
   filter(Longitude > -122.145 & Latitude > 37.7) %>% # FILTER BY the regions of interest for Drought Synthesis

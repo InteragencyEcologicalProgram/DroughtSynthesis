@@ -5,13 +5,13 @@
 library(tidyverse)
 library(brms)
 #source("Scripts/Data_format.R")
-source("Scripts/ggplot_themes.R")
+source("Scripts/MyFunctionsAndThemes.R")
 
 ## Load data frames from Data_format.R
-load("Data/DS_dataframes.Rdata") 
+load("Data/DS_dataframesST.Rdata") 
 
 ## Transform original 1-5 scale to None, Low, High
-mc_data <- DS_data %>%
+mc_data <- DS_dataST %>%
   filter(!is.na(mc_rating)) %>%
   mutate(mc_mod= ifelse(mc_rating == 1, "none",
                         ifelse(mc_rating > 1 & mc_rating < 4, "low", "high")),
@@ -93,8 +93,8 @@ mc_data_stats <- mc_data_filt %>%
   ungroup()
 
 ## WRITE CSV FILES
-#mc_data_stats %>% 
-#   write_csv(., "Data/mcRating_data_stats.csv")
+mc_data_stats %>% 
+   write_csv(., "Data/mcRating_data_stats.csv")
  
 
 
@@ -121,6 +121,14 @@ Station_Region_count <- mc_data_stats %>%
   group_by(Region) %>%
   count(Region)
 sum(Station_Region_count$n)
+
+## Percentage of each MC index level
+mc_data_stats %>% 
+  group_by(ds_year_type) %>% 
+  count(mc_max) %>% 
+  mutate(prop= n/sum(n),
+         N= sum(n)) %>% 
+  write_csv("Data/mc_rating_percentages.csv")
 
 #### DATA FIGURES ####
 
@@ -155,15 +163,15 @@ ggsave(last_plot(), filename= "mc_year_sample_summary.png", width= 8, height= 6,
 
 ## MC-rating by Region
 ggplot(mc_data_stats, aes(x= ds_year_type)) +
-  geom_bar(aes(fill= mc_max), position= "dodge") +
-  labs(x= "Year type", y= "Number of observations") +
+  geom_bar(aes(fill= mc_max), position= position_dodge(preserve = "single")) +
+  labs(x= "Water Year", y= "Number of observations") +
   scale_y_continuous(expand= c(0, 0)) +
-  scale_x_discrete(labels= c("Wet", "Below\nAvg", "Drought")) +
   scale_fill_manual(values= c("Gray70", "seagreen4", "seagreen1"),
                     name= expression(paste(italic("Microcystis "), "Rating")),
                     labels= c("None (1)", "Low (2-3)", "High (4-5)")) +
   facet_rep_wrap(~Region, nrow= 2, labeller= labeller(Region= as_labeller(region_labels))) +
-  theme_doc +
+  theme_bw(base_size= 12) +
+  #theme_doc +
   #theme(legend.position = "top")
   theme(legend.position = c(0.85, 0.2))
 ggsave(last_plot(), filename= "MCrating_Region.png", width= 6.5, height= 4, dpi= 300,
@@ -199,10 +207,10 @@ fit_max_mc1 <- brm(
   control = list(adapt_delta = 0.99)
 )
 
-#save(fit_max_mc1, file= "Data/fit_max_mc1.Rdata")
-load("Data/fit_max_mc1.Rdata")
+save(fit_max_mc1, file= "Data/fit_max_mc1b.Rdata")
+load("Data/fit_max_mc1b.Rdata")
 summary(fit_max_mc1)
-plot(fit_max_mc1)
+#plot(fit_max_mc1)
 
 
 ## Extract marginal effects
@@ -215,7 +223,7 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= year.colors, 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+                    name= "Water Year") +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("low", "high"), labels= c("Low", "High")) +
@@ -232,12 +240,13 @@ ggplot(max_mc1_effects, aes(x= cats__, y= estimate__, group= ds_year_type)) +
   geom_col(aes(fill= ds_year_type), color= "black", position= position_dodge()) +
   geom_errorbar(aes(ymin= lower__, ymax= upper__), width= 0.5, position= position_dodge(0.9)) +
   scale_fill_manual(values= year.colors, 
-                    name= "Water year type", labels= c("Wet", "Below Avg.", "Drought")) +
+                    name= "Water Year") +
   labs(x= expression(paste(italic("Microcystis"), " Rating Level")), y= "Probability") +
   scale_y_continuous(expand= c(0, 0), limits= c(0, 1)) +
   scale_x_discrete(limits= c("none", "low", "high"), labels= c("None", "Low", "High")) +
   facet_rep_grid(Region ~ Season, repeat.tick.labels = TRUE, labeller= labeller(Region= as_labeller(region_labels))) +
-  theme_doc +
+##  theme_doc +
+  theme_bw(base_size= 12) +
   theme(legend.position= "top")
 ggsave(last_plot(), filename= "MCrating_probs_NoneLowHigh_Season.png", width= 6.5, height= 8.5, dpi= 300,
        path= "Figures")

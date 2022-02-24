@@ -259,7 +259,7 @@ emm_plotter <-
     
     if (fill_type == 'rect' & !is.na(fill)) {
       x_max <- max(as.numeric(as.factor(pull(df_data, .data[[grouping]]))), na.rm = TRUE)
-      
+
       if (grouping == fill) {
         df_shading <- data.frame(
           xmin = seq(from = 0.5, to = x_max, by = 1),
@@ -272,7 +272,7 @@ emm_plotter <-
           xmin = seq(from = 0.5, to = x_max, by = 1),
           xmax = seq(from = 1.5, to = x_max + 0.5, by = 1),
           ymax = pull(df_data, .data[[analyte]]) %>% min(., na.rm = TRUE) - rect_gap,
-          Fill = pull(df_data, .data[[fill]])
+          Fill = (df_data %>% select(.data[[grouping]], .data[[fill]]) %>% unique())[2] %>% rename(Fill = .data[[fill]])
         )
       }
       
