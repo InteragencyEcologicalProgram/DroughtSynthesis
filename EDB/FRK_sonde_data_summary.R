@@ -47,8 +47,8 @@ frk_clean <- frk %>%
     #make parameter a factor
     ,parameter = as.factor(parameter)
          ) %>% 
-  #only keep the data categorized as good and data durng months July to Oct
-  filter(qaqc_flag_id=="G" & (month > 6 & month < 11)) %>% 
+  #only keep the data categorized as good and data during months July to Sept
+  filter(qaqc_flag_id=="G" & (month > 6 & month < 10)) %>% 
   #only keep needed columns
   select(parameter,year,month,time,value,unit) %>% 
   glimpse()
