@@ -10,7 +10,7 @@
 
 #packages
 library(tidyverse)
-#library(PerformanceAnalytics) #plotting correlations
+library(ggcorrplot) #plotting correlation matrix
 library(DEGreport) #adds corr and p to plots
 
 #read in the data-------------------------
@@ -29,7 +29,48 @@ dir_path <- normalizePath(
   )
 )  
 
-veg <- read_csv(file = paste0(dir_path,"./FranksTractManagement_2014-2021_formatted.csv"))
+vegetation <- read_csv(file = paste0(dir_path,"./FranksTractManagement_2014-2021_formatted.csv"))
+
+#look at correlations in abundances among species------------------
+
+#reshape the data frame so each row is a sample and each column is a species
+#keep station, date, species, score
+veg_wide <- veg %>% 
+  #first need to drop the handful of visual observations
+  #so they don't create duplicates and mess up the pivot_wider
+  filter(survey_method!="visual") %>% 
+  select(date,station,species,rake_coverage_ordinal) %>% 
+  pivot_wider(
+    id_cols=c(date,station)
+    ,names_from = species
+    , values_from=rake_coverage_ordinal
+    #was getting warnings about duplicates before removing visual spp
+    #,values_fn = list(rake_coverage_ordinal = length)
+    ) %>% 
+  glimpse()
+
+#create correlation matrix
+corr_matrix <- round(cor(veg_wide[3:17]),2)
+
+# Computing correlation matrix with p-values
+corrp_matrix <- cor_pmat(veg_wide[3:17])
+
+# Visualizing the correlation matrix
+ggcorrplot(corr_matrix, method ="square", type="lower")
+
+# Visualizing the correlation matrix within indication of whether p-values are significant
+#and correlation coefficients printed on plot
+ggcorrplot(corr_matrix, method ="square", type="lower", p.mat = corrp_matrix, lab=T)
+#strongest correlation is 0.24 (POCR vs PONO), indicating that all are very weak correlations (despite some sig. p-values)
+
+#Egeria densa vs Richardson's pondweed
+#second strongest correlation of all (-0.21)
+#these are two of the most dominant SAV spp
+ggplot(veg_wide, aes(Egeria_densa,Potamogeton_richardsonii))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_cor(method = "pearson")
+  
 
 #format veg data----------------
 
@@ -43,6 +84,8 @@ veg <- read_csv(file = paste0(dir_path,"./FranksTractManagement_2014-2021_format
 se <- function(x) sd(x)/sqrt(length(x))
 
 veg_clean <- veg %>% 
+  #remove visual only records
+  filter(survey_method!="visual") %>% 
   mutate(
     #create a year column
     year = as.integer(year(date))
