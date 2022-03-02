@@ -11,14 +11,17 @@ library(visreg)
 library(MASS)
 library(car)
 library(DroughtData)
+library(here)
+
+i_am("HABanalysis.R")
 
 #import data with all the visual index data
 load("HABs.RData")
 
 
 
-#load regions shapefile
-regions = st_read("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/Barrier/BarrierRegions/shpExport.shp") %>%
+#load Barrier regions shapefile
+regions = st_read(here("EDB/Spatial_data/EDB_Regions.shp")) %>%
   st_make_valid()
 
 # regions = R_EDSM_Strata_1718P1%>%
