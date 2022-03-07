@@ -5,8 +5,10 @@
 #based on SePro vegetation surveys conducted annually in October
 
 #packages
-library(tidyverse)
-library(lubridate)
+library(tidyverse) #suite of data science tools
+library(lubridate) #formatting dates
+library(ggcorrplot) #plotting correlation matrix
+library(DEGreport) #adds corr and p to plots
 
 #read and combine all WQ data files
 wq_list <- dir(path = "EDB/FRK_data" ,pattern = "\\.csv", full.names = T, recursive=T)
@@ -59,6 +61,42 @@ frk_clean <- frk %>%
  # geom_point()+
   #geom_line()+
   #facet_wrap(~parameter, scales = "free")
+
+#look at correlations among the six parameters---------------
+#a work in progress
+
+#start with frk df
+#remove the bad data
+#convert long to wide (a column for each parameter)
+#make corr matrix
+#plot corr matrix
+
+#reshape the data frame so each row is a sample and each column is a species
+#keep station, date, species, score
+veg_wide <- veg %>% 
+  #first need to drop the handful of visual observations
+  #so they don't create duplicates and mess up the pivot_wider
+  filter(survey_method!="visual") %>% 
+  select(date,station,species,rake_coverage_ordinal) %>% 
+  pivot_wider(
+    id_cols=c(date,station)
+    ,names_from = species
+    , values_from=rake_coverage_ordinal
+    #was getting warnings about duplicates before removing visual spp
+    #,values_fn = list(rake_coverage_ordinal = length)
+  ) %>% 
+  glimpse()
+
+
+#create correlation matrix
+corr_matrix <- round(cor(veg_wide[3:17]),2)
+
+# Computing correlation matrix with p-values
+corrp_matrix <- cor_pmat(veg_wide[3:17])
+
+# Visualizing the correlation matrix
+ggcorrplot(corr_matrix, method ="square", type="lower")
+
 
 #calculate annual means and standard errors
 

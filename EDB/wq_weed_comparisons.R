@@ -12,6 +12,7 @@
 library(tidyverse)
 library(ggcorrplot) #plotting correlation matrix
 library(DEGreport) #adds corr and p to plots
+library(lubridate) #formatting dates
 
 #read in the data-------------------------
 
@@ -19,17 +20,7 @@ library(DEGreport) #adds corr and p to plots
 wq <- read_csv("EDB/frk_sonde_data_summary.csv")
 
 #aquatic weed rake data
-
-# Define path on SharePoint site for data
-# I synced this folder to my OneDrive
-dir_path <- normalizePath(
-  file.path(
-    Sys.getenv("USERPROFILE"),
-    "California Department of Water Resources/DWR - DSRS Aquatic Weed Control Action - MasterDataSet_SAV/Clean&Formatted"
-  )
-)  
-
-vegetation <- read_csv(file = paste0(dir_path,"./FranksTractManagement_2014-2021_formatted.csv"))
+veg <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/FranksTractManagement_2014-2021_formatted.csv")
 
 #look at correlations in abundances among species------------------
 
