@@ -1,0 +1,169 @@
+---
+title: "Survey Sampling Locations"
+author: "Dave Bosworth"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document: 
+    code_folding: hide
+    toc: true
+    toc_float:
+      collapsed: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(knitr.kable.NA = "")
+```
+
+# Purpose
+
+Provide a map and a table summarizing the sampling effort of the various surveys that collect discrete nutrient and chlorophyll-a data. These will aid in the analyses for the Emergency Drought Barrier HABs/Weeds report.
+
+The following interactive map and sampling effort table only includes stations where all three nutrients (dissolved ammonia, dissolved nitrate + nitrite, and dissolved ortho-phosphate) and chlorophyll-a have been collected during their periods of record from 2014-2021.
+
+
+# Global code and functions
+
+```{r load packages, message = FALSE, warning = FALSE}
+# Load packages
+library(tidyverse)
+library(lubridate)
+# install.packages("devtools")
+# devtools::install_github("mountaindboz/EDBdata", ref = "v0.3.0)
+library(EDBdata)
+library(sf)
+library(leaflet)
+library(here)
+library(dataRetrieval)
+library(htmltools)
+library(knitr)
+library(kableExtra)
+
+# Check if we are in the correct working directory
+i_am("EDB/nutr_chla_survey_summary.Rmd")
+```
+
+
+# Import and Prepare Data
+
+```{r import data, message = FALSE}
+# Pull out station coordinates from hab_nutr_chla_mvi data frame
+df_coord_all <- hab_nutr_chla_mvi %>% distinct(Source, Station, Latitude, Longitude)
+
+# Bring in Station Names for those that have that information readily available:
+# USGS_CAWSC:
+cawsc_sta <- df_coord_all %>% 
+  filter(Source == "USGS_CAWSC") %>% 
+  pull(Station)
+
+df_cawsc_coord <- whatWQPsites(siteid = cawsc_sta)
+  
+# DWR_EMP:
+df_emp_coord <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.4&entityid=827aa171ecae79731cc50ae0e590e5af")
+```
+
+```{r clean and combine coordinates}
+# Create data frame of Station Names to be joined to the station coordinates
+df_sta_names <- df_cawsc_coord %>% 
+  select(
+    Station = MonitoringLocationIdentifier, 
+    StationName = MonitoringLocationName
+  ) %>% 
+  mutate(Source = "USGS_CAWSC") %>% 
+  bind_rows(df_emp_coord %>% select(Station, StationName = Location)) %>% 
+  replace_na(list(Source = "DWR_EMP"))
+
+# Join station names to station coordinates
+df_coord_all_c <- df_coord_all %>% 
+  left_join(df_sta_names, by = c("Source", "Station")) %>% 
+  # Add DWR_NCRO Station Names
+  mutate(
+    StationName = case_when(
+      Station == "FAL" ~ "False River near Oakley",
+      Station == "BET" ~ "Bethel Island near Piper Slough",
+      Station == "HOL" ~ "Holland Cut near Bethel Island",
+      Station == "FCT" ~ "Fisherman's Cut",
+      Station == "OSJ" ~ "Old River near Franks Tract",
+      Station == "TSL" ~ "Three Mile Slough at San Joaquin River",
+      TRUE ~ StationName
+    )
+  ) %>% 
+  rename(StationCode = Station)
+```
+
+```{r convert coord df to sf}
+# Convert the station coordinates data frame to an sf object (WGS84 datum)
+sf_coord_all <- df_coord_all_c %>% st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+```
+
+
+# Sampling Locations Map
+
+This interactive map allows for zooming and panning. Hover over a station marker to get more information about it.
+
+```{r create leaflet map}
+# Define color palette for Surveys 
+color_pal <- colorFactor(palette = "viridis", domain = sf_coord_all$Source)
+
+# Create a list for the CircleMarker labels to be used with HTML (allows for line breaks)
+map_labels <- 
+  pmap(
+    list(
+      sf_coord_all$Source,
+      sf_coord_all$StationCode,
+      sf_coord_all$StationName
+    ),
+    ~ paste0(
+      "Source: ", ..1,
+      "<br>Station Code: ", ..2,
+      "<br>Station Name: ", ..3
+    )
+  )
+
+# Create map using leaflet
+leaflet(sf_coord_all) %>% 
+  # Needed to use this base map since Standard OpenStreetMap wasn't showing correctly
+  addProviderTiles("OpenStreetMap.DE") %>%
+  addCircleMarkers(
+    radius = 4,
+    fillColor = ~color_pal(Source),
+    fillOpacity = 1,
+    weight = 0.5,
+    color = "black",
+    opacity = 1,
+    label = map(map_labels, HTML)
+  ) %>% 
+  addLegend(
+    position = "topright",
+    pal = color_pal,
+    values = ~Source,
+    title = "Survey"
+  )
+```
+
+
+# Sampling Effort
+
+Summary of the sampling effort for each parameter across stations and years:
+
+```{r count stations years}
+hab_nutr_chla_mvi %>%
+  select(!c(ends_with("_Sign"), Microcystis)) %>%
+  pivot_longer(
+    cols = c(starts_with("Diss"), Chlorophyll),
+    names_to = "Parameter",
+    values_to = "Value"
+  ) %>%
+  filter(!is.na(Value)) %>%
+  mutate(Year = year(Date)) %>%
+  count(Source, Station, Parameter, Year) %>%
+  arrange(Year) %>%
+  pivot_wider(names_from = Year, values_from = n) %>%
+  complete(nesting(Source, Station), Parameter) %>%
+  arrange(Source, Station, Parameter) %>% 
+  kable(format = "html") %>%
+  kable_styling(bootstrap_options = "striped", fixed_thead = TRUE)
+```
+
