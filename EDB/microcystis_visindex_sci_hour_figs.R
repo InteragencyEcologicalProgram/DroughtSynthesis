@@ -19,7 +19,7 @@ library(deltamapr)
 library(here)
 
 # Check if we are in the correct working directory
-i_am("EDB/microcystis_vis_index_sci_hour_figs.R")
+i_am("EDB/microcystis_visindex_sci_hour_figs.R")
 
 # Create vectors of factor levels and labels of Strata in the
   # R_EDSM_Strata_1718P1 shapefile
