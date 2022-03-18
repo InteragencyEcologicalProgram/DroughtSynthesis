@@ -369,9 +369,7 @@ ggplot(frankf, aes(sav,fl_area_ha))+
 #significant correlation
 #hard to know if incrase is due to lack of treatment or DBW giving up because of veg intensity
 
-#correlations among water quality parameters and SAV acreage----------------
-#consider using EMP discrete data instead of sonde data
-#which would be less data per year but would include more years of veg data
+#correlations among sonde water quality parameters and SAV acreage----------------
 #sonde data starts 2015 while EMP discrete likely goes back much farther
 
 #reduce acreage data set to just year and sav acreage
@@ -386,15 +384,64 @@ frankw <- left_join(frankfs,wq_format) %>%
 #create correlation matrix
 corr_matrix <- round(cor(frankw[2:8]),2)
 
+# Computing correlation matrix with p-values
+corrp_matrix <- cor_pmat(frankw[2:8])
+
 #grid of correlations
 ggcorrplot(corr_matrix, method ="square", type="lower", p.mat = corrp_matrix, lab=T)
 #some WQ parameters are strongly correlated but not with SAV
 
-# Computing correlation matrix with p-values
-corrp_matrix <- cor_pmat(frankw[2:8])
 
 # Visualizing the correlation matrix
 ggcorrplot(corr_matrix, method ="square", type="lower")
+
+
+
+
+#correlations among discrete water quality parameters and SAV acreage----------------
+
+#probably need to do each of the three regions separately
+
+#start by removing unneeded columns
+wrvs <- wrv %>% 
+  select(year,site,sav,Temperature:pH)
+
+dft <- wrvs %>% 
+  filter(site == "Franks Tract")
+
+dcc <- wrvs %>% 
+  filter(site == "Clifton Court" & year > 2015)
+
+dbb <- wrvs %>% 
+  filter(site == "Big Break")
+
+#create correlation matrices
+f_corr_matrix <- round(cor(dft[3:8]),2)
+b_corr_matrix <- round(cor(dbb[3:7]),2)
+c_corr_matrix <- round(cor(dcc[c(3:6,8:9)]),2)
+
+# Computing correlation matrix with p-values
+f_corrp_matrix <- cor_pmat(dft[3:8])
+b_corrp_matrix <- cor_pmat(dbb[3:7])
+c_corrp_matrix <- cor_pmat(dcc[c(3:6,8:9)])
+
+#grid of correlations
+ggcorrplot(f_corr_matrix, method ="square", type="lower", p.mat = f_corrp_matrix, lab=T)
+ggcorrplot(b_corr_matrix, method ="square", type="lower", p.mat = b_corrp_matrix, lab=T)
+ggcorrplot(c_corr_matrix, method ="square", type="lower", p.mat = c_corrp_matrix, lab=T)
+#few WQ parameters are strongly correlated to SAV area and none have sign. p-values
+#BB SAV and salinity have corr = -0.52
+#CC SAV and DO have corr = -0.71
+
+
+
+
+
+
+
+
+
+
 
 
 
