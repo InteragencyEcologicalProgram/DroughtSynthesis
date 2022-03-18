@@ -1,30 +1,107 @@
 #Drought Barrier
 #Hyperspectral imagery coverage data
-#Franks Tract and Clifton Court
+#Franks Tract, Big Break, and Clifton Court
 
 #to do list
+#correlate areas with water quality and with herbicide quantities
 #make polished versions of bar graphs
 #add indicator for missing data years?
 #could color by water year type
 
 #load packages
 library(tidyverse) #variety of data science tools
+library(lubridate) #format date/time
 library(PerformanceAnalytics) #plotting correlations
+library(DEGreport) #adds corr and p to plots
+library(ggcorrplot) #plotting correlation matrix
 
-#set working directory
-setwd("C:/Users/nrasmuss/OneDrive - California Department of Water Resources/Drought/DroughtBarrier")
+#correlations to run
+#areas of SAV vs fluridone quantity and fluridone acres treated
+#areas of SAV vs each water quality parameter
+#how much can we combine these into one correlation matrix?
 
-#read in data
-cc <- read_csv("./Regional_Area_Estimates/CliftonCourt_wgs84_area_ha.csv")%>% 
+
+#read in data ------------------
+
+#area estimates for the three regions
+
+#2004-2008, 2014-2015, 2019-2020
+cc <- read_csv("EDB/weeds_regional_area_estimates/CliftonCourt_wgs84_area_ha.csv")%>% 
   add_column("site" = as.factor("Clifton Court")) 
 
-ft <- read_csv("./Regional_Area_Estimates/FranksTract_wgs84_area_ha.csv")%>% 
+#2004-2008, 2014-2020
+ft <- read_csv("EDB/weeds_regional_area_estimates/FranksTract_wgs84_area_ha.csv")%>% 
   add_column("site" = as.factor("Franks Tract"))
 
-bb <- read_csv("./Regional_Area_Estimates/BigBreak_wgs84_area_ha.csv")%>% 
+#2004-2008, 2014-2020
+bb <- read_csv("EDB/weeds_regional_area_estimates/BigBreak_wgs84_area_ha.csv")%>% 
   add_column("site" = as.factor("Big Break")) 
 
-#combine data into one data set
+#read in sonde data (2015-2021)
+wq <- read_csv("EDB/frk_sonde_data_summary.csv")
+
+#read in discrete water quality data 
+#EMP stations of interest are D19 (Franks Tract) and C9 (Clifton Court)
+#Bay Study station of interest is 853 (near Big Break)
+dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.731.3&entityid=6c5f35b1d316e39c8de0bfadfb3c9692")
+
+#read in fluridone application data (2013-2021)
+herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021.csv")
+
+#format discrete water quality data-----------
+
+dwq_format <- dwq %>% 
+  #keep just the stations of interest
+  filter(Station == "EMP C9" | Station == "EMP D19" | Station == "Baystudy 853") %>% 
+  filter(Date > "2003-12-31") %>% 
+  mutate(month = month(Date)) %>%
+  select(Station, Date,month,Tide, Temperature, Conductivity, Salinity, Secchi, DissolvedOxygen,pH) %>% 
+  glimpse()
+#need to look close at which surveys/stations have which water quality parameters
+#perhaps ideally we would pick the three months that are immediately prior
+#to the remote sensing, which varies among years
+
+
+#format fluridone application data------------
+
+herb_format <- herb %>% 
+  mutate(
+    #calculate lbs of fluridone used per site and year
+    quantity_lbs = area_acres * depth_ft * (rate_ppb/367.73331896144)
+  ) %>% 
+  #sum acres and lbs of fluridone by year
+  group_by(year) %>% 
+  summarise(area_acres_tot = sum(area_acres)
+            ,quantity_lbs_tot = sum(quantity_lbs)) %>% 
+  mutate(
+    #calculate rate in ppb across all three Franks Tract sites
+    #mean depth was alway 7.9 ft
+    fl_rate_ppb = (quantity_lbs_tot / (area_acres_tot * 7.9))*367.73331896144
+    #convert acres to hectares
+    ,fl_area_ha = area_acres_tot * 0.404686
+    #convert lbs to kg
+    ,fl_quantity_kg = quantity_lbs_tot * 0.4535924 
+    #make year an integer
+    ,year = as.integer(year)
+  ) %>% 
+  select(-c(area_acres_tot,quantity_lbs_tot)) %>% 
+  glimpse()
+
+#format water quality data-----------------
+
+#need to convert long to wide for correlation matrix
+wq_format <- wq %>% 
+  select(-value_se) %>% 
+  pivot_wider(
+    id_cols=c(year)
+    ,names_from = parameter
+    , values_from= value_mean
+  ) %>% 
+  mutate(year = as.integer(year)) %>% 
+  glimpse()
+
+#combine area estimates data into one data set-----------
+
 all <- bind_rows(ft,cc,bb)%>% 
   rename(year_month = Year) %>% 
   mutate(
@@ -59,8 +136,6 @@ season <- all %>%
   group_by(month) %>% 
   summarize(count = n())
   
-  
-
 #total veg: convert wide to long
 veg_tot <- all %>% 
   select(year:fav) %>% 
@@ -74,6 +149,8 @@ veg_prop <- all %>%
   mutate(across(c("type_prop"), as.factor)) 
 
 #total area: stacked bar plots
+#add symbol for missing data
+#use better colors
 ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
     geom_bar(position = "stack", stat = "identity") + 
     ylab("Vegetation Coverage (ha)") + xlab("Year") + 
@@ -199,5 +276,82 @@ botha <- bothw %>%
     ggtitle("Franks Tract")
     )
 #could use a different color for drought barrier years
+
+#correlations between SAV acreage and fluridone applications in Franks Tract----------
+
+#join veg acreages and fluridone data sets by year
+frankf <- left_join(all,herb_format) %>% 
+  filter(site=="Franks Tract") %>% 
+  glimpse()
+
+#plot correlation between SAV acreage and fluridone quantities 
+#can only compare 2014-2020 (and eventually 2021)
+#could request older treatment data from DBW
+#DBW website doesn't have reports for years I need (2004-2008)
+ggplot(frankf, aes(sav,fl_quantity_kg))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year)
+            , vjust = -0.9
+  )+
+  geom_cor(method = "pearson")+
+  xlab("Area of SAV (ha)")+
+  ylab("Quantity of fluridone applied (kg))")
+#correlation not significant
+
+#plot correlation between SAV acreage and treatment acreage 
+#can only compare 2014-2020 (and eventually 2021)
+#could request older treatment data from DBW
+#DBW website doesn't have reports for years I need (2004-2008)
+ggplot(frankf, aes(sav,fl_area_ha))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year)
+            , vjust = -0.9
+  )+
+  geom_cor(method = "pearson")+
+  xlab("Area of SAV (ha)")+
+  ylab("Area treated with fluridone (ha))")
+#set y-axis range so it doesn't go below zero
+#significant correlation
+#hard to know if incrase is due to lack of treatment or DBW giving up because of veg intensity
+
+#correlations among water quality parameters and SAV acreage----------------
+#consider using EMP discrete data instead of sonde data
+#which would be less data per year but would include more years of veg data
+#sonde data starts 2015 while EMP discrete likely goes back much farther
+
+#reduce acreage data set to just year and sav acreage
+frankfs <- frankf %>% 
+  select(year,sav) 
+
+#join sav acreage and wq data
+frankw <- left_join(frankfs,wq_format) %>% 
+  #drop years with no WQ data
+  filter(year>2014)
+
+#create correlation matrix
+corr_matrix <- round(cor(frankw[2:8]),2)
+
+#grid of correlations
+ggcorrplot(corr_matrix, method ="square", type="lower", p.mat = corrp_matrix, lab=T)
+#some WQ parameters are strongly correlated but not with SAV
+
+# Computing correlation matrix with p-values
+corrp_matrix <- cor_pmat(frankw[2:8])
+
+# Visualizing the correlation matrix
+ggcorrplot(corr_matrix, method ="square", type="lower")
+
+
+
+
+
+
+
+
+
+
+
 
 
