@@ -48,19 +48,135 @@ dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.7
 #read in fluridone application data (2013-2021)
 herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021.csv")
 
+#combine veg area estimates data into one data set-----------
+
+all <- bind_rows(ft,cc,bb)%>% 
+  rename(year_month = Year) %>% 
+  mutate(
+    #create year column from year-month
+    year=as.integer(str_sub(year_month,1,4))
+    #create month column from year-month
+    ,month=as.integer(str_sub(year_month,5,6))
+    #sum all acreage categories to get total area
+    ,total = rowSums(across(soil:shadow))
+    #create column that sums the two FAV species
+    ,fav = hyacinth + primrose
+    #calculate proportion of area that is SAV
+    ,sav_prop = sav/total
+    #calculate proportion of area that is FAV
+    ,fav_prop = fav/total
+  )  %>% 
+  #reduce to just needed columns and reorder them
+  select(
+    year
+    ,month
+    ,site
+    ,sav
+    ,fav
+    ,sav_prop
+    ,fav_prop
+  ) %>% 
+  glimpse()
+
+#look at number of years for each imaging month
+season <- all %>% 
+  distinct(year,month) %>% 
+  group_by(month) %>% 
+  summarize(count = n())
+
+#total veg: convert wide to long
+veg_tot <- all %>% 
+  select(year:fav) %>% 
+  pivot_longer(c(sav:fav), names_to = "type_total", values_to = "area_ha") %>% 
+  mutate(across(c("type_total"), as.factor))  
+
+#proportion veg: convert wide to long
+veg_prop <- all %>% 
+  select(year:site,sav_prop:fav_prop)%>% 
+  pivot_longer(c(sav_prop:fav_prop), names_to = "type_prop", values_to = "area_prop") %>% 
+  mutate(across(c("type_prop"), as.factor)) 
+
+#total area: stacked bar plots
+#add symbol for missing data
+#use better colors
+ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
+  geom_bar(position = "stack", stat = "identity") + 
+  ylab("Vegetation Coverage (ha)") + xlab("Year") + 
+  scale_fill_discrete(labels=c("FAV","SAV")) +
+  facet_grid(site~.)
+
+#proportion area: stacked bar plots
+ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
+  geom_bar(position = "stack", stat = "identity") + 
+  ylab("Vegetation Coverage Proportion") + xlab("Year") + 
+  scale_fill_discrete(labels=c("FAV","SAV")) +
+  facet_grid(site~.)
+
 #format discrete water quality data-----------
 
 dwq_format <- dwq %>% 
   #keep just the stations of interest
   filter(Station == "EMP C9" | Station == "EMP D19" | Station == "Baystudy 853") %>% 
   filter(Date > "2003-12-31") %>% 
-  mutate(month = month(Date)) %>%
-  select(Station, Date,month,Tide, Temperature, Conductivity, Salinity, Secchi, DissolvedOxygen,pH) %>% 
+  mutate(month = month(Date)
+         ,year = year(Date)) %>%
   glimpse()
 #need to look close at which surveys/stations have which water quality parameters
 #perhaps ideally we would pick the three months that are immediately prior
 #to the remote sensing, which varies among years
 
+#figure out which WQ parameters are available for each of the three stations
+#dwq_sum <- dwq_format %>% 
+ # group_by(Station) %>% 
+  #summarise_all(funs(sum(!is.na(.))))
+dwq_sum <- dwq_format %>% 
+  group_by(Station) %>% 
+summarise(across(where(is.numeric),
+                 mean,
+                 na.rm = T))
+
+#filter out just the needed WQ parameters
+dwq_par <- dwq_format %>%
+  select(Station, Date, year, month, Tide, Temperature, Conductivity, Salinity, Secchi, DissolvedOxygen, pH)
+#no secchi for C9
+#no DO or pH for 853
+
+#look at number of measurements for each parameter by station and year
+dwq_sum2 <- dwq_par %>% 
+  group_by(Station,year) %>% 
+  summarize_all(funs(sum(!is.na(.))))
+#C9 only includes 2016-2020
+#other two sites include 2004-2020
+
+#work on selecting the correct months of WQ data for calculating means to compare with veg data
+#start by creating a df with year and month for veg imaging
+vtime <- all %>% 
+  #just unique combos of year and month
+  distinct(year,month) 
+#come back to this later
+
+#create data frame to match WQ stations and sites
+stm <- as.data.frame(
+  cbind(
+  Station = c("Baystudy 853", "EMP C9", "EMP D19")
+  , site = c("Big Break","Clifton Court","Franks Tract")
+)
+)
+
+#for now, just use WQ from months March to Oct
+wq_avg <-dwq_par %>% 
+  filter(month > 2 & month < 11) %>%
+  select(-month) %>% 
+  group_by(Station,year) %>% 
+  summarise(across(where(is.numeric),
+                   mean,
+                   na.rm = T)) 
+
+#add region info to WQ data set
+wr <- left_join(wq_avg,stm)
+
+#then add veg data
+wrv <-left_join(all,wr)
 
 #format fluridone application data------------
 
@@ -87,7 +203,7 @@ herb_format <- herb %>%
   select(-c(area_acres_tot,quantity_lbs_tot)) %>% 
   glimpse()
 
-#format water quality data-----------------
+#format sonde water quality data-----------------
 
 #need to convert long to wide for correlation matrix
 wq_format <- wq %>% 
@@ -100,71 +216,8 @@ wq_format <- wq %>%
   mutate(year = as.integer(year)) %>% 
   glimpse()
 
-#combine area estimates data into one data set-----------
 
-all <- bind_rows(ft,cc,bb)%>% 
-  rename(year_month = Year) %>% 
-  mutate(
-    #create year column from year-month
-    year=as.integer(str_sub(year_month,1,4))
-    #create month column from year-month
-    ,month=as.integer(str_sub(year_month,5,6))
-    #sum all acreage categories to get total area
-    ,total = rowSums(across(soil:shadow))
-    #create column that sums the two FAV species
-    ,fav = hyacinth + primrose
-    #calculate proportion of area that is SAV
-    ,sav_prop = sav/total
-    #calculate proportion of area that is FAV
-    ,fav_prop = fav/total
-         )  %>% 
-  #reduce to just needed columns and reorder them
-  select(
-    year
-    ,month
-    ,site
-    ,sav
-    ,fav
-    ,sav_prop
-    ,fav_prop
-  ) %>% 
-  glimpse()
-
-#look at number of years for each imaging month
-season <- all %>% 
-  distinct(year,month) %>% 
-  group_by(month) %>% 
-  summarize(count = n())
-  
-#total veg: convert wide to long
-veg_tot <- all %>% 
-  select(year:fav) %>% 
-  pivot_longer(c(sav:fav), names_to = "type_total", values_to = "area_ha") %>% 
-  mutate(across(c("type_total"), as.factor))  
-
-#proportion veg: convert wide to long
-veg_prop <- all %>% 
-  select(year:site,sav_prop:fav_prop)%>% 
-  pivot_longer(c(sav_prop:fav_prop), names_to = "type_prop", values_to = "area_prop") %>% 
-  mutate(across(c("type_prop"), as.factor)) 
-
-#total area: stacked bar plots
-#add symbol for missing data
-#use better colors
-ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
-    geom_bar(position = "stack", stat = "identity") + 
-    ylab("Vegetation Coverage (ha)") + xlab("Year") + 
-   scale_fill_discrete(labels=c("FAV","SAV")) +
-    facet_grid(site~.)
-
-#proportion area: stacked bar plots
-ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
-    geom_bar(position = "stack", stat = "identity") + 
-    ylab("Vegetation Coverage Proportion") + xlab("Year") + 
-    scale_fill_discrete(labels=c("FAV","SAV")) +
-    facet_grid(site~.)
-
-#make correlation plots------------
+#make correlation plots for veg area types------------
 
 #Clifton Court: correlations among all land surface types
 
