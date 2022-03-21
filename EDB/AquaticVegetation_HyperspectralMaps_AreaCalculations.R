@@ -3,7 +3,8 @@
 #Franks Tract, Big Break, and Clifton Court
 
 #to do list
-#correlate areas with water quality and with herbicide quantities
+#look at relationship with flows
+#also bring in clifton court herbicide applications
 #make polished versions of bar graphs
 #add indicator for missing data years?
 #could color by water year type
@@ -14,6 +15,8 @@ library(lubridate) #format date/time
 library(PerformanceAnalytics) #plotting correlations
 library(DEGreport) #adds corr and p to plots
 library(ggcorrplot) #plotting correlation matrix
+library(ggpubr) #combining plots into panel
+library(ggpmisc) #add equations and R^2 to plots
 
 #correlations to run
 #areas of SAV vs fluridone quantity and fluridone acres treated
@@ -40,7 +43,7 @@ bb <- read_csv("EDB/weeds_regional_area_estimates/BigBreak_wgs84_area_ha.csv")%>
 #read in sonde data (2015-2021)
 wq <- read_csv("EDB/frk_sonde_data_summary.csv")
 
-#read in discrete water quality data 
+#read in discrete water quality data (note this is a large file)
 #EMP stations of interest are D19 (Franks Tract) and C9 (Clifton Court)
 #Bay Study station of interest is 853 (near Big Break)
 dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.731.3&entityid=6c5f35b1d316e39c8de0bfadfb3c9692")
@@ -112,6 +115,21 @@ ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
   scale_fill_discrete(labels=c("FAV","SAV")) +
   facet_grid(site~.)
 
+#summary stats for Franks Tract--------------
+
+#2004-2006: moderately low SAV
+#2007-2008: DBW does intensive fluridone treatments
+#2009-2013: no veg imagery
+#2014: fairly low SAV
+#2105 sudden increase in SAV
+#2015-2020: sustained high SAV
+
+#range for 2004-2006
+erg <- all %>% 
+  #just FT 
+  filter(site=="Franks Tract") 
+  
+  
 #format discrete water quality data-----------
 
 dwq_format <- dwq %>% 
@@ -293,25 +311,47 @@ ggplot(veg_corr, aes(x=sav_prop_ft, y= sav_prop_cc))+
 #next make this same plot but with % coverage instead of hectares
 #the 1:1 line represents how the correlation would look if proportion of SAV
 #coverage were the same at both sites across years
-ggplot(veg_corr, aes(x=sav_prop_ft, y= sav_prop_bb,color=month))+
+fb<-ggplot(veg_corr, aes(x=sav_prop_ft, y= sav_prop_bb))+
   geom_point() +
   geom_smooth(method = 'lm', se=T)+
   geom_abline(intercept = 0, slope=1,linetype="dashed")+
   geom_text(aes(label=year)
             , vjust = -0.9
   )+
+  stat_poly_eq(formula = y ~ x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +        
   xlab("Franks Tract SAV")+
-  ylab("Big Break SAV ") 
+  ylab("Big Break SAV ") +
+  coord_cartesian(xlim = c(0,0.7), ylim = c(0, 0.7))
 
-ggplot(veg_corr, aes(x=sav_prop_ft, y= sav_prop_cc,color=month))+
+fb_mod <- cor.test(veg_corr$sav_prop_ft,veg_corr$sav_prop_bb)
+#correlation is significant 
+#p-value = 0.003648; cor=0.7663428
+
+fc<-ggplot(veg_corr, aes(x=sav_prop_ft, y= sav_prop_cc))+
   geom_point() +
   geom_smooth(method = 'lm', se=T)+
   geom_abline(intercept = 0, slope=1,linetype="dashed")+
   geom_text(aes(label=year)
             , vjust = -0.9
   )+
+  stat_poly_eq(formula = y ~ x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
   xlab("Franks Tract SAV")+
-  ylab("Clifton Court SAV ") 
+  ylab("Clifton Court SAV ")+
+  coord_cartesian(xlim = c(0,0.7), ylim = c(0, 0.7))
+
+fc_mod <- cor.test(veg_corr$sav_prop_ft,veg_corr$sav_prop_cc)
+#correlation is significant 
+#p-value = 0.04036; cor=0.6883447
+
+figure <- ggarrange(fb,fc,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+#ggsave(plot=figure, "EDB/Hyperspectral_AreaCorrPanel_FT_CC_BB.png",type ="cairo-png",width=8, height=4.5,units="in",dpi=300)
+
 
 
 #anomaly plots---------
@@ -353,9 +393,6 @@ ggplot(frankf, aes(sav,fl_quantity_kg))+
 #correlation not significant
 
 #plot correlation between SAV acreage and treatment acreage 
-#can only compare 2014-2020 (and eventually 2021)
-#could request older treatment data from DBW
-#DBW website doesn't have reports for years I need (2004-2008)
 ggplot(frankf, aes(sav,fl_area_ha))+ 
   geom_smooth(method = "lm")  + 
   geom_point() +
@@ -396,9 +433,11 @@ ggcorrplot(corr_matrix, method ="square", type="lower", p.mat = corrp_matrix, la
 ggcorrplot(corr_matrix, method ="square", type="lower")
 
 
+#correlations among discrete water quality parameters and SAV acreage by site----------------
 
-
-#correlations among discrete water quality parameters and SAV acreage----------------
+#clifton court only has discrete WQ data for 2016-2010
+#and from that period only has imagery for 2019-2020
+#so can't do a meaningful analysis
 
 #probably need to do each of the three regions separately
 
@@ -409,45 +448,91 @@ wrvs <- wrv %>%
 dft <- wrvs %>% 
   filter(site == "Franks Tract")
 
-dcc <- wrvs %>% 
-  filter(site == "Clifton Court" & year > 2015)
-
 dbb <- wrvs %>% 
   filter(site == "Big Break")
 
 #create correlation matrices
 f_corr_matrix <- round(cor(dft[3:8]),2)
 b_corr_matrix <- round(cor(dbb[3:7]),2)
-c_corr_matrix <- round(cor(dcc[c(3:6,8:9)]),2)
 
 # Computing correlation matrix with p-values
-f_corrp_matrix <- cor_pmat(dft[3:8])
-b_corrp_matrix <- cor_pmat(dbb[3:7])
-c_corrp_matrix <- cor_pmat(dcc[c(3:6,8:9)])
+f_corrp_matrix <- round(cor_pmat(dft[3:8]),2)
+b_corrp_matrix <- round(cor_pmat(dbb[3:7]),2)
 
 #grid of correlations
 ggcorrplot(f_corr_matrix, method ="square", type="lower", p.mat = f_corrp_matrix, lab=T)
 ggcorrplot(b_corr_matrix, method ="square", type="lower", p.mat = b_corrp_matrix, lab=T)
-ggcorrplot(c_corr_matrix, method ="square", type="lower", p.mat = c_corrp_matrix, lab=T)
 #few WQ parameters are strongly correlated to SAV area and none have sign. p-values
 #BB SAV and salinity have corr = -0.52
-#CC SAV and DO have corr = -0.71
+
+#Extract the corr and pval from the comparisons between sav and wq parameters
+fout <- as.data.frame(cbind("f_corr" = f_corr_matrix[,1],"f_pval" = f_corrp_matrix[,1]))
+fout$parameter <- row.names(fout)
+
+bout <- as.data.frame(cbind("b_corr" = b_corr_matrix[,1],"b_pval" = b_corrp_matrix[,1]))
+bout$parameter <- row.names(bout)
+
+#combine output df by parameter
+aout <- full_join(fout,bout)
+
+#clean up output df
+vstat <- aout %>% 
+  #no need to have corr of SAV with itself
+  #also conductivity and salinity are perfectly correlated with each other
+  filter(parameter!="sav" & parameter!="Salinity") %>% 
+  select(parameter,f_corr:f_pval,b_corr:b_pval)
+#write_csv(vstat,"sav_area_corr_discrete_wq.csv")
 
 
+#correlations among discrete water quality parameters and SAV acreage across site----------------
+#trying this because too little replication within individual sites
+#mostly data from Big Break and Franks Tract
+
+#start by removing unneeded columns
+wrvs2 <- wrv %>% 
+  select(year,site,sav_prop,Temperature:pH) %>% 
+  #drop clifton court because only two years of paired data
+  #filter(site!="Clifton Court") %>% 
+  glimpse()
 
 
+#plot correlation between SAV acreage and conductance
+ggplot(wrvs2, aes(sav_prop,Conductivity))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year,col=site)
+            , vjust = -0.9
+  )+
+  geom_cor(method = "pearson")+
+  xlab("Proportion Area of SAV")+
+  ylab("Conductance")
+#marginally sign. corr p=0.09
 
+#plot correlation between SAV acreage and temperature
+ggplot(wrvs2, aes(sav_prop,Temperature))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year,col=site)
+            , vjust = -0.9
+  )+
+  geom_cor(method = "pearson")+
+  xlab("Proportion Area of SAV")+
+  ylab("Temperature")
+#no sign. corr
 
-
-
-
-
-
-
-
-
-
-
+#plot correlation between SAV acreage and secchi
+ggplot(wrvs2, aes(sav_prop,Secchi))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year,col=site)
+            , vjust = -0.9
+  )+
+  geom_cor(method = "pearson")+
+  xlab("Proportion Area of SAV")+
+  ylab("Secchi")
+#significant corr
+#is this because sav gets more light when the water is clearer (higher secchi) or
+#because it's easier to image sav when water is clear or both?
 
 
 
