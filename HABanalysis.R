@@ -178,7 +178,8 @@ SFH2a = mutate(Habs2, HABord = case_when(
   Microcystis %in% c(2,3) ~ "Low",
   Microcystis %in% c(4,5) ~ "High")) %>%
   mutate(HABord = factor(HABord, levels = c("absent", "Low", "High"), ordered = T)) %>%
-  filter(Year >2013)
+  filter(Year >2013) %>% 
+  mutate(Yearf = fct_drop(Yearf))
 
 #now an orgered logistic regression
 
