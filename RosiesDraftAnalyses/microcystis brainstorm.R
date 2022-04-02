@@ -1,5 +1,10 @@
 #Phytoplankton 
 #COmpare microcystis in grab samples versus visual index
+library(readxl)
+library(tidyverse)
+library(lubridate)
+library(DroughtData)
+
 
 types = read_excel("data/HABs/Phyto Classification.xlsx")
 types = group_by(types, Genus, `Algal Type`) %>%
@@ -24,7 +29,7 @@ allreg = st_join(regs, reg3) %>%
 
 
 EMPall = read.csv("EMP_phyto_data.csv") %>%
-  select(-X, -SubRegion, -Stratum, -Stratum2, -Region, -nudge) %>%
+  dplyr::select(-X, -SubRegion, -Stratum, -Stratum2, -Region, -nudge) %>%
   left_join(allreg, by = "StationCode")
 
 #EMPall = left_join(EMPall, allreg)
@@ -58,18 +63,38 @@ EMPcy = group_by(EMPallzeros, StationCode, Stratum, SampleDate, Month, Year, Alg
 WQ = read_csv("data/SACSJ_delta_water_quality_1975_2020.csv")
 WQ = mutate(WQ, Date = mdy(Date), Month = month(Date), Year = year(Date)) %>%
   rename(StationCode = Station)
+#hm. That doesn'thave 2021
+
+WQ2 = HABs %>%
+  filter(Source == "EMP") %>%
+  mutate(Year = year(Date)) %>%
+  rename(StationCode = Station) %>%
+  dplyr::select(StationCode, Latitude, Longitude, Date, Salinity, Year, Month,
+                Microcystis, Secchi, Temperature, Conductivity)
+  
+  
 
 
 #join the data together
 Phyto = left_join(EMPallzeros, WQ)
+Phyto2 = left_join(EMPallzeros, WQ2) %>%
+  filter(Year >2014)
 test = filter(Phyto, is.na(WTSurface))
+test = filter(Phyto2, is.na(Temperature))
 
-MicroSummer = filter(Phyto, Genus == "Microcystis", Month %in% c(5,6,7,8,9,10), Year >2010) %>%
+
+MicroSummer = filter(Phyto, Genus == "Microcystis", Month %in% c(5,6,7,8,9,10), Year >2014, Year < 2021) %>%
   mutate(MicroPA = case_when(
     Organisms_per_mL == 0 ~ "Absent",
     Organisms_per_mL >0 ~ "Present"
   ),
   Microcystis = as.factor(Microcystis))
+
+MicroSummer2 = filter(Phyto2, Genus == "Microcystis", Month %in% c(5,6,7,8,9,10), Year >2014) %>%
+  mutate(MicroPA = case_when(
+    Organisms_per_mL == 0 ~ "Absent",
+    Organisms_per_mL >0 ~ "Present"
+  ),  Microcystis = as.factor(Microcystis))
 
 ggplot(MicroSummer, aes(x = MicroPA, y = WTSurface)) + geom_boxplot()+
   facet_wrap(~Microcystis)
@@ -83,6 +108,14 @@ ggplot(MicroSummer, aes(x = WindVelocity, fill = MicroPA)) + geom_histogram(posi
 ggplot(MicroSummer, aes(fill = MicroPA, x = WTSurface)) + geom_histogram(position = "dodge")+
   facet_wrap(~Microcystis)
 
+ggplot(MicroSummer, aes(fill = MicroPA, x = Microcystis)) + geom_bar(position = "dodge")+
+  facet_wrap(~Year) + xlab("Visual score") + ylab("Number of samples")
+
+ggplot(MicroSummer2, aes(fill = MicroPA, x = Microcystis)) + geom_bar(position = "dodge")+
+  facet_wrap(~Year) + xlab("Visual score") + ylab("Number of samples")
+
+
+
 ##########
 #just data with Mc present
 Microsum2 = filter(MicroSummer, Microcystis %in% c(2,2.5, 3, 3.5, 4))
@@ -92,3 +125,43 @@ ggplot(Microsum2, aes(x = WTSurface, fill = MicroPA)) + geom_histogram(position 
 
 ggplot(Microsum2, aes(x = WindVelocity, fill = MicroPA)) + geom_histogram(position = "dodge")+
   facet_wrap(~Year)
+
+###########################
+#Dave got the rest of the dta from 2021
+devtools::install_github("mountaindboz/EDBdata")
+library(EDBdata)
+
+View(phyto_edb)
+EMPnew = read_csv("data/emp_phyto_2014-2021.csv") %>%
+  rename(StationCode = Station) %>%
+  mutate(Month = month(Date)) %>%
+
+  left_join(allreg, by = "StationCode")
+
+#EMPall = left_join(EMPall, allreg)
+
+EMPnewzeros = pivot_wider(EMPnew, id_cols = c(StationCode, Year, Month, Region, Stratum),
+                          names_from = Genus, values_from = OrganismsPerMl, values_fn = sum, values_fill = 0) %>%
+  pivot_longer(cols = "Achnanthidium":last_col(), names_to = "Genus", values_to = "Organisms_per_mL") %>%
+  left_join(types) %>%
+  rename(Algal.Type = `Algal Type`)
+
+Phynew = left_join(EMPnewzeros, WQ2)
+test = filter(Phynew, is.na(Temperature))
+
+MicroSummer3 = filter(Phynew, Genus == "Microcystis", Month %in% c(5,6,7,8,9,10), Year >2014) %>%
+  mutate(MicroPA = case_when(
+    Organisms_per_mL == 0 ~ "Absent",
+    Organisms_per_mL >0 ~ "Present"
+  ),  Microcystis = as.factor(Microcystis))
+
+
+
+ggplot(MicroSummer3, aes(fill = MicroPA, x = Microcystis)) + geom_bar(position = "dodge")+
+  facet_wrap(~Year) + xlab("Visual score") + ylab("Number of samples")
+
+####
+#get nutrient data together to send to Frances et al.
+
+nuts = raw_nutr_2013_2021
+nuts2 = filter(nuts, YearAdj > 2019)

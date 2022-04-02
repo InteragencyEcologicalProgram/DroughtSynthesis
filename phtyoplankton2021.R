@@ -704,3 +704,81 @@ AD = filter(EMPall, Genus %in% c("Anabaena",
 AD2 = as.data.frame(table(AD$Year, AD$Genus))
 
 ggplot(AD2, aes(x = Var1, y = Freq, fill = Var2)) + geom_col()+ xlab("Year")
+
+
+#################################################
+#Dave's data
+#devtools::install_github("mountaindboz/EDBdata")
+library(EDBdata)
+Phyto = phyto_edb %>%
+  mutate(Month = month(Date)) %>%
+  group_by(Station, Region, Date, Month, Year, AlgalType, Genus) %>%
+  summarize(OrgperML = sum(OrganismsPerMl, na.rm = T)) %>%
+  filter(Year > 2013) %>%
+  mutate(Algal.Type = case_when(
+    AlgalType %in% c("Ciliate", "Dinoflagelate", "Euglenoid", "Haptophyte", "Xanthophyte") ~ "Other",
+    TRUE ~ AlgalType
+  ))
+
+groups = dplyr::select(ungroup(Phyto), AlgalType, Genus) %>%
+  distinct()
+
+Phytozeros = pivot_wider(Phyto, id_cols = c(Station, Region, Month, Year), 
+                         names_from = Genus, values_from = OrgperML, values_fill = 0) %>%
+  pivot_longer(cols = 5:last_col(), names_to = "Genus", values_to = "OrgperML") %>%
+  left_join(groups)
+
+Phytocy = filter(Phytozeros, Genus %in% c("Aphanizomenon", "Anabaena", "Dolichospermum", 
+                                        "Cylindrospermopsis",  "Anabaenopsis",
+                                        "Microcystis", "Oscillatoria", "Planktothrix"))  %>% 
+  mutate(Genus = case_when(Genus == "Anabaena" ~"Dolichospermum",
+                           TRUE ~ Genus))
+  
+ggplot(Phytocy, aes(x = as.factor(Month), y = OrgperML, color = Genus)) +
+  geom_point()+
+  facet_grid(Region~Year)+
+  coord_cartesian(ylim = c(0,10000))
+
+ggplot(filter(Phytocy, Genus != "Microcystis"), aes(x = as.factor(Month), y = OrgperML, fill = Genus)) +
+  geom_col()+
+  facet_grid(Region~Year)
+
+ggplot(filter(Phytocy, Year == 2021), aes(x = as.factor(Month), y = OrgperML, color = Genus)) +
+  geom_point()+
+  facet_grid(Region~Genus)+
+  coord_cartesian(ylim = c(0,10000))
+
+ggplot(phyto_edb, aes(x = Year, y = OrganismsPerMl, color = AlgalType)) + geom_point()
+
+phytoave = group_by(Phytozeros, Region, Month, Year, Genus) %>%
+  summarize(OrgperML = mean(OrgperML))
+
+Phytocyave = filter(phytoave, Genus %in% c("Aphanizomenon", "Anabaena", "Dolichospermum", 
+                                          "Cylindrospermopsis",  "Anabaenopsis",
+                                          "Microcystis", "Oscillatoria", "Planktothrix"))  %>% 
+  mutate(Genus = case_when(Genus == "Anabaena" ~"Dolichospermum",
+                           TRUE ~ Genus))
+
+ggplot(Phytocyave, aes(x = as.factor(Month), y = OrgperML, fill = Genus)) +
+  geom_col()+
+  facet_grid(Region~Year)+
+  coord_cartesian(ylim = c(0,6000))
+
+ggplot(filter(Phytocyave, Genus != "Microcystis", Month %in% c(6,7,8,9)), aes(x = as.factor(Month), y = OrgperML, fill = Genus)) +
+  geom_col()+
+  scale_fill_brewer(palette = "Dark2")+
+  facet_grid(Region~Year)+
+  theme_bw()+theme(legend.position = "bottom")+
+  xlab("month")+
+  ylab("Organisms per mL")
+  
+
+ggplot(filter(Phytocyave,  Month %in% c(6,7,8,9)), aes(x = as.factor(Month), y = OrgperML, fill = Genus)) +
+  geom_col()+
+  scale_fill_brewer(palette = "Dark2")+
+  facet_grid(Region~Year)+
+  theme_bw()+theme(legend.position = "bottom")+
+  xlab("month")+
+  ylab("Organisms per mL")
+
+MIc2021 = filter(Phytozeros, Genus == "Microcystis", Year == 2021)

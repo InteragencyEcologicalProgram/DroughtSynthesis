@@ -101,6 +101,8 @@ TNSd = filter(TNSd, !Species %in% filter(species, tot == 0)$Species) %>%
   summarize(Catch = sum(Catch), CPUE = sum(CPUE))
 
 
+write.csv(TNSd, "BarrierTNS.csv")
+
 #what's going on with the gobies?
 TNSd %>%
   filter(Species == "Tridentiger spp")%>%
@@ -353,6 +355,8 @@ DJFMP2 = pivot_wider(DJFMP, id_cols = c(Regions, StationCode, Month, Year, Sampl
                      names_from = "CommonName", values_from = Count, values_fn = sum, values_fill = 0) %>%
   pivot_longer(cols = `largemouth bass`:last_col(), values_to = "Count", names_to = "CommonName")
 
+write.csv(DJFMP2, "BarriersDJFMP.csv")
+
 ggplot(DJFMP, aes(x= Regions, y = Count, fill = CommonName)) + geom_boxplot() + 
   facet_wrap(~CommonName, scales = "free_y") + scale_fill_discrete(guide = NULL)
 
@@ -517,6 +521,8 @@ sal2 = pivot_wider(salvage, id_cols = c(SampleDate, AcreFeet, MinutesPumping, Sa
                    values_fn = sum) %>%
   pivot_longer(cols = c(Jacksmelt:last_col()), names_to = "Species", values_to = "count") %>%
   mutate(Year = year(SampleDate), Month = month(SampleDate))
+
+write.csv(sal2, "BarrierSalvage.csv", row.names = F)
 
 #just the listed fish 2014-2021
 

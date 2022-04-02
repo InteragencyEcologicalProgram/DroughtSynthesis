@@ -80,3 +80,98 @@ ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = regions)+
 #just filter by counties instead.
 
 cedensub = filter(ceden, county %in% c("Contra Costa", "San Joaquin", "Solano", "Sacramento"))
+
+##########################################################
+#Now the data from USGS/DWR SPATT sudy
+
+SpattWater = read_csv("data/HABs/USGS_DWR_fixed_station_WW_cyanotoxins_Rexport.csv")
+
+Spatt = read_csv("data/HABs/USGS_DWR_fixed_station_SPATT_cyanotoxins_Rexport.csv")
+
+ggplot(SpattWater, aes(x = date_time, y = resultNum)) + geom_point()+
+  facet_grid(class~Site, scales = "free_y")
+
+SpattWater2 = SpattWater %>%
+ # filter(toxin %in% c("Total Anatoxin-a" , "Total BMAA",                
+  #                    "Total Saxitoxin", "Total Nodularin-R" , "Total Cylindrospermopsin","Total Anabaenopeptins")) %>%
+  group_by(toxin)%>%
+  summarize(Res = sum(resultNum, na.rm = T))
+
+NoTox = filter(SpattWater2, Res ==0)
+Tox = filter(SpattWater, detect_tox == "Yes")
+SpattWaterX = filter(SpattWater, !toxin %in% NoTox$toxin, !is.na(resultNum)) %>%
+  group_by(BGC_ID, Site, NWIS_site_no, Date, date_time, lab, Year, Month, DOY, class)%>%
+  summarize(result = sum(resultNum, na.rm = T))
+
+
+ggplot(SpattWaterX, aes(x = date_time, y = Result)) + geom_point()+
+  facet_grid(class~Site, scales = "free_y")
+
+#######################################
+#Spatts
+
+Spatt2 = Spatt %>%
+  # filter(toxin %in% c("Total Anatoxin-a" , "Total BMAA",                
+  #                    "Total Saxitoxin", "Total Nodularin-R" , "Total Cylindrospermopsin","Total Anabaenopeptins")) %>%
+  group_by(toxin)%>%
+  summarize(Res = sum(resultNum, na.rm = T))
+
+NoTox = filter(Spatt2, Res ==0)
+Tox = filter(Spatt, detect_tox == "Yes")
+SpattX = filter(Spatt, !toxin %in% NoTox$toxin, !is.na(resultNum), Date > as.Date("2021-01-01")) %>%
+  group_by(BGC_ID, Site, NWIS_site_no, Date, date_time, lab, Year, Month, DOY, class)%>%
+  summarize(result = sum(resultNum, na.rm = T))
+
+
+ggplot(SpattX, aes(x = Date, y = result)) + geom_point()+
+  facet_grid(class~Site, scales = "free_y")
+summary(SpattX$Date)
+
+
+#######################################################
+#Can I put all these datasets together?
+unique(toxin3$Analyte)
+unique(SpattWater$toxin)
+unique(SpattWater$class)
+
+SpattWaterX = mutate(SpattWaterX, Analyte = class) %>%
+  rename(Station = Site)
+
+allTox = bind_rows(SpattWaterX, filter(toxin3, Station %in% c("Banks PP", "Clifton Court Forebay"))) %>%
+  filter(!Analyte %in% c("STX", "CYN", "PTOX Screen- toxin analysis not recommended"),
+         Date > as.Date("2021-01-01")) %>%
+  mutate(Analyte = case_when(
+    Analyte == "MC"~ "Microcystins",
+    Analyte == "ANTX-A"~"Anatoxins",
+    TRUE ~ Analyte 
+  ))
+
+#water board samples from Franks Tract
+Frk = data.frame(Station = c("FRK", "FRK", "FRK"), Analyte = c("Microcystins", "Microcystins", "Anatoxins"),
+                 Date = c(as.Date("2021-07-02"), as.Date("2021-08-06"),as.Date("2021-08-06")),
+                 result = c(0, 0.63, 0))
+
+allTox2 = bind_rows(allTox, Frk) %>%
+  mutate(Station = case_when(Station == "Banks PP" ~ "BPP",
+                             Station == "Clifton Court Forebay" ~ "CCF",
+                             TRUE ~ Station))
+
+ggplot(allTox2, aes(x = Date, y = result)) + geom_point()+
+  facet_grid(Analyte~Station, scales = "free_y") +
+  theme_bw()
+
+health = data.frame(Analyte = c("Microcystins", "Microcystins", "Anatoxins","Anatoxins"), Advisory = c(0.3, 8, .5, 20),
+                    AdviseType = c("Caution", "Warning \nTeir I", "Caution", "Warning \nTeir I"))
+
+ggplot(allTox2, aes(x = month(Date), y = result)) + geom_point()+
+    geom_hline(data = health, aes(yintercept = Advisory, color = AdviseType))+
+  scale_color_manual(values = c("orange", "red"), name = "Recreational \nAdvisory")+
+  facet_grid(Analyte~Station, scales = "free_y") +
+  xlab("Month of 2021")+ ylab("Concentration ug/L")+
+  scale_x_continuous(breaks = c(2,5,8,11))+
+  theme_bw()
+
+ggsave(filename = "Toxins.tiff", device = "tiff", width = 8, height = 5, units = "in")
+
+methods = group_by(SpattWater, toxin, method, class) %>%
+  summarize(n= n())
