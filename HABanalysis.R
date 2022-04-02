@@ -11,15 +11,21 @@ library(visreg)
 library(MASS)
 library(car)
 library(DroughtData)
+<<<<<<< HEAD
 library(lubridate)
+=======
+library(here)
+
+i_am("HABanalysis.R")
+>>>>>>> 187b6e57e63a3b6c897a4f01222a57d76f63b79c
 
 #import data with all the visual index data
 load("HABs.RData")
 
 
 
-#load regions shapefile
-regions = st_read("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/Barrier/BarrierRegions/shpExport.shp") %>%
+#load Barrier regions shapefile
+regions = st_read(here("EDB/Spatial_data/EDB_Regions.shp")) %>%
   st_make_valid()
 
 # regions = R_EDSM_Strata_1718P1%>%
@@ -220,12 +226,17 @@ SFH2a = mutate(Habs2, HABord = case_when(
   Microcystis %in% c(2,3) ~ "Low",
   Microcystis %in% c(4,5) ~ "High")) %>%
   mutate(HABord = factor(HABord, levels = c("absent", "Low", "High"), ordered = T)) %>%
+<<<<<<< HEAD
   filter(Year >2013) %>%
   droplevels()
 
 
 foo = group_by(SFH2a, Year) %>%
   summarize(table(HABord))
+=======
+  filter(Year >2013) %>% 
+  mutate(Yearf = fct_drop(Yearf))
+>>>>>>> 187b6e57e63a3b6c897a4f01222a57d76f63b79c
 
 #now an orgered logistic regression
 
