@@ -156,17 +156,50 @@ allTox2 = bind_rows(allTox, Frk) %>%
                              Station == "Clifton Court Forebay" ~ "CCF",
                              TRUE ~ Station))
 
-ggplot(allTox2, aes(x = Date, y = result)) + geom_point()+
-  facet_grid(Analyte~Station, scales = "free_y") +
+#Preece/Otten data
+library(readxl)
+preece = read_excel("data/HABs/Prop 1 data_4.1.22.xlsx", sheet = "preecedata") %>%
+  mutate(Analyte = "Microcystins", result = case_when(`Final_conc (ug/L)`=="ND"~ 0,
+                                                      TRUE ~ as.numeric(`Final_conc (ug/L)`)),
+         Year = year(Collection_Date), Month = as.character(month(Collection_Date))) %>%
+  filter(Year == 2021) %>%
+  rename(Station = Sample_ID, Date = Collection_Date)
+
+
+allTox3 = bind_rows(allTox2, preece)
+
+#Attatch stations
+Stas =  read_excel("data/HABs/Prop 1 data_4.1.22.xlsx", sheet = "stations")
+allTox3 = left_join(allTox3, Stas) %>%
+  mutate(Longitude = as.numeric(Longitude))
+bleh = filter(allTox3, is.na(Longitude))
+Alltoxsf = st_as_sf(allTox3, coords = c("Latitude", "Longitude"), crs = 4326) %>%
+  st_join(reg3) 
+
+Alltoxsf$Stratum3 = as.character(Alltoxsf$Stratum2)
+Alltoxsf$Stratum3[which(Alltoxsf$Station == "VER")] = "Vernalis"
+Alltoxsf$Stratum3[which(Alltoxsf$Station%in% c("CCF", "BPP"))] = "Clifton"
+
+
+ggplot()+geom_sf(data = Delta)+ geom_sf(data = Alltoxsf, aes(color = Study)) 
+
+
+ggplot()+geom_sf(data = Delta)+ geom_sf(data = filter(Alltoxsf, Analyte == "Microcystins"),
+                                        aes(color = Study, size = result)) 
+
+ggplot(Alltoxsf, aes(x = Date, y = result, color = Station)) + geom_point()+
+  facet_grid(Analyte~Stratum3, scales = "free_y") +
   theme_bw()
+
+
 
 health = data.frame(Analyte = c("Microcystins", "Microcystins", "Anatoxins","Anatoxins"), Advisory = c(0.3, 8, .5, 20),
                     AdviseType = c("Caution", "Warning \nTeir I", "Caution", "Warning \nTeir I"))
 
-ggplot(allTox2, aes(x = month(Date), y = result)) + geom_point()+
+ggplot(Alltoxsf, aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
     geom_hline(data = health, aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("orange", "red"), name = "Recreational \nAdvisory")+
-  facet_grid(Analyte~Station, scales = "free_y") +
+  facet_grid(Analyte~Stratum3, scales = "free_y") +
   xlab("Month of 2021")+ ylab("Concentration ug/L")+
   scale_x_continuous(breaks = c(2,5,8,11))+
   theme_bw()

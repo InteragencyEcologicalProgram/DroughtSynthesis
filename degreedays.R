@@ -188,30 +188,22 @@ plot(nit)
 nitres = simulateResiduals(nit)
 plot(nitres)
 #OK, some issues
-emmeans(nit, pairwise ~ "Year")
-plot(emmeans(nit, pairwise ~ "Year"), comparison = TRUE)
-plot(emmeans(nit, pairwise ~ "Season"))
-tukNit = cld(emmeans(nit, pairwise ~ "Year"), Letters = LETTERS) %>%
-  mutate(Analyte = "NitrateNitrite")
 
 Amm = lmer(log(Ammonium) ~ as.factor(Year)+Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(Amm)
 plot(simulateResiduals(Amm))
 
-#OK, some issues
-tukAM = cld(emmeans(Amm, pairwise ~ "Year"), Letters = LETTERS) %>%
-  mutate(Analyte = "Ammonium")
+
 
 chl= lmer(log(Chlorophyll) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(chl)
 plot(simulateResiduals(chl))
 
-#OK, some issues
-tukcl = cld(emmeans(chl, pairwise ~ "Year"), Letters = LETTERS) %>%
-  mutate(Analyte = "Chlorophyll")
+Orth= lmer(log(Orthophos) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
+summary(Orth)
+plot(Orth)
+plot(simulateResiduals(Orth))
 
-tuk = bind_rows(tukcl, tukAM, tukNit) %>%
-  mutate(group = str_trim(.group))
 
 #pllot for report##################
 ggplot(SoNutsmean, aes(x=Year, y = ConcentrationM, fill = Season)) + geom_col()+
@@ -235,6 +227,15 @@ Nitg = plot(emmeans(nit, specs = "Year", by = "Season"), comparison = T)+
 CHLg = plot(emmeans(chl, specs = "Year", by = "Season"), comparison = T)+
   xlab("Estimated Marginal Mean")+
   ggtitle("Chlorophyll")
+
+Orthg = plot(emmeans(Orth, specs = "Year", by = "Season"), comparison = T)+
+  xlab("Estimated Marginal Mean")+
+  ggtitle("Orthophosphate")
+
+cowplot::plot_grid(Amg, CHLg, Nitg, Orthg, nrow = 2)
+
+ggsave(filename = "Nutsemmeans.tiff", device = "tiff", path = "plots/", 
+       width = 8, height = 10)
 
 ##########################################################################################
 
@@ -285,3 +286,62 @@ ggplot(DDs, aes(x = as.factor(Year), y = firstDay))+geom_boxplot()
 ggplot(filter(TempsDDD, DOY >90, DOY <160), aes(x =DOY, y = Degreedays, color = as.factor(Year))) + geom_line()+
  # geom_hline(aes(yintercept = MaxDD, color = Year), linetype = 2)+
   facet_grid(.~Site, scales = "free_x")
+
+####################################################
+
+#Average degree days for the south delta by year.
+
+DDyear = mutate(TempsD, Year = year(Date), DOY = yday(Date)) %>%
+  filter(!(Site == "FRK" & Year == 2015)) %>%
+  group_by(Year, DOY) %>%
+  summarise(Daily.Max = mean(Daily.Max, na.rm = T), Daily.Min = mean(Daily.Min, na.rm = T))%>%
+  group_by(Year) %>%
+  mutate(Degreedays = gdd(tmax = Daily.Max, tmin = Daily.Min, tbase = 19, tbase_max = 35),
+         MaxDD = max(Degreedays, na.rm = T)) 
+
+ggplot(DDyear, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
+  geom_line()+ coord_cartesian(xlim = c(85, 300))+
+  geom_hline(aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  theme_bw()+
+  ylab("Degree Days above 19C")+
+  scale_x_continuous(breaks = c(91, 152, 213, 274), labels = c("Apr", "Jun", "Aug", "Oct"))
+
+#OK, do air temperature real quick
+library(cder)
+
+Airtemp = cdec_query("RRI", c(4, 30), "E", start.date = ymd("2015-01-01"), end.date = ymd("2021-12-30"))
+
+AirtempM = Airtemp %>%
+  mutate(Year = year(ObsDate), DOY = yday(ObsDate)) %>%
+  group_by(Year, DOY) %>%
+  summarise(Temp = mean(Value, na.rm = T), DailyMin = min(Value, na.rm = T), DailyMax = max(Value, na.rm = T)) %>%
+  mutate(TempC = (Temp-32)*(5/9), DailyMinC = (DailyMin -32)*(5/9), DailyMaxC = (DailyMax -32)*(5/9))
+
+ggplot(AirtempM, aes(x = DOY, y = TempC, color = as.factor(Year)))+
+  geom_point(alpha = 0.5, size = 0.5)+
+  geom_smooth()+
+  ylab("Daily mean air temperture (C)")+
+  xlab("Day of Year")+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  scale_x_continuous(breaks = c(91, 152, 213, 274), labels = c("Apr", "Jun", "Aug", "Oct"))+
+  theme_bw()
+
+#Degree days by air temperature
+
+AirDD = AirtempM %>%
+  group_by( Year) %>%
+  mutate(Degreedays = gdd(tmax = DailyMaxC, tmin = DailyMinC, tbase = 19, tbase_max = 35),
+         MaxDD = max(Degreedays, na.rm = T))
+
+
+ggplot(AirDD, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
+  geom_line()+ coord_cartesian(xlim = c(85, 300))+
+  geom_hline(aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  theme_bw()+
+  ylab("Degree Days above 19C (air temp)")+
+  scale_x_continuous(breaks = c(91, 152, 213, 274),
+                     labels = c("Apr", "Jun", "Aug", "Oct"))+
+  xlab("Day of Year")
+

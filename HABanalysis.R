@@ -11,14 +11,11 @@ library(visreg)
 library(MASS)
 library(car)
 library(DroughtData)
-<<<<<<< HEAD
 library(lubridate)
-=======
+
 library(here)
 
 i_am("HABanalysis.R")
->>>>>>> 187b6e57e63a3b6c897a4f01222a57d76f63b79c
-
 #import data with all the visual index data
 load("HABs.RData")
 
@@ -226,17 +223,9 @@ SFH2a = mutate(Habs2, HABord = case_when(
   Microcystis %in% c(2,3) ~ "Low",
   Microcystis %in% c(4,5) ~ "High")) %>%
   mutate(HABord = factor(HABord, levels = c("absent", "Low", "High"), ordered = T)) %>%
-<<<<<<< HEAD
   filter(Year >2013) %>%
   droplevels()
 
-
-foo = group_by(SFH2a, Year) %>%
-  summarize(table(HABord))
-=======
-  filter(Year >2013) %>% 
-  mutate(Yearf = fct_drop(Yearf))
->>>>>>> 187b6e57e63a3b6c897a4f01222a57d76f63b79c
 
 #now an orgered logistic regression
 
@@ -644,7 +633,11 @@ ce = conditional_effects(M5.3, categorical = TRUE)
                        labels = c("Absent", "Low", "High"), name = "Microcystis")+
     xlab("Temperature")+
     ylab("Probability")+
+    geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Temperature),
+             linetype = 2)+
+    annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
+  
    ggsave("MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
    
@@ -716,6 +709,10 @@ ce = conditional_effects(M5.3, categorical = TRUE)
                        labels = c("Absent", "Low", "High"), name = "Microcystis")+
     xlab("Secchi Depth (cm)")+
     ylab("Probability")+
+    geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Secchi),
+               linetype = 2)+
+    annotate("text", x = 70, y = 0.5, angle = 90, label = "Mean Jul 2021")+
+    
     theme_bw()
   ggsave("MicSecchi.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
@@ -726,6 +723,7 @@ SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
   summarize(Exscale = mean(Exscale), Outscale = mean(Outscale), Export = mean(Export), 
             Outflow = mean(Outflow), Tempscale = mean(Tempscale), 
             Secchs = mean(Secchs),
+            Secchi = mean(Secchi),
             Temperature = mean(Temperature), day = median(day)) %>%
   filter(Yearf %in% c("2021", "2020")) %>%
   droplevels()
