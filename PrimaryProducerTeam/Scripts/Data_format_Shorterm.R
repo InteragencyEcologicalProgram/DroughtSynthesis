@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(deltamapr) # https://github.com/InteragencyEcologicalProgram/deltamapr
 library(sf)
-source("Scripts/MyFunctionsAndThemes.R")
+source("PrimaryProducerTeam/Scripts/MyFunctionsAndThemes.R")
 
 ## Program Sources of Data
 ## discretewq: https://github.com/sbashevkin/discretewq
@@ -24,11 +24,11 @@ source("Scripts/MyFunctionsAndThemes.R")
 
 
 ## Load Drought Synthesis (DS) Regions
-rosie_regions <- read_csv("Data/Rosies_regions.csv")
+rosie_regions <- read_csv("PrimaryProducerTeam/Data/Rosies_regions.csv")
 DS_regions <- deltamapr::R_EDSM_Subregions_Mahardja_FLOAT %>% #NAD83 / UTM 10N
   filter(unique(.$SubRegion) %in% c(unique(rosie_regions$SubRegion), "Grant Line Canal and Old River")) %>%  # Add GLCAOR to our analysis
-  select(-Region) %>% # Remove DeltaMapR Regions
-  left_join(select(rosie_regions, SubRegion, Region)) %>%  # Add in Rosie's regions
+  dplyr::select(-Region) %>% # Remove DeltaMapR Regions
+  left_join(dplyr::select(rosie_regions, SubRegion, Region)) %>%  # Add in Rosie's regions
   mutate(Region= ifelse(SubRegion == "Grant Line Canal and Old River", "SouthCentral", Region),
          Region= recode(Region, North= 'North Delta', SouthCentral= "South-Central Delta")) %>%
   distinct(.)
@@ -49,7 +49,7 @@ idb_raw <- discretewq::wq(Sources = c("EMP", "STN", "FMWT", "EDSM", "DJFMP",
 
 ## Read Integrated Database from EDI, https://portal.edirepository.org/nis/mapbrowse?packageid=edi.731.1
 idb <- idb_raw %>%
-  #read_csv("Data/Delta_Integrated_WQ.csv", col_types= "ccdddDDdcccdcdddddc") %>% #automatic column parser was failing, so had to manually assign the column types
+  #read_csv("PrimaryProducerTeam/Data/Delta_Integrated_WQ.csv", col_types= "ccdddDDdcccdcdddddc") %>% #automatic column parser was failing, so had to manually assign the column types
   filter(!(is.na(Chlorophyll) & is.na(Microcystis))) %>% # remove rows with NA for both chla and mc_rating
   select(Source, Station, Latitude, Longitude, Field_coords, Date, Datetime, Depth, Microcystis, Chlorophyll) %>%
   rename(chla= Chlorophyll, mc_rating= Microcystis) %>%
@@ -62,18 +62,18 @@ idb_stations <- select(idb, Source, Station, Latitude, Longitude) %>%
 
 
 ## Read DWR South Delta Monitoring data (North Central Regional Office, NCRO)
-dwr_Sdelta_stations <- read_csv('Data/SDelta_Station_lat_long.csv') %>%
+dwr_Sdelta_stations <- read_csv('PrimaryProducerTeam/Data/SDelta_Station_lat_long.csv') %>%
   rename(HABstation= `HAB station ID`)
 
 
-dwr_Sdelta_mc <- read_csv('Data/qry_ObsHabs_SDelta_2017-2021.csv') %>%
+dwr_Sdelta_mc <- read_csv('PrimaryProducerTeam/Data/qry_ObsHabs_SDelta_2017-2021.csv') %>%
   rename(mc_rating = IndexScore, HABstation= StationCode) %>%
   mutate(Date= mdy(FldDate)) %>%
   filter(!is.na(mc_rating)) %>%
   select(-FldObsWaterHabs, -FldDate) %>%
   left_join(., dwr_Sdelta_stations)
 
-dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max = 11946) %>%
+dwr_Sdelta <- read_csv("PrimaryProducerTeam/Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max = 11946) %>%
   left_join(., dwr_Sdelta_stations) %>%
   filter(Analyte == "Chlorophyll a") %>%
   rename(Station= LongStationName, chla= Result, Datetime= CollectionDate, Latitude= `Latitude (WGS84)`, Longitude = `Longitude (WGS84)`) %>%
@@ -109,7 +109,7 @@ dwr_Sdelta <- read_csv("Data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv", n_max 
 
 
 ## Read in additional HABs Data from Fall Midwater Trawl, Directed Outflows Project, and EMP
-habs_add <- read_csv("Data/Microcystis_4NOV2021.csv") %>%
+habs_add <- read_csv("PrimaryProducerTeam/Data/Microcystis_4NOV2021.csv") %>%
   select(Source, Station, Date, Microcystis, Chlorophyll, Latitude, Longitude) %>%
   rename(mc_rating= Microcystis, chla= Chlorophyll) %>%
   mutate(Station= ifelse(Station == "72" | Station == "73", str_pad(Station, pad= "0", width= 3), Station),
@@ -135,7 +135,7 @@ emp_2021_mc <- habs_add %>%
   select(Source, Station, Date, mc_rating)
 
 
-emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
+emp_2021 <- read_csv("PrimaryProducerTeam/Data/EMP_2021_March_October_Chla.csv") %>%
   rename_with(~emp_colnames) %>% 
   select(Station, Datetime, chla) %>% 
   mutate(Station= str_replace(Station, "\\ -.*$", ""),
@@ -156,7 +156,7 @@ emp_2021 <- read_csv("Data/EMP_2021_March_October_Chla.csv") %>%
 ## Combine data and filter to the Short Term Synthesis time period 2011-present
 DS_data_noRegions <- full_join(idb, dwr_Sdelta) %>%
   #full_join(., usgs_chla) %>%
-  full_join(., filter(habs_add, !(year == 2021 & Source == "EMP"))) %>%
+ # full_join(., filter(habs_add, !(year == 2021 & Source == "EMP"))) %>%
   full_join(., emp_2021) %>% 
   filter(Longitude > -122.145 & Latitude > 37.7) %>% # FILTER BY the regions of interest for Drought Synthesis
   mutate(Station= ifelse(is.na(Station), ShortStationName, Station)) %>%
