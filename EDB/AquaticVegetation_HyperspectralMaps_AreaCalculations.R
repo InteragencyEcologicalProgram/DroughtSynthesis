@@ -3,7 +3,6 @@
 #Franks Tract, Big Break, and Clifton Court
 
 #to do list
-#look at relationship with flows
 #also bring in clifton court herbicide applications
 #make polished versions of bar graphs
 #add indicator for missing data years?
@@ -18,6 +17,7 @@ library(DEGreport) #adds corr and p to plots
 library(ggcorrplot) #plotting correlation matrix
 library(ggpubr) #combining plots into panel
 library(ggpmisc) #add equations and R^2 to plots
+
 
 #correlations to run
 #areas of SAV vs fluridone quantity and fluridone acres treated
@@ -44,13 +44,15 @@ bb <- read_csv("EDB/weeds_regional_area_estimates/BigBreak_wgs84_area_ha.csv")%>
 #2021 data for all sites
 new <- read_csv("EDB/weeds_regional_area_estimates/RegionalAreaEstimates_2021_Provisional.csv") 
 
-#read in sonde data (2015-2021)
-wq <- read_csv("EDB/frk_sonde_data_summary.csv")
+#estimated waterway area for each of the three sites, legal delta, and common area of delta
+#use these to calculate proportion of area covered by SAV and FAV
+ww <- read_csv("EDB/weeds_regional_area_estimates/waterway_area_ha.csv")
 
-#read in discrete water quality data (note this is a large file)
-#EMP stations of interest are D19 (Franks Tract) and C9 (Clifton Court)
-#Bay Study station of interest is 853 (near Big Break)
-dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.731.3&entityid=6c5f35b1d316e39c8de0bfadfb3c9692")
+#read in sonde data (2015-2021)
+wqf <- read_csv("EDB/frk_sonde_data_summary.csv")
+
+#read in discrete wq data and delta outflow (2004-2021)
+wqd <- read_csv("EDB/discrete_wq&outflow_data_summary.csv")
 
 #read in fluridone application data (2013-2021)
 herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021.csv")
@@ -172,69 +174,20 @@ erg <- alln %>%
   #just FT 
   filter(site=="Franks Tract") 
   
-  
-#format discrete water quality data-----------
-
-dwq_format <- dwq %>% 
-  #keep just the stations of interest
-  filter(Station == "EMP C9" | Station == "EMP D19" | Station == "Baystudy 853") %>% 
-  filter(Date > "2003-12-31") %>% 
-  mutate(month = month(Date)
-         ,year = year(Date)) %>%
-  glimpse()
-#need to look close at which surveys/stations have which water quality parameters
-#perhaps ideally we would pick the three months that are immediately prior
-#to the remote sensing, which varies among years
-
-#figure out which WQ parameters are available for each of the three stations
-#dwq_sum <- dwq_format %>% 
- # group_by(Station) %>% 
-  #summarise_all(funs(sum(!is.na(.))))
-dwq_sum <- dwq_format %>% 
-  group_by(Station) %>% 
-summarise(across(where(is.numeric),
-                 mean,
-                 na.rm = T))
-
-#filter out just the needed WQ parameters
-dwq_par <- dwq_format %>%
-  select(Station, Date, year, month, Tide, Temperature, Conductivity, Salinity, Secchi, DissolvedOxygen, pH)
-#no secchi for C9
-#no DO or pH for 853
-
-#look at number of measurements for each parameter by station and year
-dwq_sum2 <- dwq_par %>% 
-  group_by(Station,year) %>% 
-  summarize_all(funs(sum(!is.na(.))))
-#C9 only includes 2016-2020
-#other two sites include 2004-2020
-
-#work on selecting the correct months of WQ data for calculating means to compare with veg data
-#start by creating a df with year and month for veg imaging
-vtime <- alln %>% 
-  #just unique combos of year and month
-  distinct(year,month) 
-#come back to this later
+#Compare veg areas to discrete WQ and delta outflow--------------------------  
+#NOTE: cut the discrete WQ data formatting and moved to different file
+#Need to add the formatted version back to this file for subsequent analysis
 
 #create data frame to match WQ stations and sites
 stm <- as.data.frame(
   cbind(
-  Station = c("Baystudy 853", "EMP C9", "EMP D19")
-  , site = c("Big Break","Clifton Court","Franks Tract")
+    Station = c("Baystudy 853", "EMP C9", "EMP D19")
+    , site = c("Big Break","Clifton Court","Franks Tract")
+  )
 )
-)
-
-#for now, just use WQ from months March to Oct
-wq_avg <-dwq_par %>% 
-  filter(month > 2 & month < 11) %>%
-  select(-month) %>% 
-  group_by(Station,year) %>% 
-  summarise(across(where(is.numeric),
-                   mean,
-                   na.rm = T)) 
 
 #add region info to WQ data set
-wr <- left_join(wq_avg,stm)
+wr <- left_join(wqd,stm)
 
 #then add veg data
 wrv <-left_join(alln,wr)
