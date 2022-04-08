@@ -91,8 +91,8 @@ all <- bind_rows(ft,cc,bb)%>%
 new_formatted <- new %>%
   #only keep the column for area estimated in ha
   select(year:site,hectares) %>% 
-  #for now drop, the whole delta data
-  filter(site!="Legal Delta") %>% 
+  #for now drop, the whole delta and delta common area data
+  filter(site!="Legal Delta" & site!="Delta Common Area") %>% 
   #convert to wide form
   pivot_wider(id_cols=c(year, month, site),names_from = type,values_from = hectares) %>% 
   #clean up column names
@@ -125,6 +125,29 @@ new_formatted <- new %>%
 
 #combine 2021 data with rest of time series
 alln <- bind_rows(all,new_formatted)
+
+#add another way of calculating proportion of area as SAV and FAV
+#existing columns sum area of all classes for denominator
+#also try using standard waterway area, mostly derived from DBW data
+allnw <- left_join(alln,ww) %>% 
+  #create SAV and FAV proportions using waterway area
+  mutate(
+    sav_prop_w = sav/waterways_ha
+    ,fav_prop_w = fav/waterways_ha
+    )
+
+#quick plots of correlation between two proportion types
+ggplot(allnw,aes(sav_prop,sav_prop_w))+
+  geom_abline(intercept = 0, slope=1,linetype="dashed")+
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_cor(method = "pearson")
+  
+ggplot(allnw,aes(fav_prop,fav_prop_w))+
+  geom_abline(intercept = 0, slope=1,linetype="dashed")+
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_cor(method = "pearson")
 
 #look at number of years for each imaging month
 season <- alln %>% 
@@ -220,7 +243,7 @@ herb_format <- herb %>%
 #format sonde water quality data-----------------
 
 #need to convert long to wide for correlation matrix
-wq_format <- wq %>% 
+wq_format <- wqf %>% 
   select(-value_se) %>% 
   pivot_wider(
     id_cols=c(year)
