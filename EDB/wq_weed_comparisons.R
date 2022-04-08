@@ -5,6 +5,9 @@
 #aquatic weed data are from the SePro annual rake surveys
 
 #notes
+#will use discrete EMP WQ data but haven't yet incorporated into this code
+#instead of FRK sonde which starts 2015 would be better to use Bethal Island sonde 
+#or EMP discrete which start earlier
 #keep in mind that number of rake samples varies among year
 #usually about 100 per year but as low as 50 and as high as 200
 
@@ -16,8 +19,10 @@ library(lubridate) #formatting dates
 
 #read in the data-------------------------
 
-#summary stats for each sonde parameter (July - Oct)
+#summary stats for each FRK sonde parameter (July - Oct)
 wq <- read_csv("EDB/frk_sonde_data_summary.csv")
+
+#EMP discrete data
 
 #aquatic weed rake data
 veg <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/FranksTractManagement_2014-2021_formatted.csv")
@@ -116,7 +121,7 @@ ggplot(vsc, aes(value_mean,score_mean))+
   xlab("Mean Specific Conductance")+
   ylab("Mean Vegetation Abundance Score ") +
   facet_wrap(~species,nrow=3) 
-#none of corr are significant
+#none of corr are significant; all p> or =0.1
 
 #subset of data for just temperature data
 vtp <- wv %>% 
