@@ -7,6 +7,8 @@ library(stars)
 library(exactextractr)
 library(ggmap)
 library(deltamapr)
+library(brms)
+
 
 #first let's get the satilite data from NOAA
 #data from here: https://fhab.sfei.org/
@@ -43,3 +45,15 @@ ggplot() +
   scale_fill_viridis_b(name ="Cyanohabs")+ 
   geom_sf(data = Delta, alpha = 0, size = 0.1)+
   coord_sf(xlim = c(-121.8, -121.3), ylim = c(37.8, 38.2))
+
+###################################################################
+#Dave's dataset
+
+habsat = read_csv("data/hab_sat_fr_mil.csv")
+
+
+
+mhs = brm(cbind(Non_detect, Low, Moderate, High, Very_high) ~ Name + Date, data = habsat, family = cumulative,
+           iter = 200,   backend = "cmdstanr", normalize = FALSE, 
+           control = list(max_treedepth = 15),
+           chains = 2, cores=4, threads = threading(2))

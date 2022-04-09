@@ -1,8 +1,14 @@
 .Rproj.user
 .Rhistory
 .RData
+.Rdata
+data/
+.xlsx
+*.png
 .Ruserdata
-.tiff
+*.tiff
 *.tif
+*.pdf
+*.svg
 .zip
 .mdb
