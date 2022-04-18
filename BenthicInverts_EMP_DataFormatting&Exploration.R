@@ -17,7 +17,15 @@ library(hms)
 library(readxl) #importing data from excel files
 library(waterYearType) #lists all water year types 1901 - 2017
 
-#read in data--------------------
+#read in data from EDI-----------------------
+
+#station data
+stn <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.1036.1&entityid=4e6948186ad756dc2b6de4de41b601f3")
+
+#benthic invert CPUE
+
+
+#read in data from sharepoint--------------------
 
 #Define path on SharePoint site for data
 sharepoint_path <- normalizePath(
