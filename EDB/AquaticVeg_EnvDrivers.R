@@ -28,15 +28,6 @@ dout <- raw_hydro_1975_2021 %>%
   summarize(out_mean = mean(Outflow)) %>% 
   rename(year = YearAdj)
 
-#Dave data package doesn't include all the WQ data I need for my stations (as of 4/7/22)
-#view(raw_wq_1975_2021)
-#glimpse(raw_wq_1975_2021)
-
-wq <- raw_wq_1975_2021 %>% 
-  #just keep the two most relevant stations and months
-  #data package doesn't include Bay Study so no Bay Study 853 station
-  #also doesn't have all the months of data I need so use the EDI package + EMP data request for 2021
-  filter((Station == "D19" | Station == "C9") & (Month > 2 & Month < 11))
 
 #Discrete WQ data----------------
 
@@ -45,6 +36,16 @@ wq <- raw_wq_1975_2021 %>%
 #Bay Study station of interest is 853 (near Big Break)
 #Note that it doesn't yet include the 2021 data I need
 dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.731.3&entityid=6c5f35b1d316e39c8de0bfadfb3c9692")
+
+#Dave data package doesn't include all the WQ data I need for my stations (as of 4/7/22)
+#view(raw_wq_1975_2021)
+#glimpse(raw_wq_1975_2021)
+
+#wq <- raw_wq_1975_2021 %>% 
+  #just keep the two most relevant stations and months
+  #data package doesn't include Bay Study so no Bay Study 853 station
+  #also doesn't have all the months of data I need so use the EDI package + EMP data request for 2021
+ # filter((Station == "D19" | Station == "C9") & (Month > 2 & Month < 11))
 
 #format discrete water quality data-----------
 
