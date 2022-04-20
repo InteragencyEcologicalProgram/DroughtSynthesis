@@ -29,13 +29,44 @@ dout <- raw_hydro_1975_2021 %>%
   rename(year = YearAdj)
 
 
-#Discrete WQ data----------------
+#Read in discrete WQ data----------------
 
 #read in discrete water quality data (note this is a large file)
 #EMP stations of interest are D19 (Franks Tract) and C9 (Clifton Court)
 #Bay Study station of interest is 853 (near Big Break)
 #Note that it doesn't yet include the 2021 data I need
 dwq <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.731.3&entityid=6c5f35b1d316e39c8de0bfadfb3c9692")
+
+#for 2021 Big Break data use Blind Point sonde because don't have Bay Study 853 data
+#should just request the data from Bay Study
+#got Blind Point data from WDL 
+#https://wdl.water.ca.gov/WaterDataLibrary/StationDetails.aspx?Station=B9502900&source=map
+
+#unique(bp21_temp$quality_code) #"1: Good data"      "151: Data Missing"
+
+bp21_temp <- read_csv("EDB/BlindPoint_B9502900_Water_Temperature_Daily_Mean.csv",skip=8) %>% 
+  clean_names() %>% 
+  mutate(date = mdy_hms(date_time)) %>% 
+  filter(quality_code =="1: Good data") %>% 
+  rename(temp = water_temperature_daily_mean_degc) %>% 
+  select(-c(date_time,quality_code)) %>% 
+  glimpse()
+
+
+bp21_ec <- read_csv("EDB/BlindPoint_B9502900_Conductivity_Daily_Mean.csv",skip=8) %>% 
+  clean_names() %>% 
+  mutate(date = mdy_hms(date_time)) %>% 
+  filter(quality_code =="1: Good data") %>% 
+  rename(ec = conductivity_daily_mean_misc) %>% 
+  select(-c(date_time,quality_code)) %>% 
+  glimpse()
+
+bp21 <- full_join(bp21_temp,bp21_ec) %>% 
+  filter(date > "2021-02-28" & date < "2021-11-01")  %>%
+  summarise(across(where(is.numeric),
+                   mean,
+                   na.rm = T))  
+
 
 #Dave data package doesn't include all the WQ data I need for my stations (as of 4/7/22)
 #view(raw_wq_1975_2021)
@@ -155,12 +186,28 @@ wq_avg <- wq_all %>%
   group_by(Station,year) %>% 
   summarise(across(where(is.numeric),
                    mean,
-                   na.rm = T)) 
+                   na.rm = T),.groups = 'drop') %>% 
+  glimpse()
+
+#adding a row for 2021 for Big Break
+#don't have BS 853 data for 2021 yet
+#also add temp and EC data from Blind Point sonde station (see bp21)
+
+wq_avg2 <- wq_avg %>% 
+  add_row(Station = "Baystudy 853"
+          ,year = as.numeric("2021")
+          ,Temperature = as.numeric("19.33185")
+          ,Conductivity= as.numeric("2168.672")
+          ,Salinity=as.numeric("")
+          ,Secchi=as.numeric("")
+          ,DissolvedOxygen =as.numeric("")
+          ,pH  =as.numeric(""))
 
 #combine WQ with outflow
 #this will match WQ data set by year which will add this deltawide measure to all stations
 #but that's fine given how I will use the data
-wqout <- left_join(wq_avg,dout)
+wqout <- full_join(wq_avg2,dout) %>% 
+  arrange(Station, year)
 
 #write summary stats file 
 #write_csv(wqout,"EDB/discrete_wq&outflow_data_summary.csv")
@@ -228,33 +275,6 @@ frk_clean <- frk %>%
 #convert long to wide (a column for each parameter)
 #make corr matrix
 #plot corr matrix
-
-#reshape the data frame so each row is a sample and each column is a species
-#keep station, date, species, score
-veg_wide <- veg %>% 
-  #first need to drop the handful of visual observations
-  #so they don't create duplicates and mess up the pivot_wider
-  filter(survey_method!="visual") %>% 
-  select(date,station,species,rake_coverage_ordinal) %>% 
-  pivot_wider(
-    id_cols=c(date,station)
-    ,names_from = species
-    , values_from=rake_coverage_ordinal
-    #was getting warnings about duplicates before removing visual spp
-    #,values_fn = list(rake_coverage_ordinal = length)
-  ) %>% 
-  glimpse()
-
-
-#create correlation matrix
-corr_matrix <- round(cor(veg_wide[3:17]),2)
-
-# Computing correlation matrix with p-values
-corrp_matrix <- cor_pmat(veg_wide[3:17])
-
-# Visualizing the correlation matrix
-ggcorrplot(corr_matrix, method ="square", type="lower")
-
 
 #calculate annual means and standard errors
 
