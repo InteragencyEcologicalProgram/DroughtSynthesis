@@ -28,6 +28,37 @@ dout <- raw_hydro_1975_2021 %>%
   summarize(out_mean = mean(Outflow)) %>% 
   rename(year = YearAdj)
 
+#Read and format fluridone data for Franks Tract-----------
+#need to add clifton court herbicide data too
+
+#read in fluridone application data (2006-2021)
+herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021.csv")
+
+
+herb_format <- herb %>% 
+  mutate(
+    #calculate lbs of fluridone used per site and year
+    quantity_lbs = area_acres * depth_ft * (rate_ppb/367.73331896144)
+  ) %>% 
+  #sum acres and lbs of fluridone by year
+  group_by(year) %>% 
+  summarise(area_acres_tot = sum(area_acres)
+            ,quantity_lbs_tot = sum(quantity_lbs)) %>% 
+  mutate(
+    #calculate rate in ppb across all three Franks Tract sites
+    #mean depth was alway 7.9 ft
+    fl_rate_ppb = (quantity_lbs_tot / (area_acres_tot * 7.9))*367.73331896144
+    #convert acres to hectares
+    ,fl_area_ha = area_acres_tot * 0.404686
+    #convert lbs to kg
+    ,fl_quantity_kg = quantity_lbs_tot * 0.4535924 
+    #make year an integer
+    ,year = as.integer(year)
+  ) %>% 
+  select(-c(area_acres_tot,quantity_lbs_tot)) %>% 
+  glimpse()
+#write_csv(herb_format,"EDB/franks_tract_fluridone_applications_2006-2021_summary.csv")
+
 
 #Read in discrete WQ data----------------
 

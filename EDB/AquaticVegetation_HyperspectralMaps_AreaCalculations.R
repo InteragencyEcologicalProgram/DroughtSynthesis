@@ -56,8 +56,8 @@ wqf <- read_csv("EDB/frk_sonde_data_summary.csv")
 #read in discrete wq data and delta outflow (2004-2021)
 wqd <- read_csv("EDB/discrete_wq&outflow_data_summary.csv")
 
-#read in fluridone application data (2013-2021)
-herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021.csv")
+#read in fluridone application data (2006-2021)
+herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021_summary.csv")
 
 #combine veg area estimates data into one data set (up to 2020)-----------
 
@@ -315,32 +315,6 @@ wrv <-left_join(alln,wr) %>%
   arrange(site,year)
 #delta outflow data missing for Big Break but shouldn't be
 #fix this in the AquaticVeg_EnvDrivers.R code
-
-#format fluridone application data------------
-#need to add clifton court herbicide data too
-
-herb_format <- herb %>% 
-  mutate(
-    #calculate lbs of fluridone used per site and year
-    quantity_lbs = area_acres * depth_ft * (rate_ppb/367.73331896144)
-  ) %>% 
-  #sum acres and lbs of fluridone by year
-  group_by(year) %>% 
-  summarise(area_acres_tot = sum(area_acres)
-            ,quantity_lbs_tot = sum(quantity_lbs)) %>% 
-  mutate(
-    #calculate rate in ppb across all three Franks Tract sites
-    #mean depth was alway 7.9 ft
-    fl_rate_ppb = (quantity_lbs_tot / (area_acres_tot * 7.9))*367.73331896144
-    #convert acres to hectares
-    ,fl_area_ha = area_acres_tot * 0.404686
-    #convert lbs to kg
-    ,fl_quantity_kg = quantity_lbs_tot * 0.4535924 
-    #make year an integer
-    ,year = as.integer(year)
-  ) %>% 
-  select(-c(area_acres_tot,quantity_lbs_tot)) %>% 
-  glimpse()
 
 #format sonde water quality data-----------------
 #only 2015-present, so not as useful for looking at imagery data set which starts in 2004
