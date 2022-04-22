@@ -19,13 +19,20 @@ library(lubridate) #formatting dates
 
 #read in the data-------------------------
 
+#read in discrete wq data and delta outflow (2004-2021)
+wqd <- read_csv("EDB/discrete_wq&outflow_data_summary.csv")
+
 #summary stats for each FRK sonde parameter (July - Oct)
+#slightly less useful because doesn't start until 2015, one year later than SAV data set
 wq <- read_csv("EDB/frk_sonde_data_summary.csv")
 
 #EMP discrete data
 
 #aquatic weed rake data
 veg <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/FranksTractManagement_2014-2021_formatted.csv")
+
+#read in fluridone application data (2006-2021)
+herb <- read_csv("EDB/franks_tract_fluridone_applications_2006-2021_summary.csv")
 
 #look at correlations in abundances among species------------------
 
@@ -92,7 +99,65 @@ veg_clean <- veg %>%
   ) %>% 
   glimpse()
 
-#look at correlations between water quality and vegetation abundance---------------
+#look at correlations between discrete water quality, herbicides, delta outflow vs vegetation abundance---------------
+
+#format env driver data set
+wqd_clean <- wqd %>% 
+  filter(Station=="EMP D19" & year > 2013) %>% 
+  glimpse()
+
+herb_format <- herb %>% 
+  select(-fl_rate_ppb) %>% 
+  glimpse()
+
+#combine wq + outflow with fluridone
+drivers <- left_join(wqd_clean,herb_format) %>% 
+  select(-c(Salinity,Station))
+
+#combine veg and drivers
+vegd <- left_join(veg_clean,drivers) %>% 
+  select(-score_se) %>% 
+  #make df longer
+  pivot_longer(cols=c(Temperature:fl_quantity_kg),names_to = "parameter",values_to = "value") %>% 
+  select(species,parameter,score_mean,value) %>% 
+  arrange(species,parameter) %>% 
+  glimpse()
+
+#create nested data frame
+#a data frame of species abundances for each driver
+#vegd_nest <- vegd %>% 
+#  group_by(parameter) %>% 
+#  nest() 
+  #start looking at some relationships
+#  mutate(model = map(data, function(df) cor.test(score_mean ~ Temperature, data = df)))
+
+library(broom)
+library(tidyr)
+library(dplyr)
+
+#generate a correlation for each species abundance vs env driver  
+#note that data are ordinal so use spearman instead of pearson 
+#https://stackoverflow.com/questions/61184133/calculate-bulk-pair-wise-correlation-using-purrr-and-nested-data-frame
+output <- vegd %>% 
+    group_by(species, parameter) %>% 
+    do(tidy(cor.test(.$score_mean,.$value,method="spearman")))
+
+#now just look at the ones with p<0.05
+#this is a lot of test; should I adjust the p-values?
+#might be good to reduce the number of predictors and spp (just most common ones)
+output_sig <- output %>% 
+  filter(p.value< 0.05)
+#only six of 120 tests were significant
+
+#do a couple correlations individually to make sure the big batch of analyses worked correctly
+vegd_ng <- vegd %>% 
+  filter(species == "Najas_guadalupensis")
+cor.test(vegd_ng$score_mean,vegd_ng$pH,method="spearman")
+cor.test(vegd_ng$score_mean,vegd_ng$Conductivity,method="spearman")
+#these results do match with the bulk analyses df results
+
+
+#look at correlations between sonde water quality and vegetation abundance---------------
 
 #join water quality and vegetation data frames
 
