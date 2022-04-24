@@ -119,7 +119,7 @@ vegd <- left_join(veg_clean,drivers) %>%
   select(-score_se) %>% 
   #make df longer
   pivot_longer(cols=c(Temperature:fl_quantity_kg),names_to = "parameter",values_to = "value") %>% 
-  select(species,parameter,score_mean,value) %>% 
+  select(species,year,parameter,score_mean,value) %>% 
   arrange(species,parameter) %>% 
   glimpse()
 
@@ -135,12 +135,28 @@ library(broom)
 library(tidyr)
 library(dplyr)
 
-#generate a correlation for each species abundance vs env driver  
+#generate a correlation for the abundances of the four most abundant species vs env driver  
 #note that data are ordinal so use spearman instead of pearson 
 #https://stackoverflow.com/questions/61184133/calculate-bulk-pair-wise-correlation-using-purrr-and-nested-data-frame
 output <- vegd %>% 
+  filter(species == "Ceratophyllum_demersum" | species == "Egeria_densa" | species== "Potamogeton_richardsonii"| species =="Najas_guadalupensis") %>% 
     group_by(species, parameter) %>% 
     do(tidy(cor.test(.$score_mean,.$value,method="spearman")))
+
+#format results for export
+output_ex <- output %>%
+  #just keep needed columns
+  select(species,parameter, estimate,p.value) %>% 
+  #drop fluridone kg predictor
+  filter(parameter!="fl_quantity_kg") %>% 
+  #make wider
+  pivot_wider(id_cols=c(parameter),names_from = species,values_from = c(estimate,p.value)) %>% 
+  arrange(parameter)
+
+#reorder columns
+outex <- output_ex[c(1,2,6,3,7,4,8,5,9)]
+#write_csv(outex,"EDB/sepro_env_driver_corrs.csv")
+
 
 #now just look at the ones with p<0.05
 #this is a lot of test; should I adjust the p-values?
@@ -155,6 +171,84 @@ vegd_ng <- vegd %>%
 cor.test(vegd_ng$score_mean,vegd_ng$pH,method="spearman")
 cor.test(vegd_ng$score_mean,vegd_ng$Conductivity,method="spearman")
 #these results do match with the bulk analyses df results
+
+#create panel of plots of significant correlations-----------
+#only four of them
+
+#coontail vs secchi
+
+coon <- vegd %>% 
+  filter(species =="Ceratophyllum_demersum" & parameter=="Secchi")
+
+(cs <- ggplot(coon, aes(x=value, y=score_mean))+ 
+  geom_smooth(method = "lm")  + 
+  geom_point() +
+  geom_text(aes(label=year)
+            , vjust = -0.9
+  )+
+  #geom_cor(method = "spearman")+
+  xlab("Annual mean Secchi depth (m)")+
+  ylab("Mean abundance score")+
+    ggtitle("Ceratophyllum demersum")+
+    theme_bw()
+)
+
+#naiad vs EC and ph
+
+ndc <- vegd %>% 
+  filter(species =="Najas_guadalupensis" & parameter=="Conductivity" )
+
+(nc <- ggplot(ndc, aes(x=value, y=score_mean))+ 
+    geom_smooth(method = "lm")  + 
+    geom_point() +
+    geom_text(aes(label=year)
+              , vjust = -0.9
+    )+
+    #geom_cor(method = "spearman")+
+    xlab("Annual mean conductivity (uS/cm)")+
+    ylab("Mean abundance score")+
+    ggtitle("Najas guadalupensis")+
+    theme_bw()
+)
+
+ndp <- vegd %>% 
+  filter(species =="Najas_guadalupensis" & parameter=="pH")
+
+(np <- ggplot(ndp, aes(x=value, y=score_mean))+ 
+    geom_smooth(method = "lm")  + 
+    geom_point() +
+    geom_text(aes(label=year)
+              , vjust = -0.9
+    )+
+    #geom_cor(method = "spearman")+
+    xlab("Annual mean pH")+
+    ylab("Mean abundance score")+
+    ggtitle("Najas guadalupensis")+
+    theme_bw()
+)
+
+#egeria and ph
+edp <- vegd %>% 
+  filter(species =="Egeria_densa" & parameter=="pH")
+
+(ep <- ggplot(edp, aes(x=value, y=score_mean))+ 
+    geom_smooth(method = "lm")  + 
+    geom_point() +
+    geom_text(aes(label=year)
+              , vjust = -0.9
+    )+
+    #geom_cor(method = "spearman")+
+    xlab("Annual mean pH")+
+    ylab("Mean abundance score")+
+    ggtitle("Egeria densa")+
+    theme_bw()
+)
+
+sfigure <- ggarrange(nc, np, cs,ep,
+                     #labels = c("A", "B"),
+                     ncol = 2, nrow = 2)
+#ggsave(plot=sfigure, "EDB/Sepro_Driver_SignCorrPanel.png",type ="cairo-png",width=8, height=8,units="in",dpi=300)
+
 
 
 #look at correlations between sonde water quality and vegetation abundance---------------
