@@ -506,7 +506,7 @@ ffigure <- ggarrange(fbf,fcf,
 #correlations between SAV acreage and fluridone applications in Franks Tract----------
 
 #join veg acreages and fluridone data sets by year
-frankf <- left_join(alln,herb_format) %>% 
+frankf <- left_join(alln,herb) %>% 
   filter(site=="Franks Tract") %>% 
   glimpse()
 
@@ -599,19 +599,27 @@ ggcorrplot(corr_matrix, method ="square", type="lower")
 wrvs <- wrv %>% 
   select(year,site:fav,Temperature:out_mean)
 
-dft <- wrvs %>% 
-  filter(site == "Franks Tract")
+dfta <- wrvs %>% 
+  filter(site == "Franks Tract") 
+  
+#add herbicide data
+dft <- left_join(dfta,herb) %>% 
+  #but only keep area treated
+  select(-c(fl_rate_ppb,fl_quantity_kg)) %>% 
+  glimpse()
+#note we are missing treatment data for 2004-2005
+  
 
 dbb <- wrvs %>% 
   filter(site == "Big Break")
 
 #create correlation matrices
 #needed use="pairwise.complete.obs" because of NAs
-f_corr_matrix <- round(cor(dft[3:11],use="pairwise.complete.obs"),3)
+f_corr_matrix <- round(cor(dft[3:12],use="pairwise.complete.obs"),3)
 b_corr_matrix <- round(cor(dbb[c(3:8,11)],use="pairwise.complete.obs"),3)
 
 # Computing correlation matrix with p-values
-f_corrp_matrix <- round(cor_pmat(dft[3:11],use="pairwise.complete.obs"),3)
+f_corrp_matrix <- round(cor_pmat(dft[3:12],use="pairwise.complete.obs"),3)
 b_corrp_matrix <- round(cor_pmat(dbb[c(3:8,11)],use="pairwise.complete.obs"),3)
 
 #grid of correlations
@@ -698,8 +706,56 @@ vstat2 <- aout2 %>%
 )
 #ggsave(plot=wtemp, "EDB/Hyperspectral_FAV_Area_v_Temp.png",type ="cairo-png",width=8, scale=0.9, height=4.5,units="in",dpi=300)
 
+#try to build some multiple regression models--------------------
+#might not work because of small sample size
 
+#Franks Tract
+#originally considered the following predictors
+#temperature, EC, secchi, outflow, herbicides
+#but EC is significantly correlated with temp and outflow
+#so just use temp, secchi, ouflow, herbicides
+#note that secchi is tricky because remote sensing's ability to detect SAV is affected 
+#by turbidity in addition to veg both affecting and being affected by turbidity
+#did also look at correlations between veg and DO and pH but these are responses to veg
+#rather than predictors
 
+#SAV
+ft_sav_mod <- lm(sav ~ fl_area_ha + out_mean + Temperature + Secchi + fav, data = dft)
+summary(ft_sav_mod)
+anova(ft_sav_mod)
+#only herbicide is significant
+#same result we got with the correlations
+
+#FAV
+#didn't include EC because correlated with temp and flow
+#didn't include Secchi because shouldn't affect FAV much
+#didn't include pH and DO because those are responses
+#didn't include herbicides because I don't have data handy
+ft_fav_mod <- lm(fav ~ out_mean + Temperature, data = dft)
+summary(ft_fav_mod)
+anova(ft_fav_mod)
+#neither is significant
+
+#Big Break
+
+#SAV
+#didn't include DO or pH because responses and also not available from Bay Study station
+#didn't include EC because correlated with outflow
+#don't have herbicide data handy
+bb_sav_mod <- lm(sav ~ out_mean + Temperature + Secchi + fav, data = dbb)
+summary(bb_sav_mod)
+anova(bb_sav_mod)
+#only outflow significant
+
+#SAV
+#didn't include DO or pH because responses and also not available from Bay Study station
+#didn't include EC because correlated with outflow
+#didn't include Secchi because shouldn't affect FAV
+#don't have herbicide data handy
+bb_fav_mod <- lm(fav ~ out_mean + Temperature + Secchi, data = dbb)
+summary(bb_fav_mod)
+anova(bb_fav_mod)
+#only temperature significant
 
 #correlations among discrete water quality parameters and SAV acreage across site----------------
 #trying this because too little replication within individual sites
