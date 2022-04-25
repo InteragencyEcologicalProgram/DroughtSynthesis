@@ -17,24 +17,28 @@ library(tidyverse) #suite of data science tools
 library(sf) #tools for making maps
 library(deltamapr) #Sam's package with shapefiles for delta waterways
 library(plotrix) #standard error function
+library(vegan) #PERMANOVA
 
 # Read in the data----------------------------------------------
 # Data set is on SharePoint site for the 
 # Delta Smelt Resiliency Strategy Aquatic Weed Control Action
 # I synced this folder to my OneDrive
-sharepoint_path_read <- normalizePath(
-  file.path(
-    Sys.getenv("USERPROFILE"),
-    "California Department of Water Resources/DWR - DSRS Aquatic Weed Control Action - MasterDataSet_SAV/Clean&Formatted"
-  )
-) 
+#sharepoint_path_read <- normalizePath(
+ # file.path(
+  #  Sys.getenv("USERPROFILE"),
+   # "California Department of Water Resources/DWR - DSRS Aquatic Weed Control Action - MasterDataSet_SAV/Clean&Formatted"
+  #)
+#) 
 
 #read in field data
-cstars <- read_csv(file = paste0(sharepoint_path_read,"./CSTARS_2021_formatted.csv"))
+#cstars <- read_csv(file = paste0(sharepoint_path_read,"./CSTARS_2021_formatted.csv"))
 #glimpse(cstars) #looks good. just need to make lat/long into geometry
 
+#read in file from Github
+cstars <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/CSTARS_2021_formatted.csv")
+
 #read in df with native/non-native status
-origin <- read_csv(file = paste0(sharepoint_path_read,"./FranksTractManagement_SpeciesOrigin.csv"))
+origin <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/FranksTractManagement_SpeciesOrigin.csv")
 
 #add a species missing from the origin df
 org <- origin %>% 
@@ -455,4 +459,35 @@ fb_cov_g <- fb_cov %>%
     theme_bw()+
     ggtitle("Big Break")
 )        
+
+#try PERMANOVA------------------
+
+
+#format data set as matrix
+#might need to remove rare spp
+sav_prep <- fbs %>% 
+  filter(
+    #remove rake samples with no SAV; can't have these in analysis
+    rake_teeth_corr!=0 | 
+    #remove unIDed taxa
+    species!="Unidentified" ) %>% 
+      #drop  one sample because has two entries for S. pectinata
+      #couldn't figure out better way to remove it
+      filter(latitude_wgs84>38.01883 | latitude_wgs84 <38.01881) %>% 
+  #removes geometry
+  st_set_geometry(NULL) %>% 
+  #reduce to just needed columns
+  select(site,latitude_wgs84,longitude_wgs84,species,rake_prop)
+
+  pivot_wider(id_cols=c(site, latitude_wgs84,longitude_wgs84)
+              , names_from = species
+              , values_from = rake_prop) %>% 
+  glimpse()
+
+
+
+#convert long to wide
+
+
+
 
