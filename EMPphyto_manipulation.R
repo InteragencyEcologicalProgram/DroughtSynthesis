@@ -8,6 +8,7 @@ library(tidyr)
 library(readr)
 library(purrr)
 library(stringr)
+
 library(tibble)
 library(lubridate)
 library(readxl)
@@ -194,6 +195,8 @@ write.csv(phyto_edb, file = "AllEMPphyto.csv")
 
 #######################################################
 
+phyto_edb = read_csv("AllEMPphyto.csv")
+
 #plot it at the genus level
 EMP_wzeros = pivot_wider(phyto_edb, id_cols = c(Station, Date, Stratum, Year), names_from = Genus,
                          values_from = `OrganismsPerMl`, values_fill = 0, values_fn = sum) %>%
@@ -235,16 +238,43 @@ EMPHAB = filter(EMP_wzeros,  Genus %in% c("Aphanizomenon", "Anabaena", "Dolichos
                                         "Microcystis", "Oscillatoria", "Cylindrospermopsis",  "Anabaenopsis",
                                         "Planktothrix"), !is.na(Stratum)) %>%
   mutate(Genus = case_when(Genus == "Anabaena" ~"Dolichospermum",
-                           TRUE ~ Genus)) 
+                           TRUE ~ Genus), Stratum2 = factor(Stratum, 
+                           levels = c("Western Delta", "Suisun Bay", "Suisun Marsh", "Lower Sacramento",
+                                      "Lower San Joaquin", "Eastern Delta", "Southern Delta",
+                                      "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel",
+                                      "Upper Sacramento"), 
+                           labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
+                                      "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
+                                      "Upper Sac")))
 
-EMPHABave = group_by(EMPHAB, Stratum, Month, Year, Genus) %>%
+EMPHABave = group_by(EMPHAB, Stratum2, Month, Year, Genus) %>%
   summarize(CountperML = mean(CountperML))
 
-ggplot(EMPHABave, aes(x = Month, y = CountperML, fill = Genus))+ 
-  geom_col()+facet_grid(Year~Stratum) + scale_y_log10()+
+ggplot(EMPHABave, aes(x = Year, y = CountperML, fill = Genus))+ 
+  geom_col(position = "dodge")+facet_wrap(~Stratum2) + scale_y_log10()+
   ylab("Organisms per mL") + theme_bw()+ theme(legend.position = "bottom")+
   scale_x_continuous(breaks = c(0,4,8,12))
 
-ggplot(filter(EMPHABave, Genus != "Microcystis"), aes(x = Month, y = CountperML, fill = Genus))+ 
-  geom_col()+facet_grid(Year~Stratum, scales = "free_y")
+ggplot(EMPHABave, aes(x = Stratum2, y = CountperML, fill = Genus))+ 
+  geom_col()+facet_wrap(~Year) + 
+  ylab("Organisms per mL") + theme_bw()+ theme(legend.position = "bottom")+
+  theme(axis.text.x = element_text(angle = 90))#+
+ # scale_x_continuous(breaks = c(2,6,10), labels = c("Feb", "Jun", "Oct"))
 
+
+ggplot(filter(EMPHABave, Genus != "Microcystis"), aes(x = Month, y = CountperML, fill = Genus))+ 
+  geom_col()+facet_grid(Year~Stratum2, scales = "free_y")
+
+#one more try
+
+ggplot(EMPHABave, aes(x = Year, y = CountperML, fill = Genus))+ 
+  geom_col(position = "fill")+facet_wrap(~Stratum2) + 
+  ylab("Organisms per mL") + theme_bw()+ theme(legend.position = "bottom")+
+  scale_x_continuous(breaks = c(2,6,10), labels = c("Feb", "Jun", "Oct"))
+
+#I think this is the one I want to use
+ggplot(EMPHABave, aes(x = Year, y = CountperML, fill = Genus))+ 
+  geom_col()+facet_grid(Genus~Stratum2, scales = "free_y") + 
+  ylab("Organisms per mL") + theme_bw()+ scale_fill_discrete(guide = NULL)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+ggsave("HABspecies.tiff", device = "tiff", width = 8, height = 6)

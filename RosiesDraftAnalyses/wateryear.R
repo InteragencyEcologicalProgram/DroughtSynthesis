@@ -29,6 +29,18 @@ ggplot(WYs)+
 
 
 
+#for HABWeed
+
+
+ggplot(filter(WYs, Year >2006))+
+  geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
+  scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
+  theme_bw()+
+  theme(legend.position = "top") +
+  ylab("Sacramento Valley Index")+
+  xlab(NULL)
+
+
 Seasons = data.frame(Season = c("Spring", "Summer", "Winter", "Fall"))
 
 
