@@ -7,6 +7,7 @@
 #use DWR WY types or a simplification of them to categorize years in analyses
 #should I also try SIMPER?
 #for repeated measured PEMANOVA, stations aren't in same locations across all years
+ #2014-2016 use one grid and 2017-2021 use another grid; could just focus on 2017-2021
 #but they are fairly consistent among most recent years
 #so could used repeated measures analysis just for recent years
 #need to look up which years have same stations

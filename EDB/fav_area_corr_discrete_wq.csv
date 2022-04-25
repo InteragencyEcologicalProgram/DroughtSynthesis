@@ -1,0 +1,8 @@
+parameter,f_corr,f_pval,b_corr,b_pval
+sav,0.44,0.13,0.33,0.27
+Temperature,0.43,0.14,0.67,0.01
+Conductivity,0.24,0.42,0.11,0.72
+Secchi,0.5,0.08,0.34,0.29
+DissolvedOxygen,0.01,0.98,NA,NA
+pH,-0.45,0.26,NA,NA
+out_mean,-0.11,0.73,-0.02,0.95

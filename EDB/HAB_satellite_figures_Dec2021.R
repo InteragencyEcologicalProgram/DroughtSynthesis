@@ -1,5 +1,5 @@
 # Emergency Drought Barrier - HAB satellite data
-# Purpose: Create figures of the HAB satellite data for the EDB report:
+# Purpose: Create figures of the HAB satellite data for the Dec 2021 EDB report:
   # 1) Area plot of pixel counts of Cyano Index categories for Franks Tract and
     # Mildred Island in 2020 and 2021
   # 2) A few maps of the HAB satellite data for a couple of days of interest in 2021
@@ -276,4 +276,6 @@ ggsave(
   height = 8.25,
   units = "in"
 )
+
+# NOTE: The .jpg files for the area plot and HAB satellite maps were moved to the EDB SharePoint site.
 
