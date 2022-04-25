@@ -35,7 +35,8 @@ library(vegan) #PERMANOVA
 #glimpse(cstars) #looks good. just need to make lat/long into geometry
 
 #read in file from Github
-cstars <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/CSTARS_2021_formatted.csv")
+cstars <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/CSTARS_2021_formatted.csv") 
+glimpse(cstars)
 
 #read in df with native/non-native status
 origin <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/FranksTractManagement_SpeciesOrigin.csv")
@@ -291,8 +292,20 @@ frbb <- bind_rows(weeds_bbreak,weeds_franks)
 #glimpse(frbb)
 
 #add the spp origin info 
-fbs <- left_join(frbb,org)
+fbs1 <- left_join(frbb,org) %>% 
+  #add id column 
+  #will be used to filter out some rows
+  add_column(id = seq(1:167)) 
 
+#show the two duplicated S. pectinata rows
+test <- fbs1 %>% 
+  filter(site== "Big Break" & species == "Stuckenia_pectinata")
+#rows 16 and 17
+
+#drop some duplicate rows
+fbs <- fbs1 %>% 
+  filter(id!=16 & id!=17)
+  
 #create version of data set with just Franks Tract to send to SePro
 fbs_frank <- fbs %>% 
   filter(site=="Franks Tract")
@@ -468,25 +481,21 @@ fb_cov_g <- fb_cov %>%
 sav_prep <- fbs %>% 
   filter(
     #remove rake samples with no SAV; can't have these in analysis
-    rake_teeth_corr!=0 | 
+    rake_teeth_corr > 0 & 
     #remove unIDed taxa
-    species!="Unidentified" ) %>% 
-      #drop  one sample because has two entries for S. pectinata
-      #couldn't figure out better way to remove it
-      filter(latitude_wgs84>38.01883 | latitude_wgs84 <38.01881) %>% 
+    species!="Unidentified") %>% 
   #removes geometry
   st_set_geometry(NULL) %>% 
   #reduce to just needed columns
-  select(site,latitude_wgs84,longitude_wgs84,species,rake_prop)
-
-  pivot_wider(id_cols=c(site, latitude_wgs84,longitude_wgs84)
+  select(site,latitude_wgs84,longitude_wgs84,species,rake_prop) %>% 
+  pivot_wider(id_cols=c(site,latitude_wgs84,longitude_wgs84)
               , names_from = species
               , values_from = rake_prop) %>% 
+  #replace na with zero 
+  replace(is.na(.), 0) %>% 
   glimpse()
 
-
-
-#convert long to wide
+#look at abundances of species and should probably cut some of the less common ones
 
 
 
