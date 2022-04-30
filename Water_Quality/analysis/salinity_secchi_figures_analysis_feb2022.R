@@ -16,7 +16,7 @@ library(car)
 library(here)
 
 # Check if we are in the correct working directory
-i_am("Water_Quality/analysis/wq_figures_analysis_sal_secchi.R")
+i_am("Water_Quality/analysis/salinity_secchi_figures_analysis_feb2022.R")
 
 # Source figures and analysis functions
 source("Water_Quality/analysis/figures_analysis_feb2022_funcs.R")
