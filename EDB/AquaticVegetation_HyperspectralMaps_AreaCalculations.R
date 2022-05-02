@@ -169,14 +169,27 @@ veg_prop <- alln %>%
   pivot_longer(c(sav_prop:fav_prop), names_to = "type_prop", values_to = "area_prop") %>% 
   mutate(across(c("type_prop"), as.factor)) 
 
-#total area: stacked bar plots
+#focal sites: stacked bar plots------------------------------
 #add symbol for missing data
 #use better colors
-ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
-  geom_bar(position = "stack", stat = "identity") + 
+(foc_ha <- ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
+  geom_bar(position = "stack", stat = "identity", colour="grey25") + 
   ylab("Vegetation Coverage (ha)") + xlab("Year") + 
-  scale_fill_discrete(labels=c("FAV","SAV")) +
+  #scale_fill_discrete(labels=c("FAV","SAV")) +
+  scale_fill_manual(name= NULL
+                    ,labels=c("Floating","Submersed")
+                    ,values=c("#88BA33","#556B2F")
+                    ,guide=guide_legend(keyheight=0.5)
+  )  +
+  #customizes names in legend key, specifies the custom color palette, and sets height of elements in legend
+  theme(
+    legend.box.spacing=unit(0, units="cm"), 
+    legend.margin=margin(t=0,r=0,b=2,l=0, unit="pt")) +
+  theme_bw()+
   facet_grid(site~.)
+)
+#ggsave(plot=foc_ha, "EDB/Hyperspectral_Veg_Area_TimeSeries_FocalSiteArea.png",type ="cairo-png",width=8, scale=0.8, height=7,units="in",dpi=300)
+
 
 #proportion area: stacked bar plots
 ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
@@ -185,7 +198,7 @@ ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
   scale_fill_discrete(labels=c("FAV","SAV")) +
   facet_grid(site~.)
 
-#summary stats for Franks Tract--------------
+#summary stats--------------
 
 #2004-2006: moderately low SAV
 #2007-2008: DBW does intensive fluridone treatments
@@ -194,10 +207,16 @@ ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
 #2105 sudden increase in SAV
 #2015-2020: sustained high SAV
 
-#range for 2004-2006
 erg <- alln %>% 
   #just FT 
   filter(site=="Franks Tract") 
+
+bbeff <- alln %>% 
+  filter(site=="Big Break")
+
+cceff <- alln %>% 
+  filter(site=="Clifton Court")
+range(cceff$fav_prop)
 
 
 #barplot of common area of delta through time--------------------
@@ -367,7 +386,7 @@ chart.Correlation(ft[2:10])
 #Big Bend: correlations among all land surface types
 chart.Correlation(bb[2:10])
 
-#make comparisons among sites within land types
+#make comparisons among sites within land types-----------
 
 #format data sets
 veg_corr <- alln %>% 
