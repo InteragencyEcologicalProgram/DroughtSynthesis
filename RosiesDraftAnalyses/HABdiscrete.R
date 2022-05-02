@@ -97,9 +97,33 @@ DOP = filter(DOP, !is.na(hab_score)) %>%
          )
 
 HABs = bind_rows(HABs1, DOP)
+
+#################################################
+#extra data from the end of 2021
+
+FMWT = read_csv("data/HABs/FMWT 1967-2021 Catch Matrix_updated_tidy.csv")
+FMWT2 = filter(FMWT, SampleDate > as.Date("2021-09-30")) %>%
+  group_by(SurveyNumber, SampleDate, StationCode, StartLat, StartLong, ConductivityTop, WaterTemperature, Turbidity, Secchi, Microcystis) %>%
+  summarize(n = n()) %>%
+  rename(Station = StationCode,
+         Latitude = StartLat,
+         Longitude = StartLong,
+         Conductivity = ConductivityTop,
+         Temperature = WaterTemperature,
+         Date = SampleDate) %>%
+  mutate(Source = "FMWTx", Month = month(Date), Station = as.character(Station))
+
+EMP = read_excel("data/hab_nutr_chla_mvi.xlsx")
+EMP2 = filter(EMP, Date > as.Date("2021-09-30"), Microcystis != "NA") %>%
+  dplyr::select(Source, Station, Latitude, Longitude, Date, Microcystis) %>%
+  mutate(Microcystis = as.numeric(Microcystis), Year = year(Date), Month = month(Date))
+
+HABsX = bind_rows(HABs, FMWT2, EMP2)
+HABs = HABsX
 #save the combined visual index data
 save(HABs, file = "HABs.RData")
 
+#############################################################################
 #look at how chlorophyll measured by the YSI compares to grab samples, just for fun.
 lm = lm(ChlA_YSI ~ Chlorophyll, data = DOP)
 summary(lm)
@@ -110,6 +134,7 @@ ggplot(DOP, aes(x = Chlorophyll, y = ChlA_YSI)) +
   geom_abline(slope = 1, intercept = 0, linetype = 2, color = "red")+
   annotate("text", x = 8.5, y = 7.5, label = "1:1 line", size = 6)+
   annotate("text", x = 20, y = 10, label = "Regression \n0.3X + 1.1", size = 6)
+
 
 
 #load regions shapefile
@@ -272,7 +297,8 @@ sumfall = filter(HABs, Month %in% c(6,7,8,9,10), !is.na(Microcystis))
 ggplot(sumfall, aes(x = Year, fill = as.factor(Microcystis))) +geom_bar(position = "fill")+ 
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
                     labels = c("absent", "low", "medium", "high", "very high"),
-                    name = "Microcystis")+ ylab("Relative Frequency")
+                    name = "Microcystis")+ ylab("Relative Frequency")+
+  theme_bw()
 
 reg2 = R_EDSM_Regions_1819P1 %>%
   st_transform(crs = st_crs(4326))
@@ -300,7 +326,7 @@ sfhab = st_crop(HABssf1, reg3)%>%
   #filter(Year == 2021) 
 
 #load teh grab sample stations
-EMPstas = read.csv("EMP_Discrete_Water_Quality_Stations_1975-2020.csv") 
+EMPstas = read.csv("data/EMP_Discrete_Water_Quality_Stations_1975-2020.csv") 
 EMP = st_as_sf(filter(EMPstas, !is.na(Latitude)), coords = c("Longitude", "Latitude"), crs = st_crs(4326)) %>%
   filter(Status == "Active")
 
@@ -310,16 +336,18 @@ cdec = read.csv("data/CDEC_StationsEC.csv") %>%
 cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326) 
 
 
+
+
 ##############################################################################
 
 library(ggsn)
 #plot the map
 ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
   geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.4) + 
-  geom_sf(data = sfhab, aes(shape = Source)) +
-  scale_shape_discrete(name = "Visual Index Sites")+
-  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "EMP grab samples"))+
-  geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
+ # geom_sf(data = sfhab, aes(shape = Source)) +
+#  scale_shape_discrete(name = "Visual Index Sites")+
+#  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "Phytoplankton \n samples"))+
+  #geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
   scale_color_manual(values = c("red", "blue"), name = NULL)+
   scale_fill_brewer(palette = "Set3", guide = NULL)+
  coord_sf(xlim = c(-122.4, -121.2), ylim = c(37.6, 38.6))+
@@ -327,9 +355,9 @@ ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
                  label.size = 0.05,
                 label.padding = unit(0.1, "lines"),
                 nudge_y = reg3$nudge, alpha = 0.8, fontface = "bold")+
-  geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
-                label.size = 0.05,
-                label.padding = unit(0.1, "lines"))+
+  # geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
+  #               label.size = 0.05,
+  #               label.padding = unit(0.1, "lines"))+
   #You can adjust the size, units, etc of your scale bar.
   scalebar(data = EMP, dist = 20, dist_unit = "km",
            transform = TRUE, st.dist = .05) +
@@ -337,6 +365,8 @@ ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
   #there are a number of different optinos for north arrow symbols. ?north
   north(data = reg3, symbol = 2) +
   theme_bw()+ylab("")+xlab("")
+
+ggsave("plots/HABmap.tiff", device = "tiff", width = 8, height = 8)
 
 SFH =   sfhab %>%
   st_drop_geometry() %>%
@@ -459,7 +489,7 @@ HWR =   sfhab%>%
 
 
 
-ggplot(filter(HWR, Year == 2021, Month != 10), aes(x = Stratum, fill = as.factor(Microcystis))) + 
+ggplot(filter(HWR, Year == 2021), aes(x = Stratum, fill = as.factor(Microcystis))) + 
   geom_bar(position = "fill")+ 
   facet_grid(.~Month)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 

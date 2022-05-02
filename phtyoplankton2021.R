@@ -10,9 +10,9 @@ EMP2021 = read_excel("data/HABs/2021_EMP_Taxonomy.xlsx")
 
 #now strata for SFHA sesonal report
 #attach regional assignments
-regs = read.csv("AllIEP_wRegions.csv") %>%
+regs = read.csv("data/AllIEP_wRegions.csv") %>%
   st_as_sf(coords = c("Longitude","Latitude"), crs = 4326)
-reg3 = st_transform(R_EDSM_Strata_1718P1, crs = 4326)
+load("Regions.RData")
 allreg = st_join(regs, reg3) %>%
   st_drop_geometry()
 
@@ -409,15 +409,15 @@ types = group_by(types, Genus, `Algal Type`) %>%
 
 #now strata for SFHA sesonal report
 #attach regional assignments
-regs = read.csv("AllIEP_wRegions.csv") %>%
+regs = read.csv("data/AllIEP_wRegions.csv") %>%
   st_as_sf(coords = c("Longitude","Latitude"), crs = 4326)
-reg3 = st_transform(R_EDSM_Strata_1718P1, crs = 4326)
+load("Regions.RData")
 allreg = st_join(regs, reg3) %>%
   st_drop_geometry()
 
 
 EMPall = read.csv("EMP_phyto_data.csv") %>%
-  select(-X, -SubRegion, -Stratum, -Stratum2, -Region, -nudge) %>%
+  dplyr::select(-X, -SubRegion, -Stratum, -Stratum2, -Region, -nudge) %>%
   left_join(allreg, by = "StationCode")
 
 #EMPall = left_join(EMPall, allreg)
@@ -436,7 +436,7 @@ EMPallsum = group_by(EMPall, StationCode, Region, SampleDate, Month, Year, Algal
 #ggplot(filter(EMPallsum, Year == 2020), aes(x = Month, y = OrgperML, fill = Genus)) + geom_col()+
 #  facet_grid(Algal.Type~Year)
 
-ggplot(filter(EMPallsum, !is.na(Region), Algal.Type != "Cyanobacterium", Year > 2018), aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
+ggplot(dplyr::filter(EMPallsum, !is.na(Region), Algal.Type != "Cyanobacterium", Year > 2018), aes(x = Month, y = OrgperML, fill = Algal.Type)) + geom_col()+
   facet_grid(Region~Year)
 
 

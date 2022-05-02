@@ -17,7 +17,7 @@ library(here)
 
 i_am("HABanalysis.R")
 #import data with all the visual index data
-load("HABs.RData")
+load("data/data package/HABs.RData")
 
 
 
@@ -76,8 +76,11 @@ reg3 = R_EDSM_Strata_1718P1%>%
                            labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
                                       "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
                                       "Upper Sac")),
-         nudge = c(-.05,0,0,0,0,0,0,0,.1,0))
+         nudge = c(-.05,0,0,0,0,0,0,0,.1,0),
+         colors = c( "#8DD3C7","#FFFFB3","#BEBADA" ,"#FB8072", "#80B1D3","#FDB462","#B3DE69",       
+                     "#FCCDE5" , "#D9D9D9", "#BC80BD"))
 
+save(reg3, file= "Regions.RData")
 
 HABssf1 = filter(sumfall, !is.na(Longitude), !is.na(Latitude)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
@@ -91,7 +94,7 @@ sfhaball2 = st_crop(HABssf, reg3)%>%
   mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
     "absent", "low", "med", "high", "v.high")))  
 
-ggplot() + geom_sf(data = reg3) + geom_sf(data = HABssf1)
+ggplot() + geom_sf(data = reg3)+ geom_sf(data = WW_Delta)# + geom_sf(data = HABssf1)
 
 #crop it to the area we are interested in
 sfhab = st_crop(HABssf1, reg3)%>%
@@ -100,12 +103,13 @@ sfhab = st_crop(HABssf1, reg3)%>%
 
 #do the whole delta, but broken up into subregions
 sfhaball = filter(HABs, !is.na(Microcystis), !is.na(Longitude), !is.na(Latitude)) %>%
+  mutate(Year = year(Date)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326)) %>%
 st_crop(HABssf1, reg3)%>%
   st_join(reg3)
 
 
-SFHall =   sfhaball2 %>%
+SFHall =   sfhaball %>%
     filter(!is.na(Stratum), !is.na(Microcystis)) %>%
   #        Stratum %in% c("Suisun Marsh", "Suisun Bay", "Lower Sacramento", "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel")) %>%
   mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
@@ -114,8 +118,10 @@ SFHall =   sfhaball2 %>%
 
 ###############################
 #plot of just 2021, all months
-
-ggplot(filter(SFHall, Year == 2021, Month <10), aes(x = Stratum2, fill = Mic))+geom_bar(position = "fill")+
+#THIS IS THE PLOT FOR THE REPORT
+SFH2021 = filter(SFHall, Year == 2021)
+test = filter(sfhaball, Year == 2021)
+ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(position = "fill")+
   facet_wrap(~Month, nrow = 3)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
   theme_bw()+
@@ -135,6 +141,7 @@ SFHallzeros =   pivot_wider(SFHall2, id_cols = c(Yearm, Yearf, Year, Month, Stra
   mutate(Mic = factor(Mic, levels = c(
     "absent", "low", "med", "high", "v.high")))
 
+#Time series plot for the report
 ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, fill = Mic, group = Mic)) + geom_area(position = "fill")+
   facet_wrap(~Stratum, nrow = 4)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
@@ -142,7 +149,18 @@ ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, fi
   theme(legend.position = "top")+
   ylab(NULL) + xlab(NULL)
 
+#Bar graph plot for the report
+ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Year, y = n, fill = Mic, group = Mic)) + geom_col(position = "fill")+
+  facet_wrap(~Stratum, nrow = 4)+
+  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
+  theme_bw()+
+  theme(legend.position = "top")+
+  ylab(NULL) + xlab(NULL)
+
 ggsave("Microtimeseries.tiff", device = "tiff", width = 11, height = 8, units = "in")
+
+
+
 
 ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, color = Mic)) + geom_point()+
   facet_wrap(~Stratum, nrow = 3) 
@@ -228,7 +246,7 @@ SFH2a = mutate(Habs2, HABord = case_when(
 
 
 #now an orgered logistic regression
-
+library(multcomp)
 ord2 = polr(HABord ~Yearf, data = SFH2a, Hess = T)
 summary(ord2)
 Anova(ord2)
@@ -266,7 +284,12 @@ p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 (ci <- confint(ord1))
 exp(cbind(OR = coef(ord1), ci))
 
-
+#By Region, just summer/fall
+ggplot(SFH2a, aes(x = Year, fill = as.factor(Microcystis))) +
+  geom_bar(position = "fill")+ facet_wrap(~Region)+
+  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
+                    labels = c("absent", "low", "medium", "high", "very high"),
+                    name = "Microcystis")+ ylab("Relative Frequency") 
 
 ###################################################
 #import temperature analyses
@@ -390,7 +413,7 @@ test = left_join(HWR, dplyr::select(flowX, -Year, -Season)) %>%
 
 #Note: All of these models take a long time to run. If you want to just get
 #the results and look at them, use:
-load("HABsbrimsresults.RData")
+#load("HABsbrimsresults.RData")
 
 #Three terms and a random effect using all the data looks like its going to take days to run.
 #####################
@@ -603,7 +626,7 @@ ggplot(SoDelta, aes(x =Export, y = EXPORTS, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =EXPORTS, y = SJR, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =OUT, y = SJR, color = Yearf)) + geom_point()+
 coord_cartesian(xlim = c(0, 20000))
-
+load("MCmodels30mar2022")
 
 ggplot(SoDelta, aes(x = day, y = Temperature, color = Yearf)) + geom_point()+
   ylab("Water Temperature, degrees C") + xlab("Day of the Year")
@@ -624,19 +647,26 @@ ce = conditional_effects(M5.3, categorical = TRUE)
   newdata = mutate(temp, Temperature = Tempscale*foo$Estimate[2] + foo$Estimate[1])
   
   
-  ggplot(newdata, aes(x = Temperature, y = estimate__)) +
+  ggplot(filter(newdata, cats__ != "absent"), aes(x = Temperature, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    scale_fill_manual(values = c("blue", "orange", "red"), 
-                      labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("blue", "orange", "red"), 
-                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    xlab("Temperature")+
+    # scale_fill_manual(values = c("blue", "orange", "red"), 
+    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_color_manual(values = c("blue", "orange", "red"), 
+    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    scale_fill_manual(values = c("orange", "red"), 
+                      labels = c("Low", "High"), name = "Microcystis")+
+    scale_color_manual(values = c("orange", "red"), 
+                       labels = c("Low", "High"), name = "Microcystis")+
+    
+    xlab("Temperature C")+
     ylab("Probability")+
     geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Temperature),
              linetype = 2)+
     annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
+  
+  ggsave("MicTemp2.tiff", device = "tiff", width = 6, height = 4, units = "in") 
   
    ggsave("MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
@@ -674,19 +704,23 @@ ce = conditional_effects(M5.3, categorical = TRUE)
   newdataE = mutate(ex, Exports = Exscale*fooE$Estimate[2] + fooE$Estimate[1])
   
   
-  ggplot(newdataE, aes(x = Exports, y = estimate__)) +
+  ggplot(filter(newdataE, cats__ != "absent"), aes(x = Exports, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    scale_fill_manual(values = c("blue", "orange", "red"), 
-                      labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("blue", "orange", "red"), 
-                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_fill_manual(values = c("blue", "orange", "red"), 
+    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_color_manual(values = c("blue", "orange", "red"), 
+    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    scale_fill_manual(values = c("orange", "red"), 
+                      labels = c("Low", "High"), name = "Microcystis")+
+    scale_color_manual(values = c("orange", "red"), 
+                       labels = c("Low", "High"), name = "Microcystis")+
     xlab("Project Exports (cfs)")+
     ylab("Probability")+
     geom_vline(xintercept = 1500, linetype = 2)+
     annotate("text", x = 1300, y = 0.4, label = "TUCP Export Limit", angle = 90)+
     theme_bw()
-  ggsave("MicExports.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("MicExports2.tiff", device = "tiff", width = 6, height = 4, units = "in")
 
 
 #definitley a lower outflow effect and a bigger export effect when you take day of year into account
@@ -700,13 +734,17 @@ ce = conditional_effects(M5.3, categorical = TRUE)
   newdataS = mutate(turb, Secchi = Secchs*fooS$Estimate[2] + fooS$Estimate[1])
   
   
-  ggplot(newdataS, aes(x = Secchi, y = estimate__)) +
+  ggplot(filter(newdataS, cats__ != "absent"), aes(x = Secchi, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    scale_fill_manual(values = c("blue", "orange", "red"), 
-                      labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("blue", "orange", "red"), 
-                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_fill_manual(values = c("blue", "orange", "red"), 
+    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_color_manual(values = c("blue", "orange", "red"), 
+    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    scale_fill_manual(values = c("orange", "red"), 
+                      labels = c("Low", "High"), name = "Microcystis")+
+    scale_color_manual(values = c("orange", "red"), 
+                       labels = c("Low", "High"), name = "Microcystis")+
     xlab("Secchi Depth (cm)")+
     ylab("Probability")+
     geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Secchi),
@@ -714,7 +752,7 @@ ce = conditional_effects(M5.3, categorical = TRUE)
     annotate("text", x = 70, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     
     theme_bw()
-  ggsave("MicSecchi.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("MicSecchi2.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
 
 
@@ -728,18 +766,19 @@ SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
   filter(Yearf %in% c("2021", "2020")) %>%
   droplevels()
 
+save(SoDelta, SoDeltasum, file = "SoDelta.RData")
 
 newdata2 = data.frame(Exscale = filter(SoDeltasum, Yearf == '2021')$Exscale, 
                       Outscale = c(-.47, -.47, -.569157, -.586204), 
                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
                       Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 221, 252), Yearf = "2021", Scenario = "NoTUCP")
+                      day = c(165,190, 224, 255), Yearf = "2021", Scenario = "NoTUCP")
 
 newdata3 = data.frame(Exscale = filter(SoDeltasum, Yearf == '2021')$Exscale, 
                       Outscale = filter(SoDeltasum, Yearf == '2021')$Outscale, 
                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
                       Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 221, 252), Yearf = "2021", Scenario = "TUCP")
+                      day = c(165,190, 224, 255), Yearf = "2021", Scenario = "TUCP")
 allnew = bind_rows(newdata2, newdata3)
 
 prede = predict(M5.61, newdata = SoDeltasum)
@@ -848,32 +887,36 @@ diff = group_by(Predictions, HABs, day) %>%
 newdata2e = data.frame(Exscale = rep(-1.18, 5), Outscale = rep(-.647, 5), 
                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
                       Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 220, 252, 293), Yearf = "2021", Scenario = "1500 CFS")
+                      day = c(165,190, 224, 252), Yearf = "2021", Scenario = "1500 CFS")
 
-newdata3e = data.frame(Exscale = rep(-.908, 5), Outscale = rep(-.647, 5), 
+newdata3e = data.frame(Exscale = rep(-.908, 4), Outscale = rep(-.647, 4), 
                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
                       Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 220, 252, 293), Yearf = "2021", Scenario = "2500 CFS")
-allnewe = bind_rows(newdata2e, newdata3e)
+                      day = c(165,190, 224, 252), Yearf = "2021", Scenario = "2500 CFS")
 
+newdata4e = data.frame(Exscale = rep(-.4995, 4), Outscale = rep(-.647, 4), 
+                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
+                       Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
+                       day = c(165,190, 224, 252), Yearf = "2021", Scenario = "4000 CFS")
+allnewe = bind_rows(newdata2e, newdata3e, newdata4e )
 
-prede = as.data.frame(predict(M5.3, newdata = allnewe)) %>%
-  bind_cols(allnewe)
+library(tidybayes)
 
-Predictionse = prede %>%
-  pivot_longer(cols = c("P(Y = absent)","P(Y = Low)","P(Y = High)"), names_to = "HABs", values_to = "Probability") %>%
-  mutate(HABs = factor(HABs, levels = c("P(Y = absent)","P(Y = Low)","P(Y = High)"), labels = c("Absent", "Low", "High")))
+Predictionse = add_epred_draws(allnewe, M5.61)%>%
+  median_qi(.epred)
 
-
-ggplot(filter(Predictionse, day < 225),  aes(x = as.factor(day), y = Probability, fill = Scenario)) + 
+ggplot(filter(Predictionse),  aes(x = as.factor(day), y = .epred, fill = Scenario)) + 
   geom_col(position = "dodge") +
-  facet_wrap(~HABs)+
-  scale_fill_manual(values = c("grey", "darkgreen"), name = "Export Scenario")+
-  scale_x_discrete(labels = c("June", "July", "August"), name = "Month")+
-  theme_bw()
+  geom_errorbar(aes(ymin = .lower, ymax = .upper, group = Scenario), position = "dodge")+
+  facet_wrap(~.category)+
+  scale_fill_manual(values = c("grey", "darkgreen", "lightblue"), name = "Export Scenario")+
+  scale_x_discrete(labels = c("June", "July", "August", "Sept"), name = "Month")+
+  theme_bw()+ylab("Probability")
 
 diffe = group_by(Predictionse, HABs, day) %>%
   summarize(Difference = Probability[1]-Probability[2])
+
+
 
 ##########################################################################
 #fhab portal

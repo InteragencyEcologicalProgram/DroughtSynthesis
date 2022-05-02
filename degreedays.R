@@ -1,4 +1,5 @@
 #degree day calculations for the South Delta
+#also nutrient plots
 
 library(tidyverse)
 library(lubridate)
@@ -8,29 +9,40 @@ library(pollen)
 library(sf)
 
 #quick check of hte nurient data
-
+load("Regions.RData")
 hab_nutr_chla_mvi <- read_excel("data/hab_nutr_chla_mvi.xlsx")
 
-Franks = filter(hab_nutr_chla_mvi, Station %in% c("OSJ", "FAL", "FCT", "BET", "D19")) %>%
+#attach regions
+nutsallsf = st_as_sf(hab_nutr_chla_mvi, coords = c("Longitude", "Latitude"), crs = 4326) %>%
+  st_join(reg3) %>%
+  dplyr::select(-nudge, -Stratum) %>%
+  rename(Region = Stratum2)
+
+save(nutsallsf, file = "nuts_w_regions.RData")
+
+Franks = filter(hab_nutr_chla_mvi, Station %in% c("D19")) %>%
   mutate(Month = month(Date), Year = year(Date), Chlorophyll = as.numeric(Chlorophyll),
          Nitrate = as.numeric(DissNitrateNitrite)) %>%
-  filter(Year == 2021, Month %in%c(2, 3, 4, 5, 6,7,8,9))
+  filter(Month %in%c(4, 5, 6,7,8,9))
 
-ggplot(Franks, aes(x= Month, y = Chlorophyll, color = Station ))+geom_point() + geom_line() +
-  xlab("month - 2021")+ ylab("chlorophyll ug/L") 
+ggplot(Franks, aes(x= Month, y = Chlorophyll, color = as.factor(Year)))+geom_point() + geom_line() +
+  xlab("month - 2021")+ ylab("chlorophyll ug/L")
 
+ggplot(Franks, aes(x= Month, y = Nitrate, color = as.factor(Year)))+geom_point() + geom_line() +
+  xlab("Month of Year")+ ylab("Nitrate mg/L")+ theme_bw() 
 
 
 
 ggplot(Franks, aes(x= Month, y = Nitrate, color = Station ))+geom_point() + geom_line() +
-  xlab("month - 2021")+ ylab("Nitrate")
+  xlab("Month of Year")+ ylab("Nitrate")
 
 
 #Let's look at other areas in teh Delta
 
 Nuts = mutate(hab_nutr_chla_mvi, Month = month(Date), 
               Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
-              Nitrate = as.numeric(DissNitrateNitrite)) %>%
+              Nitrate = as.numeric(DissNitrateNitrite),
+              Phosphorus = as.numeric(DissOrthophos)) %>%
   dplyr::filter(Year == 2021, Month %in% c(2, 3, 4, 5, 6,7,8,9))
 
 
@@ -70,7 +82,7 @@ nutssf %>%
   filter(!is.na(Nitrate)) %>%
   split(.$Stratum2) %>%
   map(~ ggplot(., aes(x= Date, y = Nitrate, color = Station ))+geom_point() + geom_line() +
-        xlab("Date")+ ylab("Nitrage (mg/L)") +
+        xlab("Date")+ ylab("Nitrate + Nitrite (mg/L)") +
         scale_color_manual(values = pal)+
         annotate("rect", xmin = min(nutssf$Date), 
                  xmax =  max(nutssf$Date),
@@ -97,9 +109,7 @@ nutssf %>%
         annotate("rect", xmin = min(nutssf$Date), 
                  xmax =  max(nutssf$Date),
                  ymin = 0, ymax = 0.05, alpha = 0.5, fill = "gray")+
-        annotate("text", x = median(nutssf$Date), 
-y= 0.06, label = "EMP reporting limit")+
-        
+          
         ggtitle(.$Stratum2)+
         theme_bw()+
         theme(legend.margin = margin(0, 0,0,0),
@@ -126,10 +136,34 @@ split(.$Stratum2) %>%
             legend.text = element_text(size = 7),
               legend.title = element_blank(), legend.key.size = unit(1, "line"),
               legend.background = element_rect(fill = "transparent"))+
+
         guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
   cowplot::plot_grid(plotlist = ., nrow = 4)
 
 ggsave(filename = "Chlorophyll.tiff", device = "tiff", width = 10, height = 12)
+
+
+
+nutssf %>%
+  droplevels() %>%
+  filter(!is.na(Phosphorus)) %>%
+  split(.$Stratum2) %>%
+  map(~ ggplot(., aes(x= Date, y = Phosphorus, color = Station ))+geom_point() + geom_line() +
+        xlab("Date")+ ylab("Dissolved Orthophosphate (mg/L)") +
+        scale_color_manual(values = pal)+
+        ggtitle(.$Stratum2)+
+        theme_bw()+
+        annotate("rect", xmin = min(nutssf$Date), 
+                 xmax =  max(nutssf$Date),
+                 ymin = 0, ymax = 0.05, alpha = 0.5, fill = "gray")+
+        theme(legend.margin = margin(0, 0,0,0),
+              legend.text = element_text(size = 7),
+              legend.title = element_blank(), legend.key.size = unit(1, "line"),
+              legend.background = element_rect(fill = "transparent"))+
+        guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
+  cowplot::plot_grid(plotlist = ., nrow = 4)
+
+ggsave(filename = "Orthophos.tiff", device = "tiff", width = 10, height = 12)
 
 P8 = filter(mutate(hab_nutr_chla_mvi, Month = month(Date), 
                    Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
@@ -241,17 +275,18 @@ ggsave(filename = "Nutsemmeans.tiff", device = "tiff", path = "plots/",
 
 #Now for the degree day calculations
 
-load("data/WQ.RData")
+#load("data/WQ.RData")
 
-summary(WQ)
-unique(WQ$Analyte)
+#summary(WQ)
+#unique(WQ$Analyte)
 
-Temps = filter(WQ, Analyte == "Temp")
+#Temps = filter(WQ, Analyte == "Temp")
 
-ggplot(Temps, aes(x = DateTime, y = Amount)) + geom_point()
+#ggplot(Temps, aes(x = DateTime, y = Amount)) + geom_point()
 
 load("data/WQ.daily.RData")
-
+unique(WQ.daily$Site)
+library(pollen)
 TempsD = filter(WQ.daily, Analyte == "Temp")
 
 Degreedays = gdd(tmax = TempsD$Daily.Max, tmin = TempsD$Daily.Min, tbase = 19, tbase_max = 35)
@@ -292,9 +327,9 @@ ggplot(filter(TempsDDD, DOY >90, DOY <160), aes(x =DOY, y = Degreedays, color = 
 #Average degree days for the south delta by year.
 
 DDyear = mutate(TempsD, Year = year(Date), DOY = yday(Date)) %>%
-  filter(!(Site == "FRK" & Year == 2015)) %>%
+  filter(!(Site == "FRK")) %>%
   group_by(Year, DOY) %>%
-  summarise(Daily.Max = mean(Daily.Max, na.rm = T), Daily.Min = mean(Daily.Min, na.rm = T))%>%
+  summarise(Daily.Max = mean(Daily.Max, na.rm = T), Daily.Min = mean(Daily.Min, na.rm = T), WaterMean = mean(Daily.Mean))%>%
   group_by(Year) %>%
   mutate(Degreedays = gdd(tmax = Daily.Max, tmin = Daily.Min, tbase = 19, tbase_max = 35),
          MaxDD = max(Degreedays, na.rm = T)) 
@@ -309,14 +344,19 @@ ggplot(DDyear, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
 
 #OK, do air temperature real quick
 library(cder)
+library(cimir)
 
-Airtemp = cdec_query("RRI", c(4, 30), "E", start.date = ymd("2015-01-01"), end.date = ymd("2021-12-30"))
+Airtemp = cdec_query(c("HBP", "RRI", "MSD", "SJR"), 4, "E", start.date = ymd("2015-01-01"), end.date = ymd("2021-12-30"))
 
 AirtempM = Airtemp %>%
+  dplyr::filter(Airtemp, StationID != "SJR") %>%
   mutate(Year = year(ObsDate), DOY = yday(ObsDate)) %>%
-  group_by(Year, DOY) %>%
+  group_by(Year, DOY, StationID) %>%
   summarise(Temp = mean(Value, na.rm = T), DailyMin = min(Value, na.rm = T), DailyMax = max(Value, na.rm = T)) %>%
   mutate(TempC = (Temp-32)*(5/9), DailyMinC = (DailyMin -32)*(5/9), DailyMaxC = (DailyMax -32)*(5/9))
+
+AirtempM2 = group_by(AirtempM, Year, DOY) %>%
+  summarise(TempC = mean(TempC, na.rm = T), Min = mean(DailyMinC, na.rm = T), Max = mean(DailyMaxC, na.rm = T))
 
 ggplot(AirtempM, aes(x = DOY, y = TempC, color = as.factor(Year)))+
   geom_point(alpha = 0.5, size = 0.5)+
@@ -327,12 +367,21 @@ ggplot(AirtempM, aes(x = DOY, y = TempC, color = as.factor(Year)))+
   scale_x_continuous(breaks = c(91, 152, 213, 274), labels = c("Apr", "Jun", "Aug", "Oct"))+
   theme_bw()
 
+ggplot(AirtempM2, aes(x = DOY, y = TempC, color = as.factor(Year)))+
+  geom_point(alpha = 0.5, size = 0.5)+
+  geom_smooth()+
+  ylab("Daily mean air temperture (C)")+
+  xlab("Day of Year")+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  scale_x_continuous(breaks = c(91, 152, 213, 274), labels = c("Apr", "Jun", "Aug", "Oct"))+
+  theme_bw()
+
 #Degree days by air temperature
 
-AirDD = AirtempM %>%
+AirDD = AirtempM2 %>%
   group_by( Year) %>%
-  mutate(Degreedays = gdd(tmax = DailyMaxC, tmin = DailyMinC, tbase = 19, tbase_max = 35),
-         MaxDD = max(Degreedays, na.rm = T))
+  mutate(DegreedaysA = gdd(tmax = Max, tmin = Min, tbase = 19, tbase_max = 35),
+         MaxDDA = max(DegreedaysA, na.rm = T))
 
 
 ggplot(AirDD, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
@@ -345,3 +394,64 @@ ggplot(AirDD, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
                      labels = c("Apr", "Jun", "Aug", "Oct"))+
   xlab("Day of Year")
 
+#air temperature versus water temperature
+
+alltemp = left_join(DDyear, AirDD)
+
+ggplot(alltemp, aes(x = WaterMean, y = TempC, color = as.factor(Year))) + 
+  geom_point()+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  geom_smooth(method = "lm")
+
+ggplot(alltemp, aes(x = DOY, y = TempC, color = as.factor(Year))) + 
+  geom_point(alpha = 0.5)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  geom_smooth(se = FALSE)
+
+ggplot(alltemp, aes(x = DOY, y = WaterMean, color = as.factor(Year))) + 
+  geom_point(alpha = 0.5)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  geom_smooth(se = FALSE)
+
+alltemplong = alltemp %>%
+  rename(Water = WaterMean, Air = TempC) %>%
+  pivot_longer(cols = c(Water, Air), names_to = "Analyte", values_to = "MeanTemp")
+
+#TEMPERATURE PLOT FOR REPORT
+ggplot(alltemplong, aes(x = DOY, y =`MeanTemp`, color = as.factor(Year))) + 
+  geom_point(alpha = 0.1)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  geom_smooth(se = FALSE)+
+  coord_cartesian(xlim = c(70, 320), ylim = c(10, 30))+
+  ylab("Daily Mean Temp (C)")+
+  facet_wrap(~Analyte)+
+  theme_bw()+
+  scale_x_continuous(breaks = c(91, 152, 213, 274),
+                     labels = c("Apr", "Jun", "Aug", "Oct"))+
+  xlab("Day of Year")
+
+ggsave("plots/Meantemp.tiff", device = "tiff", width = 6, height = 4)
+
+
+allDDlong = alltemp %>%
+  rename(Water = Degreedays, Air = DegreedaysA) %>%
+  pivot_longer(cols = c(Water, Air), names_to = "Analyte", values_to = "DegreeDays")
+
+Maxes = alltemp %>%
+  dplyr::select(MaxDD, MaxDDA, Year) %>%
+  rename(Water = MaxDD, Air = MaxDDA) %>%
+  pivot_longer(cols = c(Water, Air), names_to = "Analyte", values_to = "MaxDD")%>%
+  group_by(Year, Analyte) %>%
+  summarize(MaxDD = max(MaxDD, na.rm = T))
+
+#DEGREE DAYS PLOT FOR REPORT
+ggplot(allDDlong, aes(x = DOY, y =`DegreeDays`, color = as.factor(Year))) + 
+  coord_cartesian(xlim = c(70, 320))+
+  geom_hline(data = Maxes, aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2, size = 1)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  geom_line(size = 1)+
+  facet_wrap(~Analyte)+
+  ylab("Degree Days above 19C")+
+  theme_bw() +scale_x_continuous(breaks = c(91, 152, 213, 274),
+                                labels = c("Apr", "Jun", "Aug", "Oct"))+
+  xlab("Day of Year")
