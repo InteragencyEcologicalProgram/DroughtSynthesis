@@ -341,6 +341,9 @@ fb_spp_cov <- fbs %>%
          ) %>% 
   glimpse()
 
+#which species 
+unique(fb_spp_cov$species)
+
 #plot species mean abundances by site (faceted by site)
 (plot_spp_score_avg <-ggplot(fb_spp_cov, aes(x=species, y= rake_mean, fill=native))+
     geom_bar(stat = "identity") + 
@@ -420,7 +423,9 @@ fb_avg <- fb_cov %>%
     geom_bar(stat = "identity") + 
     geom_errorbar(aes(ymin=rake_mean-rake_se, ymax=rake_mean+rake_se), width = 0.2) +
     ylab("Mean percent of rake head covered") + xlab("Site")
-    )
+    +
+  theme_bw()
+)
 #ggsave(file = paste0(sharepoint_path_read,"./FranksTract_BigBreak_TotalVegVolume_2021.png"),type ="cairo-png",width=2.5, height=3,units="in",dpi=300)
 
 
