@@ -192,6 +192,10 @@ weeds_ccourt <- cstars_format %>%
   st_filter(sf_ccourt_4326) 
 #n=0; no sampling in clifton court
 
+#write a file with Big Break and Franks Tract data
+weeds_fb <- bind_rows(weeds_franks,weeds_bbreak)
+#write_csv(weeds_fb,"EDB/CSTARS_2021_FT&BB_Formatted.csv")
+
 #Second draft of sampling maps using site polygons----------
 
 #create map showing Franks Tract SAV data points
