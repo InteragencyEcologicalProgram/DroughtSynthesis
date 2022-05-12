@@ -98,7 +98,7 @@ new_formatted <- new %>%
   #convert to wide form
   pivot_wider(id_cols=c(year, month, site),names_from = type,values_from = hectares) %>% 
   #clean up column names
-  clean_names() %>% 
+  clean_names()  %>% 
   mutate(
     #make year an integer
     year=as.integer(year)
@@ -107,7 +107,7 @@ new_formatted <- new %>%
     #sum all acreage categories to get total area
     ,total = rowSums(across(arundo:w_primrose))
     #create column that sums the two FAV species
-    ,fav = w_hyacinth + w_primrose
+    ,fav = w_hyacinth + w_primrose + empr
     #calculate proportion of area that is SAV
     ,sav_prop = sav/total
     #calculate proportion of area that is FAV
@@ -254,7 +254,7 @@ veg_cm_new <- new %>%
     #sum all acreage categories to get total area
     ,total = rowSums(across(arundo:w_primrose))
     #create column that sums the two FAV species
-    ,fav = w_hyacinth + w_primrose
+    ,fav = w_hyacinth + w_primrose +empr
     #calculate proportion of area that is SAV
     ,sav_prop = sav/total
     #calculate proportion of area that is FAV
@@ -657,7 +657,7 @@ bout$parameter <- row.names(bout)
 #combine output df by parameter
 aout <- full_join(fout,bout)
 
-#clean up output df
+#SAV: clean up output df
 vstat <- aout %>% 
   #no need to have corr of SAV with itself
   #also conductivity and salinity are perfectly correlated with each other
@@ -675,7 +675,7 @@ bout2$parameter <- row.names(bout2)
 #combine output df by parameter
 aout2 <- full_join(fout2,bout2)
 
-#clean up output df
+#FAV: clean up output df
 vstat2 <- aout2 %>% 
   #no need to have corr of SAV with itself
   #also conductivity and salinity are perfectly correlated with each other
@@ -723,7 +723,7 @@ vstat2 <- aout2 %>%
     ylab("Area of FAV (ha)")+
     theme_bw()
 )
-#ggsave(plot=wtemp, "EDB/Hyperspectral_FAV_Area_v_Temp.png",type ="cairo-png",width=8, scale=0.9, height=4.5,units="in",dpi=300)
+#ggsave(plot=wtemp, "EDB/Hyperspectral_FAV_BB_Area_v_Temp.png",type ="cairo-png",width=8, scale=0.9, height=4.5,units="in",dpi=300)
 
 #try to build some multiple regression models--------------------
 #might not work because of small sample size
