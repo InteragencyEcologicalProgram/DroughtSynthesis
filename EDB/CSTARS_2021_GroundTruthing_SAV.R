@@ -20,22 +20,10 @@ library(plotrix) #standard error function
 library(vegan) #PERMANOVA
 
 # Read in the data----------------------------------------------
-# Data set is on SharePoint site for the 
-# Delta Smelt Resiliency Strategy Aquatic Weed Control Action
-# I synced this folder to my OneDrive
-#sharepoint_path_read <- normalizePath(
- # file.path(
-  #  Sys.getenv("USERPROFILE"),
-   # "California Department of Water Resources/DWR - DSRS Aquatic Weed Control Action - MasterDataSet_SAV/Clean&Formatted"
-  #)
-#) 
-
-#read in field data
-#cstars <- read_csv(file = paste0(sharepoint_path_read,"./CSTARS_2021_formatted.csv"))
-#glimpse(cstars) #looks good. just need to make lat/long into geometry
 
 #read in file from Github
-cstars <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/CSTARS_2021_formatted.csv") 
+cstars <- read_csv("https://raw.githubusercontent.com/InteragencyEcologicalProgram/AquaticVegetationPWT/main/MasterDataSet_SAV/Data_Formatted/CSTARS_2021_formatted.csv") %>% 
+  arrange(latitude_wgs84,longitude_wgs84)
 glimpse(cstars)
 
 #read in df with native/non-native status
@@ -59,13 +47,44 @@ hist(cstars$depth_to_sav_m)
 #website with EPSG codes for CRS
 #https://spatialreference.org/
 
+#combine Stuckenia pectinata and S. filiformis
+#not consistently differentiated in field
+#possibly not even different species
+#start by looking at all records of them in the data set
+cstars_stuck <- cstars %>% 
+  filter(grepl("Stuckenia",species)) 
+#59 obs
+
+#are the two species ever recorded in same sample?
+cstars_stuck_dist <- cstars_stuck %>% 
+  distinct(latitude_wgs84,longitude_wgs84)
+#56 obs; yes, so need to combine some within sample values
+
 cstars_format <- cstars %>% 
+  #change Stuckenia filiformis to S. pectinata
+  mutate(species = case_when(
+    #find and replace Stuckenia_filiformis
+    str_detect(species,"filiformis")~"Stuckenia_pectinata"
+    #for all other names, keep them as they are
+    ,TRUE ~ as.character(species)
+  ))  
+
+cstars_format2<-cstars_format %>% 
+  #combine rake proportions for the two Stuckenia spp in the few samples where they are both present
+  group_by(latitude_wgs84,  longitude_wgs84, date,rake_teeth_corr,species) %>% 
+  summarize(rake_prop = sum(rake_prop), .groups = 'drop')  
+
+cstars_format3 <- cstars_format2 %>% 
   #specify the crs which is wgs84
   st_as_sf(coords = c(x='longitude_wgs84',y='latitude_wgs84'), 
            crs = 4326
            ,remove=F #retains original columns
            ) %>%   #EPSG code for WGS84
   glimpse()
+
+#compare original and formatted data sets
+glimpse(cstars)
+glimpse(cstars_format)
 
 #First draft of sampling maps-------------
 
@@ -84,7 +103,7 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
   #plot waterways base layer
   geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
   #plot SAV sampling points
-  geom_sf(data= cstars_format, fill= "red", color= "black", shape= 22, size= 1.5)+
+  geom_sf(data= cstars_format3, fill= "red", color= "black", shape= 22, size= 1.5)+
     coord_sf( 
       xlim =c(-121.870, -121.251),
       ylim = c(38.570, 37.801)
@@ -98,7 +117,7 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
-    geom_sf(data= cstars_format, fill= "red", color= "black", shape= 22, size= 3.5)+
+    geom_sf(data= cstars_format3, fill= "red", color= "black", shape= 22, size= 3.5)+
     #set bounding box for site
     #Box picks up a few unneeded sampling over in Taylor Slough 
     coord_sf( 
@@ -114,7 +133,7 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
-    geom_sf(data= cstars_format, fill= "red", color= "black", shape= 22, size= 3.5)+
+    geom_sf(data= cstars_format3, fill= "red", color= "black", shape= 22, size= 3.5)+
     #set bounding box for site
     #No stray samples from outside sites captured in this box
     coord_sf( 
@@ -132,7 +151,7 @@ WW_Delta_4326 <- st_transform(WW_Delta, crs = 4326)
     #plot waterways base layer
     geom_sf(data= WW_Delta_4326, fill= "skyblue3", color= "black") +
     #plot SAV sampling points
-    geom_sf(data= cstars_format, fill= "red", color= "black", shape= 22, size= 3.5)+
+    geom_sf(data= cstars_format3, fill= "red", color= "black", shape= 22, size= 3.5)+
     coord_sf( 
       xlim =c(-121.605, -121.552),
       ylim = c(37.867, 37.818)
@@ -174,20 +193,23 @@ bbox_fr_4326 <- st_bbox(sf_franks_4326)
 #will be used to crop base map in plots
 bbox_bb_4326 <- st_bbox(sf_bbreak_4326)
 
+#CODE FROM HERE DOWN IS BROKEN AFTER I COMBINED THE STUCKENIA SPP ABOVE---------
+#I guess start by look at format of columns
+
 #Filter CSTARS data set to just those within the Franks Tract polygon
-weeds_franks <- cstars_format %>% 
+weeds_franks <- cstars_format3 %>% 
   add_column(site="Franks Tract") %>% 
   st_filter(sf_franks_4326) 
 #n=106 (not samples which are fewer)
 
 #Filter CSTARS data set to just those within the Big Break polygon
-weeds_bbreak <- cstars_format %>% 
+weeds_bbreak <- cstars_format3 %>% 
   add_column(site="Big Break") %>% 
   st_filter(sf_bbreak_4326) 
 #n=61 rows (not samples which are fewer)
 
 #Filter CSTARS data set to just those within the Clifton Court polygon
-weeds_ccourt <- cstars_format %>% 
+weeds_ccourt <- cstars_format3 %>% 
   add_column(site="Clifton Court") %>% 
   st_filter(sf_ccourt_4326) 
 #n=0; no sampling in clifton court
@@ -250,7 +272,7 @@ ft_count<-weeds_franks %>%
 ft_wat <- weeds_franks %>% 
   filter(rake_teeth_corr==0 & is.na(species)) %>% 
   st_set_geometry(NULL) %>%  #removes geometry
-  distinct(latitude_wgs84,longitude_wgs84,date,time)
+  distinct(latitude_wgs84,longitude_wgs84,date)
 #n=5 open water samples
 
 #just look at samples where SAV was present and species have non-zero rake_prop
@@ -296,19 +318,20 @@ frbb <- bind_rows(weeds_bbreak,weeds_franks)
 #glimpse(frbb)
 
 #add the spp origin info 
-fbs1 <- left_join(frbb,org) %>% 
+fbs <- left_join(frbb,org)  %>% 
   #add id column 
   #will be used to filter out some rows
-  add_column(id = seq(1:167)) 
+  add_column(id = seq(1:161)) 
 
 #show the two duplicated S. pectinata rows
-test <- fbs1 %>% 
-  filter(site== "Big Break" & species == "Stuckenia_pectinata")
+#test <- fbs1 %>% 
+#  filter(site== "Big Break" & species == "Stuckenia_pectinata") %>% 
+#  arrange(latitude_wgs84,longitude_wgs84)
 #rows 16 and 17
 
 #drop some duplicate rows
-fbs <- fbs1 %>% 
-  filter(id!=16 & id!=17)
+#fbs <- fbs1 %>% 
+#  filter(id!=16 & id!=17)
   
 #create version of data set with just Franks Tract to send to SePro
 fbs_frank <- fbs %>% 
@@ -369,7 +392,7 @@ unique(fb_spp_cov$species)
     facet_wrap(~species,nrow = 2)+
     theme(legend.position = "none")
 )
-#ggsave(file = paste0(sharepoint_path_read,"./FranksTract_BigBreak_SppAbundance_2021.png"),type ="cairo-png",width=8, height=7,units="in",dpi=300)
+#ggsave(plot=plot_spp_score_avg2, "EDB/FranksTract_BigBreak_SppAbundance_2021.png",type ="cairo-png",width=8, height=8,units="in",dpi=300)
 
 #format df to create bar plot showing mean % rake cover of non-native spp by site
 fb_non <- fbs %>% 
