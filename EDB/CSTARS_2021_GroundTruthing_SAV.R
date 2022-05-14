@@ -193,8 +193,6 @@ bbox_fr_4326 <- st_bbox(sf_franks_4326)
 #will be used to crop base map in plots
 bbox_bb_4326 <- st_bbox(sf_bbreak_4326)
 
-#CODE FROM HERE DOWN IS BROKEN AFTER I COMBINED THE STUCKENIA SPP ABOVE---------
-#I guess start by look at format of columns
 
 #Filter CSTARS data set to just those within the Franks Tract polygon
 weeds_franks <- cstars_format3 %>% 
