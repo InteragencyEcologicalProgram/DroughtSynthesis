@@ -45,6 +45,21 @@ library(here)
 i_am("EDB/HAB_satellite_analysis_June2022.Rmd")
 ```
 
+```{r create functions}
+# Helper function to print out kable with specific options
+print_kable <- function(df, fixed_header = FALSE) {
+  df %>% 
+    kable() %>% 
+    kable_styling(
+      bootstrap_options = "striped",
+      full_width = FALSE,
+      position = "left",
+      fixed_thead = fixed_header
+    )
+}
+```
+
+
 # Import and Prepare Data
 
 Import the average Cyano Index data from a csv file since it may not remain in the `EDBdata` package.
@@ -95,12 +110,7 @@ Generate a table of imagery counts by `YearFct` and `Region`:
 df_hab_sat_counts_c %>% 
   count(YearFct, Region) %>% 
   pivot_wider(names_from = YearFct, values_from = n) %>% 
-  kable() %>% 
-  kable_styling(
-    bootstrap_options = "striped",
-    full_width = FALSE,
-    position = "left"
-  )
+  print_kable()
 ```
 
 Imagery counts are somewhat unbalanced between groups. Let's look at the imagery coverage adding the percent of valid pixels for each image:
@@ -149,8 +159,7 @@ df_hab_sat_avg_ci_c %>%
     StdDev = sd(AvgCI)
   ) %>% 
   ungroup() %>% 
-  kable() %>% 
-  kable_styling(bootstrap_options = "striped")
+  print_kable()
 ```
 
 Let's look at time-series plots of average Cyano Index values grouped by `YearFct` and `Region`:
@@ -199,12 +208,7 @@ Generate a table of imagery counts by `YearFct` and `Region`:
 df_hab_sat_counts_jun_oct %>% 
   count(YearFct, Region) %>% 
   pivot_wider(names_from = YearFct, values_from = n) %>% 
-  kable() %>% 
-  kable_styling(
-    bootstrap_options = "striped",
-    full_width = FALSE,
-    position = "left"
-  )
+  print_kable()
 ```
 
 Imagery counts are still somewhat unbalanced between groups. Let's look at the imagery coverage adding the percent of valid pixels for each image:
@@ -253,8 +257,7 @@ df_hab_sat_avg_ci_jun_oct %>%
     StdDev = sd(AvgCI)
   ) %>% 
   ungroup() %>% 
-  kable() %>% 
-  kable_styling(bootstrap_options = "striped")
+  print_kable()
 ```
 
 Let's look at time-series plots of average Cyano Index values grouped by `YearFct` and `Region`:
@@ -818,5 +821,75 @@ ggsave(
   height = 6.5,
   units = "in"
 )
+```
+
+## Quantitative Analysis for Report
+
+Calculate percentages of the counts of valid pixels within the Cyano Index categories to be used to describe the results in the report.
+
+```{r calc ci perc}
+df_hab_sat_perc <- df_hab_sat_counts_jun_oct %>% 
+  select(-c(AvgCI, InvalidOrMissing, DOY)) %>% 
+  mutate(
+    TotalCount = rowSums(across(where(is.integer))),
+    across(where(is.integer), ~ .x / TotalCount * 100),
+    HighSum = High + VeryHigh
+  ) %>% 
+  select(-TotalCount)
+```
+
+Look at the 2021 bloom in Franks Tract from July through 9/6/2021:
+
+```{r franks 2021 ci perc}
+df_hab_sat_perc %>% 
+  filter(
+    Region == "Franks Tract",
+    Date >= "2021-07-01" & Date <= "2021-09-06"
+  ) %>% 
+  print_kable(fixed_header = TRUE)
+```
+
+Look at the blooms in 2020 and 2021 in Mildred Island:
+
+```{r mildred ci perc 2020}
+# 2020:
+df_hab_sat_perc %>% 
+  filter(
+    Region == "Mildred Island",
+    Date >= "2020-06-30" & Date <= "2020-09-16"
+  ) %>% 
+  print_kable(fixed_header = TRUE)
+```
+
+```{r mildred ci perc 2021}
+# 2021:
+df_hab_sat_perc %>% 
+  filter(
+    Region == "Mildred Island",
+    Date >= "2021-06-24" & Date <= "2021-08-02"
+  ) %>% 
+  print_kable(fixed_header = TRUE)
+```
+
+Look at the blooms in 2020 and 2021 in Clifton Court Forebay:
+
+```{r ccf ci perc 2020}
+# 2020:
+df_hab_sat_perc %>% 
+  filter(
+    Region == "Clifton Court Forebay",
+    Date >= "2020-06-23" & Date <= "2020-09-05"
+  ) %>% 
+  print_kable(fixed_header = TRUE)
+```
+
+```{r ccf ci perc 2021}
+# 2021:
+df_hab_sat_perc %>% 
+  filter(
+    Region == "Clifton Court Forebay",
+    Date >= "2021-06-29" & Date <= "2021-08-21"
+  ) %>% 
+  print_kable(fixed_header = TRUE)
 ```
 
