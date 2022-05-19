@@ -20,10 +20,10 @@ library(ggpubr)
 library(here)
 
 # Check if we are in the correct working directory
-i_am("Water_Quality/analysis/usgs_flow_figures_analysis_feb2022.R")
+i_am("Water_Quality/analysis_feb2022/usgs_flow_figures_analysis.R")
 
 # Source figures and analysis functions
-source("Water_Quality/analysis/figures_analysis_feb2022_funcs.R")
+source(here("Water_Quality/analysis_feb2022/wq_flow_figures_analysis_funcs.R"))
 
 # Define factor levels: 
 # Season

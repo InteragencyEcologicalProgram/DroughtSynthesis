@@ -12,7 +12,7 @@ library(DroughtData)
 library(here)
 
 # Check if we are in the correct working directory
-i_am("Water_Quality/analysis/diss_oxygen_figures_feb2022.R")
+i_am("Water_Quality/analysis_feb2022/diss_oxygen_figures.R")
 
 # Prepare dissolved oxygen data for plots
 cont_do_daily_c <- cont_do_daily %>% 
