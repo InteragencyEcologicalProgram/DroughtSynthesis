@@ -15,8 +15,9 @@ library(emmeans)
 library(DroughtData)
 require(knitr)
 require(car)
-source('Water_Quality/wq_analysis_funcs.R')
-source('Water_Quality/wq_graph_funcs.R')
+library(here)
+source(here("Water_Quality/analysis_feb2022/nutr_analysis_funcs.R"))
+source(here("Water_Quality/analysis_feb2022/nutr_graph_funcs.R"))
 ```
 
 From Dave's Drought package

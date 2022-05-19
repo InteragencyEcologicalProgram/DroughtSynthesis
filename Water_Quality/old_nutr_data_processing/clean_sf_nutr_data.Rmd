@@ -13,7 +13,8 @@ library(anytime)
 library(sf)
 library(sp)
 # library(discretewq)
-source('Water_Quality/wq_funcs.R')
+library(here)
+source(here("Water_Quality/old_nutr_data_processing/nutr_cleaning_funcs.R"))
 ```
 
 ```{r, message=FALSE, warning = FALSE}

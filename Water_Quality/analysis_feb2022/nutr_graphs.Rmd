@@ -8,7 +8,8 @@
 ```{r}
 library(DroughtData)
 library(tidyverse)
-source('Water_Quality/wq_graph_funcs.R')
+library(here)
+source(here("Water_Quality/analysis_feb2022/nutr_graph_funcs.R"))
 ```
 
 ```{r}

@@ -11,7 +11,8 @@ library(deltamapr)
 library(lubridate)
 library(sf)
 library(sp)
-source('Water_Quality/wq_funcs.R')
+library(here)
+source(here("Water_Quality/old_nutr_data_processing/nutr_cleaning_funcs.R"))
 ```
 
 ```{r message = FALSE}
