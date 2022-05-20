@@ -287,15 +287,33 @@ plt_op_lt_reg_reg <- emm_plotter(
 # save plots
 # dissam
 bp_em_DissAmmonia_di_both <- dual_year_plts(plt_am_lt_reg_di, plt_am_lt_seas_di, 'Drought')
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_di_both.jpg'), bp_em_DissAmmonia_di_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_di_both.jpg"), 
+  plot = bp_em_DissAmmonia_di_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissnn
 bp_em_DissNitrateNitrite_di_both <- dual_year_plts(plt_nn_lt_reg_di, plt_nn_lt_seas_di, 'Drought')
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_di_both.jpg'), bp_em_DissNitrateNitrite_di_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissNitrateNitrite_di_both.jpg"), 
+  plot = bp_em_DissNitrateNitrite_di_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissorthophos
 bp_em_DissOrthophos_di_both <- dual_year_plts(plt_op_lt_reg_di, plt_op_lt_seas_di, 'Drought')
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_di_both.jpg'), bp_em_DissOrthophos_di_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_di_both.jpg"), 
+  plot = bp_em_DissOrthophos_di_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 ```
 
 # ----
@@ -573,15 +591,33 @@ plt_op_st_reg_reg <- emm_plotter(
 # save plots
 # dissam
 bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_st_reg_yr, plt_am_st_seas_yr, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_both.jpg'), bp_em_DissAmmonia_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_yt_both.jpg"), 
+  plot = bp_em_DissAmmonia_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissnn
 bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_st_reg_yr, plt_nn_st_seas_yr, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_both.jpg'), bp_em_DissNitrateNitrite_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissNitrateNitrite_yt_both.jpg"), 
+  plot = bp_em_DissNitrateNitrite_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissorthophos
 bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_st_reg_yr, plt_op_st_seas_yr, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_both.jpg'), bp_em_DissOrthophos_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_yt_both.jpg"), 
+  plot = bp_em_DissOrthophos_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 ```
 
 # ----
@@ -596,42 +632,76 @@ plt_am_st_seas_yr
 #dissam
 bp_am_seasonal <- quad_year_plts(plt_am_lt_seas_di, plt_am_st_seas_yr, plt_am_lt_seas_seas, plt_am_st_seas_seas,
                                  type = 'Season', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_am_seasonal.jpg'), bp_am_seasonal, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_am_seasonal.jpg"),
+  plot = bp_am_seasonal, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 
 #dissam
 bp_nn_seasonal <- quad_year_plts(plt_nn_lt_seas_di, plt_nn_st_seas_yr, plt_nn_lt_seas_seas, plt_nn_st_seas_seas,
                                  type = 'Season', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_nn_seasonal.jpg'), bp_nn_seasonal, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_nn_seasonal.jpg"),
+  plot = bp_nn_seasonal, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 
 #dissam
 bp_op_seasonal <- quad_year_plts(plt_op_lt_seas_di, plt_op_st_seas_yr, plt_op_lt_seas_seas, plt_op_st_seas_seas,
                                  type = 'Season', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_op_seasonal.jpg'), bp_op_seasonal, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_op_seasonal.jpg"),
+  plot = bp_op_seasonal, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 ```
+
 ```{r}
 # regional
 #dissam
 bp_am_regional <- quad_year_plts(plt_am_lt_reg_di, plt_am_st_reg_yr, plt_am_lt_reg_reg, plt_am_st_reg_reg,
                                  type = 'Region', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_am_regional.jpg'), bp_am_regional, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_am_regional.jpg"),
+  plot = bp_am_regional, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 
 #dissam
 bp_nn_regional <- quad_year_plts(plt_nn_lt_reg_di, plt_nn_st_reg_yr, plt_nn_lt_reg_reg, plt_nn_st_reg_reg,
                                  type = 'Region', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_nn_regional.jpg'), bp_nn_regional, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_nn_regional.jpg"),
+  plot = bp_nn_regional, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 
 #dissam
 bp_op_regional <- quad_year_plts(plt_op_lt_reg_di, plt_op_st_reg_yr, plt_op_lt_reg_reg, plt_op_st_reg_reg,
                                  type = 'Region', txt_size = 15, label_size = 17)
-
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_op_regional.jpg'), bp_op_regional, width = 11.5, height = 9.5)
+ggsave(
+  here("Water_Quality/bp_op_regional.jpg"),
+  plot = bp_op_regional, 
+  width = 11.5, 
+  height = 9.5,
+  units = "in"
+)
 ```
+
 ```{r}
 plt_am_st_reg_yr
 ```
+
+All exported figures were moved to the Drought Synthesis SharePoint site
 

@@ -58,7 +58,13 @@ for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
   
   # print(plt_bp)
   
- ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_yt.jpg'),plt_bp, width = 5.5, height = 4)
+  ggsave(
+    filename = here("Water_Quality", paste0("bp_", analyte, "_yt.jpg")), 
+    plot = plt_bp, 
+    width = 5.5, 
+    height = 4,
+    units = "in"
+  )
 }
 
 # drought index
@@ -79,7 +85,15 @@ for (analyte in c('DissAmmonia','DissOrthophos','DissNitrateNitrite')){
   
   # print(plt_bp)
   
-  ggsave(paste0(getwd(),'/Water_Quality/plots/bp_',analyte,'_di.jpg'),plt_bp, width = 5.5, height = 4)
+  ggsave(
+    filename = here("Water_Quality", paste0("bp_", analyte, "_di.jpg")), 
+    plot = plt_bp, 
+    width = 5.5, 
+    height = 4,
+    units = "in"
+  )
 }
 ```
+
+All exported figures were moved to the Drought Synthesis SharePoint site
 

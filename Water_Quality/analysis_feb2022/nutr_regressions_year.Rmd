@@ -77,7 +77,7 @@ aov_seasonal <- Anova(lm_seasonal, type = 'II', test.statistic = 'F')
 
 df_aov <- aov_as_df(aov_seasonal, 'DissAmmonia')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv')
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"))
 
 # plts
 plt_am_seas <- emm_plotter(
@@ -98,7 +98,13 @@ plt_am_seas <- emm_plotter(
 
 plt_am_seas
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_sea.jpg'), plt_am_seas, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_yt_sea.jpg"), 
+  plot = plt_am_seas, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 ```
 
 # Regional Averages for Entire Delta (DissAmmonia)
@@ -134,7 +140,7 @@ print(aov_regional)
 
 df_aov <- aov_as_df(aov_regional, 'DissAmmonia')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv', space = TRUE, append = TRUE)
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"), space = TRUE, append = TRUE)
 
 # plts
 plt_am_reg <- emm_plotter(
@@ -154,7 +160,13 @@ plt_am_reg <- emm_plotter(
   ylab('log(Dissolved Ammonia)')
 plt_am_reg
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_reg.jpg'), plt_am_reg, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_yt_reg.jpg"), 
+  plot = plt_am_reg, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 
 plt_am_reg_reg <- emm_plotter(
   lm_regional,
@@ -168,7 +180,13 @@ plt_am_reg_reg <- emm_plotter(
   theme_bw() +
   ylab('log(Dissolved Ammonia)')
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_reg_reg.jpg'), plt_am_reg_reg, width = 4.5, height = 3)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_reg_reg.jpg"), 
+  plot = plt_am_reg_reg, 
+  width = 4.5, 
+  height = 3,
+  units = "in"
+)
 ```
 
 # DissNitrateNitrite
@@ -212,7 +230,7 @@ print(aov_seasonal)
 
 df_aov <- aov_as_df(aov_seasonal, 'DissNitrateNitrite')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv', space = TRUE, append = TRUE)
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"), space = TRUE, append = TRUE)
 
 # plts
 plt_nn_seas <- emm_plotter(
@@ -233,7 +251,13 @@ plt_nn_seas <- emm_plotter(
 
 plt_nn_seas
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_sea.jpg'), plt_nn_seas, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissNitrateNitrite_yt_sea.jpg"), 
+  plot = plt_nn_seas, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 ```
 
 ## Regional Averages for the Entire Delta (DissNitrateNitrite)
@@ -270,7 +294,7 @@ print(aov_regional)
 
 df_aov <- aov_as_df(aov_regional, 'DissNitrateNitrite')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv', space = TRUE, append = TRUE)
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"), space = TRUE, append = TRUE)
 
 # plts
 plt_nn_reg <- emm_plotter(
@@ -291,7 +315,13 @@ plt_nn_reg <- emm_plotter(
 
 plt_nn_reg
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_reg.jpg'), plt_nn_reg, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissNitrateNitrite_yt_reg.jpg"), 
+  plot = plt_nn_reg, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 ```
 
 # Dissolved Orthophosphate
@@ -326,7 +356,7 @@ print(aov_seasonal)
 
 df_aov <- aov_as_df(aov_seasonal, 'DissOrthophos')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Seasonal', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv', space = TRUE, append = TRUE)
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"), space = TRUE, append = TRUE)
 
 # plts
 plt_op_seas <- emm_plotter(
@@ -347,7 +377,13 @@ plt_op_seas <- emm_plotter(
 
 plt_op_seas
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_sea.jpg'), plt_op_seas, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_yt_sea.jpg"), 
+  plot = plt_op_seas, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 ```
 
 # Regional Averages for the Entire Delta (DissOrthophos)
@@ -382,7 +418,7 @@ print(aov_regional)
 
 df_aov <- aov_as_df(aov_regional, 'DissOrthophos')
 df_aov <- df_aov %>% mutate(`Agg Type` = 'Regional', `Avg Type` = 'yt') %>% relocate(`Response Var`, `Agg Type`, `Avg Type`)
-write_aov(df_aov, filepath = 'Water_Quality/results/aov_yt.csv', space = TRUE, append = TRUE)
+write_aov(df_aov, filepath = here("Water_Quality/nutr_aov_yt.csv"), space = TRUE, append = TRUE)
 
 #plts
 plt_op_reg <- emm_plotter(
@@ -401,7 +437,13 @@ plt_op_reg <- emm_plotter(
   drt_color_pal_drought() +
   ylab('log(Dissolved Orthophosphate)')
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_reg.jpg'), plt_op_reg, width = 7, height = 4.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_yt_reg.jpg"), 
+  plot = plt_op_reg, 
+  width = 7, 
+  height = 4.5,
+  units = "in"
+)
 
 plt_op_reg_reg <- emm_plotter(
   lm_regional,
@@ -415,21 +457,47 @@ plt_op_reg_reg <- emm_plotter(
   theme_bw() +
   ylab('log(Dissolved Orthophosphate)')
 
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_reg_reg.jpg'), plt_op_reg_reg, width = 4.5, height = 3)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_reg_reg.jpg"), 
+  plot = plt_op_reg_reg, 
+  width = 4.5, 
+  height = 3,
+  units = "in"
+)
 ```
 
 ```{r}
 # save plots
 # dissam
 bp_em_DissAmmonia_yt_both <- dual_year_plts(plt_am_reg, plt_am_seas, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissAmmonia_yt_both.jpg'), bp_em_DissAmmonia_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissAmmonia_yt_both.jpg"), 
+  plot = bp_em_DissAmmonia_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissnn
 bp_em_DissNitrateNitrite_yt_both <- dual_year_plts(plt_nn_reg, plt_nn_seas, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissNitrateNitrite_yt_both.jpg'), bp_em_DissNitrateNitrite_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissNitrateNitrite_yt_both.jpg"), 
+  plot = bp_em_DissNitrateNitrite_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 
 # dissorthophos
 bp_em_DissOrthophos_yt_both <- dual_year_plts(plt_op_reg, plt_op_seas, 'Year', angle = 45)
-ggsave(paste0(getwd(),'/Water_Quality/plots/bp_em_DissOrthophos_yt_both.jpg'), bp_em_DissOrthophos_yt_both, width = 8, height = 3.5)
+ggsave(
+  filename = here("Water_Quality/bp_em_DissOrthophos_yt_both.jpg"), 
+  plot = bp_em_DissOrthophos_yt_both, 
+  width = 8, 
+  height = 3.5,
+  units = "in"
+)
 ```
+
+All exported figures and tables were moved to the Drought Synthesis SharePoint site
 
