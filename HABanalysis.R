@@ -22,8 +22,10 @@ load("data/data package/HABs.RData")
 
 
 #load Barrier regions shapefile
-regions = st_read(here("EDB/Spatial_data/EDB_Regions.shp")) %>%
-  st_make_valid()
+# regions = st_read(here("EDB/Spatial_data/EDB_Regions.shp")) %>%
+#   st_make_valid()
+
+regions = st_read("data/HABregions.shp")
 
 # regions = R_EDSM_Strata_1718P1%>%
 #   st_transform(crs = st_crs(4326)) %>%
@@ -37,50 +39,14 @@ ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = HABssf)+
                 position = "jitter", label.size = 0.05)
 
 ############################################################################
-#crop it to the area right around the barrier
-BarHABs = st_crop(HABssf, regions)
-
-ggplot() + geom_sf(data = regions) + geom_sf(data = BarHABs)
-
-BH =   st_join(BarHABs, regions) %>%
-  st_drop_geometry() %>%
-  filter(!is.na(Regions), Month >4) %>%
-  mutate(Yearf = as.factor(Year))
-
-BHm = filter(BH, !is.na(Microcystis), Year >2013, Month %in% c(6,7,8,9, 10))
-
-
-
-ggplot(BHm, aes(x = Regions, fill = as.factor(Microcystis))) +geom_bar(position = "fill")+ facet_wrap(~Year) +
-  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
-                    labels = c("absent", "low", "medium", "high", "very high"),
-                    name = "Microcystis")+ ylab("Relative Frequency")+
-  scale_x_discrete(labels = c("Central Delta", "Sacramento", "San Joaquin"))
-
-
 ###################################################################
 
 #look at regions across the Delta
 sumfall = filter(HABs, Month %in% c(6,7,8,9,10), !is.na(Microcystis))
 
-reg2 = R_EDSM_Regions_1819P1 %>%
-  st_transform(crs = st_crs(4326))
 
-reg3 = R_EDSM_Strata_1718P1%>%
-  st_transform(crs = st_crs(4326)) %>%
-  mutate(Stratum2 = factor(Stratum, 
-                           levels = c("Western Delta", "Suisun Bay", "Suisun Marsh", "Lower Sacramento",
-                                      "Lower San Joaquin", "Eastern Delta", "Southern Delta",
-                                      "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel",
-                                      "Upper Sacramento"), 
-                           labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
-                                      "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
-                                      "Upper Sac")),
-         nudge = c(-.05,0,0,0,0,0,0,0,.1,0),
-         colors = c( "#8DD3C7","#FFFFB3","#BEBADA" ,"#FB8072", "#80B1D3","#FDB462","#B3DE69",       
-                     "#FCCDE5" , "#D9D9D9", "#BC80BD"))
-
-save(reg3, file= "Regions.RData")
+reg3 = regions
+#save(reg3, file= "Regions.RData")
 
 HABssf1 = filter(sumfall, !is.na(Longitude), !is.na(Latitude)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
@@ -94,7 +60,19 @@ sfhaball2 = st_crop(HABssf, reg3)%>%
   mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
     "absent", "low", "med", "high", "v.high")))  
 
-ggplot() + geom_sf(data = reg3)+ geom_sf(data = WW_Delta)# + geom_sf(data = HABssf1)
+mypal = reg3$colors
+
+# Map of regions for report ####################
+ggplot() + geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.7)+ 
+  geom_sf(data = WW_Delta, fill = "lightblue")+ # + geom_sf(data = HABssf1)+
+scale_fill_manual(values = reg3$colors, guide = NULL)+
+  geom_sf_label(data = reg3,aes(label = Stratum2))+
+  coord_sf(xlim = c(-121.3, -121.9), ylim = c(37.7, 38.6))+
+  theme_bw()+
+  xlab(NULL) + ylab(NULL)
+
+ggsave("HABregionsmap.tiff", device = "tiff", width = 5, height = 7)
+#
 
 #crop it to the area we are interested in
 sfhab = st_crop(HABssf1, reg3)%>%
@@ -121,14 +99,15 @@ SFHall =   sfhaball %>%
 #THIS IS THE PLOT FOR THE REPORT
 SFH2021 = filter(SFHall, Year == 2021)
 test = filter(sfhaball, Year == 2021)
-ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(position = "fill")+
+ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(position = "fill", color = "grey")+
   facet_wrap(~Month, nrow = 3)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
   theme_bw()+
   theme(legend.position = "top")+
   ylab(NULL) + xlab(NULL)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
+ggsave("HABs2021.tiff", device = "tiff", width = 6, height = 5)
 
 SFHall2 = group_by(SFHall, Yearm, Yearf, Year, Month, Mic, Stratum) %>%
   summarize(n = n()) %>%
@@ -150,14 +129,15 @@ ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, fi
   ylab(NULL) + xlab(NULL)
 
 #Bar graph plot for the report
-ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Year, y = n, fill = Mic, group = Mic)) + geom_col(position = "fill")+
+ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Year, y = n, fill = Mic, group = Mic)) + 
+  geom_col(position = "fill", color = "grey")+
   facet_wrap(~Stratum, nrow = 4)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
   theme_bw()+
   theme(legend.position = "top")+
   ylab(NULL) + xlab(NULL)
 
-ggsave("Microtimeseries.tiff", device = "tiff", width = 11, height = 8, units = "in")
+ggsave("Microtimeseries.tiff", device = "tiff", width = 8, height = 6, units = "in")
 
 
 
@@ -174,31 +154,27 @@ SFH =   sfhab %>%
                          labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))   
 
 
+
+Habs2 =   st_join(HABssf, reg3) %>%
+  st_drop_geometry() %>%
+  filter(!is.na(Stratum), !is.na(Microcystis)) %>% 
+  mutate(Year = year(Date), Yearf = as.factor(Year),
+         Month2 = factor(Month, levels = c(6,7,8,9,10),
+                         labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    
+
+
+
 ####################################################################################
 #Models for HAB weed report
 
 
-HWR =   sfhab%>%
-  st_drop_geometry() %>%
-  filter(!is.na(Stratum), !is.na(Microcystis)) %>% 
-  mutate(Yearf = as.factor(Year),
-         Month2 = factor(Month, levels = c(6,7,8,9,10),
-                         labels = c("Jun", "Jul", "Aug", "Sep", "Oct")),
-         HABord = case_when(
-           Microcystis == 1 ~ "absent",
-           Microcystis %in% c(2,3) ~ "Low",
-           Microcystis %in% c(4,5) ~ "High")) %>%
-  mutate(HABord = factor(HABord, levels = c("absent", "Low", "High"), ordered = T)) %>%
-  filter(Year >2013)
-
-
-effort = group_by(HWR, Year, Stratum) %>%
+effort = group_by(Habs2, Year, Stratum2) %>%
   summarize(N = n()) %>%
-  pivot_wider(id_cols = Stratum, names_from = Year, values_from = N)
+  pivot_wider(id_cols = Stratum2, names_from = Year, values_from = N)
 
 write.csv(effort, "visualindexeffort.csv")
 
-SFH2 = mutate(HWR, HABPA = case_when(
+SFH2 = mutate(Habs2, HABPA = case_when(
   Microcystis == 1 ~ FALSE,
   Microcystis > 1 ~ TRUE)) %>%
   filter(Year >2013)
@@ -213,30 +189,9 @@ SFHwflow = left_join(SFH2, yeartypes)
 
 ##############################################################
 #ordered logistic regression
-Regions<-read_csv("RosiesDraftAnalyses/Rosies_regions2.csv")
+HABs3 = Habs2
 
-
-## Load Delta Shapefile from Brian
-Delta<-deltamapr::R_EDSM_Subregions_Mahardja_FLOAT%>%
-  filter(SubRegion%in%unique(Regions$SubRegion))%>%  #Filter to regions of interest
-  dplyr::select(SubRegion)
-
-Regs = unique(Regions[,c(1,5)])
-Delta = merge(Delta, Regs) %>%
-  st_transform(crs = 4326)
-
-
-
-Habs2 =   st_join(HABssf, Delta) %>%
-  st_drop_geometry() %>%
-  filter(!is.na(Region), !is.na(Microcystis)) %>% 
-  mutate(Yearf = as.factor(Year),
-         Month2 = factor(Month, levels = c(6,7,8,9,10),
-                         labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    
-
-
-
-SFH2a = mutate(Habs2, HABord = case_when(
+Habs2 = mutate(Habs2, HABord = case_when(
   Microcystis == 1 ~ "absent",
   Microcystis %in% c(2,3) ~ "Low",
   Microcystis %in% c(4,5) ~ "High")) %>%
@@ -247,7 +202,7 @@ SFH2a = mutate(Habs2, HABord = case_when(
 
 #now an orgered logistic regression
 library(multcomp)
-ord2 = polr(HABord ~Yearf, data = SFH2a, Hess = T)
+ord2 = polr(HABord ~Yearf + Stratum2, data = Habs2, Hess = T)
 summary(ord2)
 Anova(ord2)
 pairs = emmeans(ord2, pairwise ~ Yearf)
@@ -257,7 +212,12 @@ tukcfg = cld(emmeans(ord2, pairwise ~ Yearf), Letters = letters) %>%
   mutate(Year = as.numeric(as.character(Yearf)), 
          Letter = str_trim(.group)) 
 
+tukcfg2 = cld(emmeans(ord2, pairwise ~ Stratum2), Letters = letters) %>%
+  mutate( 
+         Letter = str_trim(.group)) 
 
+Tuekyresults = bind_rows(tukcfg, tukcfg2)
+write.csv(Tuekyresults, "Pairwise_visualdata.csv")
 
 #write.csv(pairs, "visualdata_alldelta.csv")
 pr <- profile(ord2)
@@ -267,95 +227,70 @@ pairs(pr)
 
 
 #Plot across the whole Delta, just summer/fall
-ggplot(sumfall, aes(x = Year, fill = as.factor(Microcystis))) +
-  geom_bar(position = "fill")+ 
+ggplot(HABs3, aes(x = Year, fill = as.factor(Microcystis))) +
+  geom_bar(position = "fill", color = "grey")+ 
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
                     labels = c("absent", "low", "medium", "high", "very high"),
                     name = "Microcystis")+ ylab("Relative Frequency") +
   geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
 
+ggsave("YearHAB.tiff", device = "tiff", width = 6, height = 5)
 
-(ctable <- coef(summary(ord1)))
+
+(ctable <- coef(summary(ord2)))
 ## calculate and store p values
 p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 
 ## combined table
 (ctable <- cbind(ctable, "p value" = p))
-(ci <- confint(ord1))
-exp(cbind(OR = coef(ord1), ci))
+write.csv(ctable, "Visualindexmodel.csv")
+
+(ci <- confint(ord2))
+exp(cbind(OR = coef(ord2), ci))
 
 #By Region, just summer/fall
 ggplot(SFH2a, aes(x = Year, fill = as.factor(Microcystis))) +
-  geom_bar(position = "fill")+ facet_wrap(~Region)+
+  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
                     labels = c("absent", "low", "medium", "high", "very high"),
                     name = "Microcystis")+ ylab("Relative Frequency") 
 
 ###################################################
-#import temperature analyses
-Temps = read_csv("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/Barrier/DWR_TempCount.csv")
 
-HAB3 = pivot_wider(HWR, id_cols = c(Yearf, Stratum2), 
-                   names_from = HABord, values_from = Microcystis,
-                   values_fn = length, values_fill = 0) %>%
-  ungroup() %>%
-  mutate(present = Low + High)
 
-#connect stratums to temperature stations
-cdec = read.csv("data/CDEC_StationsEC.csv")
-cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326)
+#function for orgered logistic regression
+HabMod = nest_by(Habs2, Stratum2) %>%
+  mutate(mod = list(polr(HABord ~Yearf, data = data, Hess = T)),
+         pairs = list(emmeans(mod, pairwise ~ Yearf)),
+         CLD = list(cld(pairs, Letters = letters)))
 
-stasT = filter(cdecsf, STA %in% c("BET", "DWS", "FRK", "LIB", "LPS",
-                                  "MAL","MRZ", "NSL", "SJJ", "SRH"))
-stasT2 = st_join(stasT, reg3) %>%
-  st_drop_geometry() %>%
-  rename(Station = STA) %>%
-  dplyr::select(Station, Stratum2)
+RegTuk = summarize(HabMod, broom::tidy(CLD))%>%
+  mutate(Year = as.numeric(as.character(Yearf)), 
+         Letter = str_trim(.group)) %>%
+  rename(emmean = estimate, std.erroremm = std.error)
 
-#join temperatures to regions
-Temps = left_join(Temps, stasT2)
+regMod = summarize(HabMod, broom::tidy(mod)) %>%
+  mutate(Yearf = str_sub(term, start = 6, end = 9))
 
-#Summarize by stratum
-Tempssum = group_by(Temps, Stratum2, Year, Threshold) %>%
-  summarize(Days = mean(Days)) %>%
-  mutate(Yearf = as.factor(Year))
+ctable <- summarize(HabMod, ctab = coef(summary(mod)),
+                    p = pnorm(abs(ctab[, "t value"]), lower.tail = FALSE) * 2)
 
-#Attach to HAB data.
-HAB3a = left_join(HAB3, Tempssum) %>%
-  mutate(PresentPerc = present/(present + absent), Total = present + absent) %>%
-  filter(!is.na(Threshold)) %>%
-  mutate(Threshold = factor(Threshold, labels = c("19 C", "25 C")))
 
-ggplot(HAB3a, aes(x = Days, y = PresentPerc)) + geom_point(aes(shape = Yearf, color = Stratum2))+
-  facet_wrap(~Threshold, scales = "free_x") + geom_smooth(method = "lm")+
-  scale_shape_manual(values = c(16,17,15,4,5,6,7,8), name = NULL)+
-  scale_color_brewer(palette = "Dark2", name = NULL)+theme_bw()+
-  ylab("Percent of observations\n with Microcystis present")+
-  xlab("Days above temperature threshold")
 
-HAB3b = group_by(HAB3a, Year, Threshold) %>%
-  summarize(Days = mean(Days), Percent = mean(PresentPerc), 
-            total = sum(Total), present = sum(present))
-ggplot(HAB3b, aes(x = Days, y = Percent)) + geom_point()+
-  facet_wrap(~Threshold, scales = "free_x") + geom_smooth(method = "lm")+
-  ylab("Percent of observations\n with Microcystis Present")+
-  xlab("Days above temperature threshold")
-#binomial regression
+regMod2 = left_join(regMod, RegTuk) %>%
+  bind_cols(ctable)
+write.csv(regMod2, "regionalresults.csv")
 
-Thresh25 = filter(HAB3a, Threshold == "Temp25")
-Thresh19 = filter(HAB3a, Threshold == "Temp19")
+#By Region, just summer/fall
+ggplot(Habs2, aes(x = Year, fill = as.factor(Microcystis))) +
+  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2, nrow = 4)+
+  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
+                    labels = c("absent", "low", "medium", "high", "very high"),
+                    name = "Microcystis")+ ylab("Relative Frequency") +
+  geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
+  theme_bw()+ theme(legend.position = "top", legend.key = element_rect(color = "black"))
 
-b1 = glmer(present/Total~ Days + (1|Stratum2), data = Thresh19,
-           family = "binomial")
-summary(b1)
-visreg(b1, scale = "response", gg = TRUE)+ xlab("Days above 19 C")+
-  ylab("Probability of Microcystis Presence") + theme_bw()
-
-plot(b1)
-b2 = glmer(present/Total~ Days + (1|Stratum2), data = Thresh25,
-           family = "binomial")
-summary(b2)
-visreg(b2, scale = "response")
+ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
 
 ##############################################################################
 #Now the flow analysis
@@ -398,9 +333,9 @@ ggplot(filter(flowX, Outflow >0, Year > 2007),
 names(DF)
 names(flowX)
 names(Temps)
-names(HWR)
-HWR = mutate(HWR, Date = as.Date(Date))
-test = left_join(HWR, dplyr::select(flowX, -Year, -Season)) %>%
+names(Habs2)
+Habs2 = mutate(Habs2, Date = as.Date(Date))
+test = left_join(Habs2, dplyr::select(flowX, -Year, -Season)) %>%
   filter(Temperature >0, Temperature <30) %>%
   left_join(DF)
 
@@ -420,7 +355,7 @@ test = left_join(HWR, dplyr::select(flowX, -Year, -Season)) %>%
 
 #let's simplify
 
-SoDelta = dplyr::filter(test, Stratum2 %in% c("Lower SJ", "Lower Sac", "South Delta"))
+SoDelta = dplyr::filter(test, Stratum2 %in% c("Lower SJ", "Lower Sac", "South Delta", "Franks", "OMR"))
 
 
 #OK, this is super, duper not working. WHat can I do here?

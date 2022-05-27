@@ -105,7 +105,7 @@ library(deltamapr)
 #   # Assign "Outside" to stations without region assignments
 #   replace_na(list(Region = "Outside"))
 
-reg3 = st_transform(R_EDSM_Strata_1718P1, crs = 4326)
+reg3 = st_read("data/HABregions.shp")
 
 df_region_emp <- df_coord_emp %>%
      dplyr::select(Station, Latitude, Longitude) %>%
@@ -179,6 +179,7 @@ phyto_edb <- df_phyto_all %>%
   dplyr::select(
     Station,
     Stratum,
+    Stratum2,
     Year,
     Date,
     DateTime,
@@ -196,13 +197,14 @@ write.csv(phyto_edb, file = "AllEMPphyto.csv")
 #######################################################
 
 phyto_edb = read_csv("AllEMPphyto.csv")
-
+tax = group_by(phyto_edb, Genus, AlgalType) %>%
+  summarize(n = n())
 #plot it at the genus level
-EMP_wzeros = pivot_wider(phyto_edb, id_cols = c(Station, Date, Stratum, Year), names_from = Genus,
+EMP_wzeros = pivot_wider(phyto_edb, id_cols = c(Station, Date, Stratum, Stratum2, Year), names_from = Genus,
                          values_from = `OrganismsPerMl`, values_fill = 0, values_fn = sum) %>%
   pivot_longer(cols = "Cocconeis":last_col(), names_to = "Genus", values_to = "CountperML") %>%
   mutate(Month = month(Date)) %>%
-  left_join(df_phyto_taxonomy_c1) %>%
+  left_join(tax) %>%
   mutate(AlgalType = case_when(
     `AlgalType` == "Centric diatom" ~ "Centric Diatom",
     `AlgalType` == "Unknown Genus" ~ "Unknown",
@@ -238,14 +240,7 @@ EMPHAB = filter(EMP_wzeros,  Genus %in% c("Aphanizomenon", "Anabaena", "Dolichos
                                         "Microcystis", "Oscillatoria", "Cylindrospermopsis",  "Anabaenopsis",
                                         "Planktothrix"), !is.na(Stratum)) %>%
   mutate(Genus = case_when(Genus == "Anabaena" ~"Dolichospermum",
-                           TRUE ~ Genus), Stratum2 = factor(Stratum, 
-                           levels = c("Western Delta", "Suisun Bay", "Suisun Marsh", "Lower Sacramento",
-                                      "Lower San Joaquin", "Eastern Delta", "Southern Delta",
-                                      "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel",
-                                      "Upper Sacramento"), 
-                           labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
-                                      "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
-                                      "Upper Sac")))
+                           TRUE ~ Genus))
 
 EMPHABave = group_by(EMPHAB, Stratum2, Month, Year, Genus) %>%
   summarize(CountperML = mean(CountperML))
@@ -277,4 +272,4 @@ ggplot(EMPHABave, aes(x = Year, y = CountperML, fill = Genus))+
   geom_col()+facet_grid(Genus~Stratum2, scales = "free_y") + 
   ylab("Organisms per mL") + theme_bw()+ scale_fill_discrete(guide = NULL)+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-ggsave("HABspecies.tiff", device = "tiff", width = 8, height = 6)
+ggsave("HABspecies.tiff", device = "tiff", width = 7, height = 8)

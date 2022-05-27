@@ -121,7 +121,7 @@ EMP2 = filter(EMP, Date > as.Date("2021-09-30"), Microcystis != "NA") %>%
 HABsX = bind_rows(HABs, FMWT2, EMP2)
 HABs = HABsX
 #save the combined visual index data
-save(HABs, file = "HABs.RData")
+save(HABs, file = "data/data package/HABs.RData")
 
 #############################################################################
 #look at how chlorophyll measured by the YSI compares to grab samples, just for fun.
@@ -141,10 +141,8 @@ ggplot(DOP, aes(x = Chlorophyll, y = ChlA_YSI)) +
 #regions = st_read("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/Barrier/BarrierRegions/shpExport.shp") %>%
 #  st_make_valid()
 
-regions = R_EDSM_Strata_1718P1%>%
-  st_transform(crs = st_crs(4326)) %>%
-  filter(Stratum %in% c("Lower Sacramento", "Lower San Joaquin", "Southern Delta"))
-
+regions = st_read("HABregions.shp")
+  
 HABssf = filter(HABs, !is.na(Longitude), !is.na(Latitude)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
 
@@ -300,20 +298,9 @@ ggplot(sumfall, aes(x = Year, fill = as.factor(Microcystis))) +geom_bar(position
                     name = "Microcystis")+ ylab("Relative Frequency")+
   theme_bw()
 
-reg2 = R_EDSM_Regions_1819P1 %>%
-  st_transform(crs = st_crs(4326))
 
-reg3 = R_EDSM_Strata_1718P1%>%
-  st_transform(crs = st_crs(4326)) %>%
-  mutate(Stratum2 = factor(Stratum, 
-                          levels = c("Western Delta", "Suisun Bay", "Suisun Marsh", "Lower Sacramento",
-                                                                        "Lower San Joaquin", "Eastern Delta", "Southern Delta",
-                                                                        "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel",
-                                                                        "Upper Sacramento"), 
-                                                    labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
-                                                               "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
-                                                               "Upper Sac")),
-         nudge = c(-.05,0,0,0,0,0,0,0,.1,0))
+
+reg3 = st_read("HABregions.shp")
 
 
 HABssf1 = filter(sumfall, !is.na(Longitude), !is.na(Latitude)) %>%
@@ -328,7 +315,8 @@ sfhab = st_crop(HABssf1, reg3)%>%
 #load teh grab sample stations
 EMPstas = read.csv("data/EMP_Discrete_Water_Quality_Stations_1975-2020.csv") 
 EMP = st_as_sf(filter(EMPstas, !is.na(Latitude)), coords = c("Longitude", "Latitude"), crs = st_crs(4326)) %>%
-  filter(Status == "Active")
+  filter(Status == "Active") %>%
+  st_crop(reg3)
 
 #load CDEC coordinates and filter to stations of inerest
 cdec = read.csv("data/CDEC_StationsEC.csv") %>%
@@ -342,15 +330,21 @@ cdecsf = st_as_sf(cdec, coords = c("Longitude", "Latitude"), crs = 4326)
 
 library(ggsn)
 #plot the map
+sfhab = mutate(sfhab, Source = case_when(Source == "DWR_EMP" ~ "EMP",
+                                         Source == "DWR_NCRO" ~ "NCRO",
+                                         Source == "FMWTx" ~ "FMWT",
+                                         TRUE ~ Source))
+
 ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
   geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.4) + 
- # geom_sf(data = sfhab, aes(shape = Source)) +
-#  scale_shape_discrete(name = "Visual Index Sites")+
-#  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "Phytoplankton \n samples"))+
+  scale_fill_manual(values = reg3$colors, guide = NULL)+
+  geom_sf(data = filter(sfhab, Source != "DOP"), aes(shape = Source)) +
+  scale_shape_discrete(name = "Visual Index Sites")+
+  geom_sf(data = EMP, shape = 16, size = 4, aes(color = "Phytoplankton \n samples"))+
   #geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
   scale_color_manual(values = c("red", "blue"), name = NULL)+
-  scale_fill_brewer(palette = "Set3", guide = NULL)+
- coord_sf(xlim = c(-122.4, -121.2), ylim = c(37.6, 38.6))+
+  
+ coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.6, 38.6))+
   geom_sf_label(data = reg3, aes(label = Stratum2), 
                  label.size = 0.05,
                 label.padding = unit(0.1, "lines"),
@@ -359,14 +353,48 @@ ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
   #               label.size = 0.05,
   #               label.padding = unit(0.1, "lines"))+
   #You can adjust the size, units, etc of your scale bar.
-  scalebar(data = EMP, dist = 20, dist_unit = "km",
-           transform = TRUE, st.dist = .05) +
+  scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .05, x.min = -121.6, x.max = -121.8, y.min = 37.6, y.max = 37.8) +
   
   #there are a number of different optinos for north arrow symbols. ?north
   north(data = reg3, symbol = 2) +
   theme_bw()+ylab("")+xlab("")
 
-ggsave("plots/HABmap.tiff", device = "tiff", width = 8, height = 8)
+ggsave("plots/HABmap.tiff", device = "tiff", width = 6, height = 8)
+ggsave("plots/HABmap.pdf", device = "pdf", width = 6, height = 8)
+
+
+####################################################
+#regional map
+ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
+  geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.4) + 
+  scale_fill_manual(values = reg3$colors, guide = NULL)+
+ 
+  coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.6, 38.6))+
+  geom_sf_label(data = reg3, aes(label = Stratum2), 
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"),
+                nudge_y = reg3$nudge, alpha = 0.8, fontface = "bold")+
+  # geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
+  #               label.size = 0.05,
+  #               label.padding = unit(0.1, "lines"))+
+  #You can adjust the size, units, etc of your scale bar.
+  scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .1, x.min = -121.6, x.max = -121.8, y.min = 37.6, y.max = 37.8) +
+  
+  #there are a number of different optinos for north arrow symbols. ?north
+  north(data = reg3, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")
+
+ggsave("plots/RegionsHABs.tiff", device = "tiff", width = 6, height = 8)
+ggsave("plots/RegionsHABs.pdf", device = "pdf", width = 6, height = 8)
+
+
+
+
+
+
+######################################################
 
 SFH =   sfhab %>%
   st_drop_geometry() %>%

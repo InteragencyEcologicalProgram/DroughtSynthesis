@@ -65,6 +65,8 @@ stas1 = st_join(stas, regions, join=st_intersects)%>% # Add subregions
   st_drop_geometry() %>% # Drop sf geometry column since it's no longer needed
   dplyr::select(StationCode, Regions)
   
+stasTNS = left_join(stas1, stations)
+
 #get rid of things we don't need
 TNS2 = left_join(stas1, Townet)  %>%
   dplyr::select(-`Tows Completed`,-`Temperature Top`, -`Temperature Bottom`,          
@@ -344,6 +346,12 @@ stas1D = st_join(stasD, regions, join=st_intersects)%>% # Add subregions
   filter(!is.na(Regions))%>% # Remove any data outside our regions of interest
   st_drop_geometry() %>% # Drop sf geometry column since it's no longer needed
   dplyr::select(StationCode, Regions)
+
+stasDJFMP = left_join(stas1D, DJFMPstas)
+
+fishstas = bind_rows(stasDJFMP, stasTNS)
+write.csv(fishstas, "fishstations.csv")
+
 
 DJFMP = left_join(DJFMP, stas1D) %>%
   filter(!is.na(Regions), GearConditionCode ==1) %>%

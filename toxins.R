@@ -221,12 +221,19 @@ allTox3a = left_join(allTox3, Stas) %>%
 bleh = filter(allTox3a, is.na(Longitude))
 
 load("data/data package/Alltoxindata.RData")
-Alltoxsf = st_as_sf(Alltox3, coords = c("Latitude", "Longitude"), crs = 4326) 
+
 
 #Alltoxsf = dplyr::select(Alltoxsf, Station, Date, Year, Month, Analyte, result, Study, Region, Stratum2, Stratum3)
 #save(Alltoxsf, file = "Alltoxindata.RData")
 
+Stastest = st_as_sf(Stas, coords = c("Latitude", "Longitude"), crs = 4326) %>%
+  st_join(reg3) %>%
+  extract(geometry, c('lat', 'lon'), '\\((.*), (.*)\\)') 
+write.csv(Stastest, "toxinstations.csv")
 
+Alltoxx = left_join(Alltox3, Stastest)
+
+Alltoxsf = st_as_sf(Alltoxx, coords = c("Latitude", "Longitude"), crs = 4326) 
 reg3crop = st_crop(reg3, xmin = -121.9, xmax = -121.2, ymin = 37.65, ymax = 38.4)
 
 library(deltamapr)
@@ -244,7 +251,7 @@ Alltoxsf = mutate(Alltoxsf, Study = case_when(
 
 ggplot()+
   geom_sf(data =reg3crop, aes(fill = Stratum2), alpha = 0.5)+
-  scale_fill_manual(values = mypal, name = NULL, guide = NULL)+
+  scale_fill_manual(values = reg3crop$colors, name = NULL, guide = NULL)+
   geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
   geom_sf(data = Alltoxsf, aes(color = Study))+
   scale_color_brewer(palette = "Dark2")+
@@ -254,9 +261,18 @@ ggplot()+
   #geom_sf_text(data = Alltoxsf, aes(label = Station), size = 2)
   geom_sf_text(data = reg3crop, aes(label = Stratum2))+
   annotate("text", x = -121.3, y = 37.7, label = "Vernalis")+
-  annotate("text", x = -121.6, y = 37.77, label = "Clifton Court")
+  annotate("text", x = -121.6, y = 37.77, label = "Clifton Court")+
+  scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .1, x.min = -121.6, x.max = -121.8, y.min = 37.7, y.max = 37.9) +
+  
+  #there are a number of different optinos for north arrow symbols. ?north
+  north(data = reg3crop, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")
 
 ggsave(filename = "plots/Toxinmap.tiff", device = "tiff", width = 6, height = 6)
+
+ggsave(filename = "plots/Toxinmap.pdf", device = "pdf", width = 6, height = 6)
+
 
 ggplot()+geom_sf(data = Delta)+ geom_sf(data = filter(Alltoxsf, Analyte == "Microcystins"),
                                         aes(color = Study, size = result)) 
@@ -273,8 +289,8 @@ Stas2 = group_by(Alltoxsf, Station, Year, Region) %>%
 
 
 health = data.frame(Analyte = c("Microcystins", "Microcystins", "Microcystins", "Anatoxins","Anatoxins"), Advisory = c(0.8, 6,20, .5, 20),
-                    AdviseType = c("Caution\nTeir I", "Warning \nTeir II","Danger \nTeir III", "Caution\nTeir I", "Warning \nTeir II")) %>%
-  mutate(AdviseType = factor(AdviseType, levels = c("Caution\nTeir I", "Warning \nTeir II","Danger \nTeir III")))
+                    AdviseType = c("Caution\nTier I", "Warning \nTier II","Danger \nTier III", "Caution\nTier I", "Warning \nTier II")) %>%
+  mutate(AdviseType = factor(AdviseType, levels = c("Caution\nTier I", "Warning \nTier II","Danger \nTier III")))
 
 ggplot(filter(Alltoxsf, Study == "EastBay", Analyte == "Microcystins"), aes(x = month(Date), y = result)) + geom_point()+
     geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
@@ -283,16 +299,21 @@ ggplot(filter(Alltoxsf, Study == "EastBay", Analyte == "Microcystins"), aes(x = 
   scale_x_continuous(breaks = c(2,5,8,11))+
   ggtitle("Big Break Regional Shoreline")+
   theme_bw()
+ggsave(filename = "BigBreak2021.tiff", device = "tiff", width = 5, height = 5, units = "in")
 
-ggplot(filter(Alltoxsf, Study != "EastBay"), aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
-  geom_hline(data = filter(health, AdviseType != "Danger \nTeir III"), aes(yintercept = Advisory, color = AdviseType))+
+Alltoxsf$Stratum2[which(Alltoxsf$Region == "Vernalis")] = "Vernalis"
+Alltoxsf$Stratum2[which(Alltoxsf$Region == "Clifton Court")] = "CCF"
+
+ggplot(filter(Alltoxsf, Study != "EastBay", year(Date) == 2021, Analyte != "Saxitoxins"), aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
+  geom_hline(data = filter(health, AdviseType != "Danger \nTier III"), aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
-  facet_grid(Analyte~Stratum3, scales = "free_y") +
+  facet_grid(Analyte~Stratum2, scales = "free_y") +
   xlab("Month of 2021")+ ylab("Concentration ug/L")+
   scale_x_continuous(breaks = c(2,5,8,11))+
-  theme_bw()
+  theme_bw()+
+  theme(legend.position = "bottom")
 
-ggsave(filename = "Toxins.tiff", device = "tiff", width = 8, height = 5, units = "in")
+ggsave(filename = "Toxins.tiff", device = "tiff", width = 11, height = 6, units = "in")
 
 methods = group_by(SpattWater, toxin, method, class) %>%
   summarize(n= n())
@@ -342,11 +363,26 @@ inc2021 =
 
 ggplot()+
   geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
-  geom_sf(data = inc2021, aes(fill = Advisory), shape = 21, color = "black", size = 3)+
-  scale_fill_manual(values = c("yellow",  "red"), labels = c("Caution", "Danger"))+
-  theme_bw()+
+
+  geom_sf(data = reg3crop, aes(fill = Stratum2), alpha = 0.4) + 
+  scale_fill_manual(values = reg3$colors, guide = NULL)+
+  geom_sf_text(data = reg3crop, aes(label = Stratum2), 
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"),
+                nudge_y = reg3$nudge, alpha = 0.8, fontface = "bold")+
+  
+  theme_bw()+ylab("")+xlab("")+
+
+  geom_sf(data = inc2021, aes(color = Advisory), size = 3)+
+  scale_color_manual(values = c("yellow",  "red"), labels = c("Caution", "Danger"), name = "Incident Reports\nAdvisory Level")+
+  theme_bw()+ scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .1, x.min = -121.6, x.max = -121.8, y.min = 37.75, y.max = 37.9) +
+    north(data = inc2021, symbol = 2) +
   scale_x_continuous(limits = c(-121.9, -121.2)) +
-  scale_y_continuous( limits = c(37.65, 38.4))
+  scale_y_continuous( limits = c(37.7, 38.4))
+
+ggsave("Incidentsmap.pdf", device = "pdf", width = 6, height = 6)
+
 
 ggplot()+
   geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
@@ -367,10 +403,18 @@ Bigbreak = filter(Bigbreak, Analyte == "Microcystins") %>%
 ggplot(Bigbreak, aes(x = DOY, y = Result)) + geom_point()+
   geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
-  facet_wrap(~Year) + theme_bw() + ylab("Microcystin concentraiton ug/L")+
+  facet_wrap(~Year) + theme_bw() + ylab("Microcystin concentration ug/L")+
   scale_x_continuous(breaks = c(30, 91, 152, 213, 274, 335),
                      labels = c("Feb", "Apr", "Jun", "Aug", "Oct", "Dec"))
+ggsave(filename = "BigBreak.tiff", device = "tiff", width = 7, height = 6)
 
+ggplot(filter(Bigbreak, Year == 2021), aes(x = DOY, y = Result)) + geom_point()+
+  geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
+  scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
+  facet_wrap(~Year) + theme_bw() + ylab("Microcystin concentration ug/L")+
+  scale_x_continuous(breaks = c( 91, 152, 213, 274),
+                     labels = c("Apr", "Jun", "Aug", "Oct"))
+ggsave(filename = "BigBreak2021.tiff", device = "tiff", width = 4, height = 4)
 
 #Can I plot all the 2021 toxin data in terms of warning levels?
 
@@ -413,3 +457,25 @@ Alltox3 = mutate(Alltox3, Advisory = case_when(Analyte == "Microcystins" & resul
 write.csv(Alltox3, "Alltoxindata.csv")
 Alltoxsf = st_as_sf(Alltox3, coords = c("Latitude", "Longitude"), crs = 4326)
 st_write(Alltoxsf, "data/HABs/Toxindata.shp", )
+
+############################################
+#
+ggplot()+
+  geom_sf(data =reg3crop, aes(fill = Stratum2), alpha = 0.5)+
+  scale_fill_manual(values = reg3crop$colors, name = NULL, guide = NULL)+
+  geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
+  geom_sf(data = filter(Alltoxsf, Study == "Prop 1"))+
+  scale_color_brewer(palette = "Dark2")+
+  theme_bw()+
+  scale_x_continuous(limits = c(-121.9, -121.2)) +
+  scale_y_continuous( limits = c(37.65, 38.4))+
+  #geom_sf_text(data = Alltoxsf, aes(label = Station), size = 2)
+  geom_sf_text(data = filter(Alltoxsf, Study == "Prop 1"), aes(label = Station))+
+  annotate("text", x = -121.3, y = 37.7, label = "Vernalis")+
+  annotate("text", x = -121.6, y = 37.77, label = "Clifton Court")
+
+alltox2021 = Alltox3 %>%
+  mutate(Year = year(Date)) %>%
+  filter(Year == 2021)
+
+write.csv(alltox2021, "AllTox2021.csv", row.names = FALSE)

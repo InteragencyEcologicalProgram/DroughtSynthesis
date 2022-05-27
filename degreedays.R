@@ -10,20 +10,23 @@ library(sf)
 
 #quick check of hte nurient data
 load("Regions.RData")
-hab_nutr_chla_mvi <- read_excel("data/hab_nutr_chla_mvi.xlsx")
+hab_nutr_chla_mvi <- read_csv("data/hab_nutr_chla_mvi.csv")
 
 #attach regions
-nutsallsf = st_as_sf(hab_nutr_chla_mvi, coords = c("Longitude", "Latitude"), crs = 4326) %>%
-  st_join(reg3) %>%
-  dplyr::select(-nudge, -Stratum) %>%
-  rename(Region = Stratum2)
-
-save(nutsallsf, file = "nuts_w_regions.RData")
+# nutsallsf = st_as_sf(hab_nutr_chla_mvi, coords = c("Longitude", "Latitude"), crs = 4326) %>%
+#   st_join(reg3) %>%
+#   dplyr::select(-nudge, -Stratum) %>%
+#   rename(Region = Stratum2)
+# 
+# save(nutsallsf, file = "nuts_w_regions.RData")
 
 Franks = filter(hab_nutr_chla_mvi, Station %in% c("D19")) %>%
   mutate(Month = month(Date), Year = year(Date), Chlorophyll = as.numeric(Chlorophyll),
          Nitrate = as.numeric(DissNitrateNitrite)) %>%
   filter(Month %in%c(4, 5, 6,7,8,9))
+
+#replace values below the reporting limits with zeros
+
 
 ggplot(Franks, aes(x= Month, y = Chlorophyll, color = as.factor(Year)))+geom_point() + geom_line() +
   xlab("month - 2021")+ ylab("chlorophyll ug/L")
@@ -43,6 +46,12 @@ Nuts = mutate(hab_nutr_chla_mvi, Month = month(Date),
               Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
               Nitrate = as.numeric(DissNitrateNitrite),
               Phosphorus = as.numeric(DissOrthophos)) %>%
+  mutate(Chl = case_when(Chlorophyll_Sign == "<" ~ 0,
+                         TRUE ~ Chlorophyll),
+         Nitrate = case_when(DissNitrateNitrite_Sign == "<" ~ 0,
+                             TRUE ~ Nitrate),
+         Phosphorus = case_when(DissOrthophos_Sign == "<" ~ 0,
+                                TRUE ~ Phosphorus)) %>%
   dplyr::filter(Year == 2021, Month %in% c(2, 3, 4, 5, 6,7,8,9))
 
 
@@ -51,28 +60,16 @@ ggplot(Nuts, aes(x= Month, y = Nitrate, color = Station ))+geom_point() + geom_l
 
 
 
-reg2 = R_EDSM_Regions_1819P1 %>%
-  st_transform(crs = st_crs(4326))
-
-reg3 = R_EDSM_Strata_1718P1%>%
-  st_transform(crs = st_crs(4326)) %>%
-  mutate(Stratum2 = factor(Stratum, 
-                           levels = c("Western Delta", "Suisun Bay", "Suisun Marsh", "Lower Sacramento",
-                                      "Lower San Joaquin", "Eastern Delta", "Southern Delta",
-                                      "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel",
-                                      "Upper Sacramento"), 
-                           labels = c("Far West", "Suisun Bay", "Suisun Marsh", "Lower Sac",
-                                      "Lower SJ", "East Delta", "South Delta", "Cache/Liberty", "SDWSC",
-                                      "Upper Sac")),
-         nudge = c(-.05,0,0,0,0,0,0,0,.1,0))
 
 nutssf = st_as_sf(Nuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
   st_join(reg3) %>%
   st_drop_geometry() %>%
-  filter(!is.na(Stratum2)) %>%
+ # filter(!is.na(Region)) %>%
   mutate(Station = case_when(Source == "USGS_CAWSC" ~str_sub(Station, start = 6),
                              TRUE ~ Station),
-         Ammonium = as.numeric(DissAmmonia))
+         Ammonium = as.numeric(DissAmmonia)) %>%
+  mutate(Ammonium = case_when(DissAmmonia_Sign == "<" ~ 0,
+                         TRUE ~ Ammonium))
 
 library(RColorBrewer)
 pal = c(brewer.pal(8, "Set2"), brewer.pal(12, "Set3"), brewer.pal(9, "Set1"), brewer.pal(12, "Paired"), "black", "grey")
@@ -80,14 +77,14 @@ pal = c(brewer.pal(8, "Set2"), brewer.pal(12, "Set3"), brewer.pal(9, "Set1"), br
 nutssf %>%
   droplevels() %>%
   filter(!is.na(Nitrate)) %>%
-  split(.$Stratum2) %>%
+  split(.$Region) %>%
   map(~ ggplot(., aes(x= Date, y = Nitrate, color = Station ))+geom_point() + geom_line() +
         xlab("Date")+ ylab("Nitrate + Nitrite (mg/L)") +
         scale_color_manual(values = pal)+
         annotate("rect", xmin = min(nutssf$Date), 
                  xmax =  max(nutssf$Date),
                  ymin = 0, ymax = 0.04, alpha = 0.5, fill = "gray")+
-        ggtitle(.$Stratum2)+
+        ggtitle(.$Region)+
         theme_bw()+
         theme(legend.margin = margin(0, 0,0,0),
               legend.text = element_text(size = 7),
@@ -127,10 +124,13 @@ nutssf %>%
   droplevels() %>%
   filter(!is.na(Chlorophyll)) %>%
 split(.$Stratum2) %>%
-  map(~ ggplot(., aes(x= Date, y = Chlorophyll, color = Station ))+geom_point() + geom_line() +
+  map(~ ggplot(., aes(x= Date, y = Chl, color = Station ))+geom_point() + geom_line() +
         xlab("Date")+ ylab("Chlorophyll (ug/L)") +
         scale_color_manual(values = pal)+
         ggtitle(.$Stratum2)+
+        annotate("rect", xmin = min(nutssf$Date), 
+                 xmax =  max(nutssf$Date),
+                 ymin = 0, ymax = 0.5, alpha = 0.5, fill = "gray")+
         theme_bw()+
         theme(legend.margin = margin(0, 0,0,0),
             legend.text = element_text(size = 7),
@@ -178,7 +178,15 @@ SoNuts = mutate(hab_nutr_chla_mvi, Month = month(Date),
                 Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
                 NitrateNitrite = as.numeric(DissNitrateNitrite),
                 Ammonium = as.numeric(DissAmmonia), 
-                Orthophos = as.numeric(DissOrthophos))
+                Orthophos = as.numeric(DissOrthophos)) %>%
+  mutate(Chl = case_when(Chlorophyll_Sign == "<" ~ 0,
+                         TRUE ~ Chlorophyll),
+         Nitrate = case_when(DissNitrateNitrite_Sign == "<" ~ 0,
+                             TRUE ~ NitrateNitrite),
+         Phosphorus = case_when(DissOrthophos_Sign == "<" ~ 0,
+                                TRUE ~ Orthophos),
+         Ammonium = case_when(DissAmmonia_Sign == "<" ~ 0,
+                                TRUE ~ DissAmmonia))
 
 
 Sonutssf = st_as_sf(SoNuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
@@ -195,7 +203,7 @@ Sonutssf = st_as_sf(SoNuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
     Month %in% c(9,10,11) ~ "Fall"
   ))
 SoNutsmean = Sonutssf %>%
-  pivot_longer(cols = c(Ammonium, Chlorophyll, NitrateNitrite, Orthophos), names_to= "Analyte",
+  pivot_longer(cols = c(Ammonium, Chl, Nitrate, Phosphorus), names_to= "Analyte",
                values_to = "Concentration")  %>%
   group_by(Year, Season, Analyte) %>%
 summarize(ConcentrationM = mean(Concentration, na.rm = T), 
@@ -206,7 +214,7 @@ ggplot(SoNutsmean, aes(x=Year, y = ConcentrationM, fill = Season)) + geom_col()+
   geom_errorbar(aes(ymin = ConcentrationM - SEc, ymax = ConcentrationM + SEc ))+
   facet_grid(Analyte~Season, scales = "free_y")+
   scale_fill_brewer(palette = "Set2", guide = NULL)+
-  ylab("Concentration (mg/L)")+
+  ylab("Concentration")+
   theme_bw()
 
 ggsave(filename = "Nutrients.tiff", device = "tiff", width = 6, height = 5)
@@ -216,24 +224,24 @@ library(lme4)
 library(lmerTest)
 library(emmeans)
 library(DHARMa)
-nit = lmer(log(Nitrate) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
+nit = lmer(log(Nitrate+0.04) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(nit)
 plot(nit)
 nitres = simulateResiduals(nit)
 plot(nitres)
 #OK, some issues
 
-Amm = lmer(log(Ammonium) ~ as.factor(Year)+Season + (1|Month)+ (1|Station),  data = Sonutssf)
+Amm = lmer(log(Ammonium+0.05) ~ as.factor(Year)+Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(Amm)
 plot(simulateResiduals(Amm))
 
 
 
-chl= lmer(log(Chlorophyll) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
+chl= lmer(log(Chl+0.01) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(chl)
 plot(simulateResiduals(chl))
 
-Orth= lmer(log(Orthophos) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
+Orth= lmer(log(Phosphorus+0.05) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(Orth)
 plot(Orth)
 plot(simulateResiduals(Orth))
@@ -245,7 +253,7 @@ ggplot(SoNutsmean, aes(x=Year, y = ConcentrationM, fill = Season)) + geom_col()+
   facet_grid(Analyte~Season, scales = "free_y")+
   scale_fill_brewer(palette = "Set2", guide = NULL)+
  # geom_text(data = tuk, aes(x = Year, y = 0, label = group), inherit.aes = FALSE)+
-  ylab("Concentration (mg/L)")+
+  ylab("Concentration")+
   theme_bw()
 
 #Meh, maybe I don't show the letters?
@@ -455,3 +463,60 @@ ggplot(allDDlong, aes(x = DOY, y =`DegreeDays`, color = as.factor(Year))) +
   theme_bw() +scale_x_continuous(breaks = c(91, 152, 213, 274),
                                 labels = c("Apr", "Jun", "Aug", "Oct"))+
   xlab("Day of Year")
+
+
+#####################################################################
+# water quality map
+nutsallsf = hab_nutr_chla_mvi %>%
+  group_by(Source, Station, Longitude, Latitude) %>%
+  summarize(N = n()) %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+#continuous stations
+WQsta = read_excel("data/continuous stations.xlsx") %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+ggplot() + geom_sf(data=reg3, aes(fill = Stratum2), alpha = 0.7)+
+  scale_fill_manual(values = reg3$colors, guide = NULL)+
+  geom_sf(data = WW_Delta, fill = "lightblue")+
+  geom_sf(data=nutsallsf, aes(shape = Source))+
+  scale_shape(name = "Nutrients")+
+  geom_sf(data = WQsta, aes(color = Type), size = 3)+
+  scale_color_manual(values = c("blue", "red"), name = "Continuous Stations")+
+    geom_sf_label(data = WQsta, aes(label = StationCode), size = 2, label.size  = 0.05, nudge_x = .03)+
+    theme_bw()+
+  scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .1, x.min = -121.6, x.max = -121.8, y.min = 37.6, y.max = 37.8) +
+  
+  #there are a number of different optinos for north arrow symbols. ?north
+  north(data = reg3, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")+
+  coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.7, 38.6))+
+  xlab(NULL)+ ylab(NULL)
+
+ggsave("WQmap.tiff", device = "tiff", width = 7, height = 9)
+ggsave("plots/WQmap.pdf", device = "pdf", width = 7, height = 9)
+
+###############################################################
+#N:P ratio
+
+Ratios = read.csv("data/HABs/DWR_NutChl_NP_ratio.csv") %>%
+  mutate(Date = mdy(Date), Month = month(Date)) %>%
+  filter(RegionName != "Suisun")
+
+
+Ratiossum = group_by(Ratios, Year, Month, RegionName) %>%
+  summarize(NPratioM = mean(NPratio, na.rm = T), sdNP = sd(NPratio, na.rm = T), minNP = min(NPratio), maxNP = max(NPratio))
+
+ggplot(filter(Ratiossum, Month %in% c(6,7,8,9)), aes(x = Month, y = NPratioM)) + geom_col()+ facet_grid(RegionName~Year)+
+ geom_hline(yintercept = 16, color = "red")+
+  geom_errorbar(aes(ymin = NPratioM-sdNP, ymax = NPratioM + sdNP))
+
+ggplot(Ratiossum, aes(x = Month, y = NPratioM, fill = RegionName)) + geom_col()+ 
+  facet_grid(RegionName~Year, scales = "free_y")+
+  geom_hline(yintercept = 16, color = "red")+
+  geom_errorbar(aes(ymin = minNP, ymax = maxNP))+
+  scale_fill_manual(values = reg3$colors, guide = NULL)+
+  scale_x_continuous(breaks = c(2,4,6,8,10))+
+  xlab("Month of Year")+ ylab("N:P Ratio")+
+  theme_bw()
