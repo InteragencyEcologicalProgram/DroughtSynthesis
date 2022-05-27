@@ -98,7 +98,7 @@ new_formatted <- new %>%
   #convert to wide form
   pivot_wider(id_cols=c(year, month, site),names_from = type,values_from = hectares) %>% 
   #clean up column names
-  clean_names() %>% 
+  clean_names()  %>% 
   mutate(
     #make year an integer
     year=as.integer(year)
@@ -107,7 +107,7 @@ new_formatted <- new %>%
     #sum all acreage categories to get total area
     ,total = rowSums(across(arundo:w_primrose))
     #create column that sums the two FAV species
-    ,fav = w_hyacinth + w_primrose
+    ,fav = w_hyacinth + w_primrose + empr
     #calculate proportion of area that is SAV
     ,sav_prop = sav/total
     #calculate proportion of area that is FAV
@@ -169,14 +169,27 @@ veg_prop <- alln %>%
   pivot_longer(c(sav_prop:fav_prop), names_to = "type_prop", values_to = "area_prop") %>% 
   mutate(across(c("type_prop"), as.factor)) 
 
-#total area: stacked bar plots
+#focal sites: stacked bar plots------------------------------
 #add symbol for missing data
 #use better colors
-ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
-  geom_bar(position = "stack", stat = "identity") + 
+(foc_ha <- ggplot(veg_tot, aes(x=year, y=area_ha,  fill = type_total))+
+  geom_bar(position = "stack", stat = "identity", colour="grey25") + 
   ylab("Vegetation Coverage (ha)") + xlab("Year") + 
-  scale_fill_discrete(labels=c("FAV","SAV")) +
+  #scale_fill_discrete(labels=c("FAV","SAV")) +
+  scale_fill_manual(name= NULL
+                    ,labels=c("Floating","Submersed")
+                    ,values=c("#88BA33","#556B2F")
+                    ,guide=guide_legend(keyheight=0.5)
+  )  +
+  #customizes names in legend key, specifies the custom color palette, and sets height of elements in legend
+  theme(
+    legend.box.spacing=unit(0, units="cm"), 
+    legend.margin=margin(t=0,r=0,b=2,l=0, unit="pt")) +
+  theme_bw()+
   facet_grid(site~.)
+)
+#ggsave(plot=foc_ha, "EDB/Hyperspectral_Veg_Area_TimeSeries_FocalSiteArea.png",type ="cairo-png",width=8, scale=0.8, height=7,units="in",dpi=300)
+
 
 #proportion area: stacked bar plots
 ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
@@ -185,7 +198,7 @@ ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
   scale_fill_discrete(labels=c("FAV","SAV")) +
   facet_grid(site~.)
 
-#summary stats for Franks Tract--------------
+#summary stats--------------
 
 #2004-2006: moderately low SAV
 #2007-2008: DBW does intensive fluridone treatments
@@ -194,10 +207,16 @@ ggplot(veg_prop, aes(x=year, y=area_prop,  fill = type_prop))+
 #2105 sudden increase in SAV
 #2015-2020: sustained high SAV
 
-#range for 2004-2006
 erg <- alln %>% 
   #just FT 
   filter(site=="Franks Tract") 
+
+bbeff <- alln %>% 
+  filter(site=="Big Break")
+
+cceff <- alln %>% 
+  filter(site=="Clifton Court")
+range(cceff$fav_prop)
 
 
 #barplot of common area of delta through time--------------------
@@ -235,7 +254,7 @@ veg_cm_new <- new %>%
     #sum all acreage categories to get total area
     ,total = rowSums(across(arundo:w_primrose))
     #create column that sums the two FAV species
-    ,fav = w_hyacinth + w_primrose
+    ,fav = w_hyacinth + w_primrose +empr
     #calculate proportion of area that is SAV
     ,sav_prop = sav/total
     #calculate proportion of area that is FAV
@@ -367,7 +386,7 @@ chart.Correlation(ft[2:10])
 #Big Bend: correlations among all land surface types
 chart.Correlation(bb[2:10])
 
-#make comparisons among sites within land types
+#make comparisons among sites within land types-----------
 
 #format data sets
 veg_corr <- alln %>% 
@@ -638,7 +657,7 @@ bout$parameter <- row.names(bout)
 #combine output df by parameter
 aout <- full_join(fout,bout)
 
-#clean up output df
+#SAV: clean up output df
 vstat <- aout %>% 
   #no need to have corr of SAV with itself
   #also conductivity and salinity are perfectly correlated with each other
@@ -656,7 +675,7 @@ bout2$parameter <- row.names(bout2)
 #combine output df by parameter
 aout2 <- full_join(fout2,bout2)
 
-#clean up output df
+#FAV: clean up output df
 vstat2 <- aout2 %>% 
   #no need to have corr of SAV with itself
   #also conductivity and salinity are perfectly correlated with each other
@@ -704,7 +723,7 @@ vstat2 <- aout2 %>%
     ylab("Area of FAV (ha)")+
     theme_bw()
 )
-#ggsave(plot=wtemp, "EDB/Hyperspectral_FAV_Area_v_Temp.png",type ="cairo-png",width=8, scale=0.9, height=4.5,units="in",dpi=300)
+#ggsave(plot=wtemp, "EDB/Hyperspectral_FAV_BB_Area_v_Temp.png",type ="cairo-png",width=8, scale=0.9, height=4.5,units="in",dpi=300)
 
 #try to build some multiple regression models--------------------
 #might not work because of small sample size

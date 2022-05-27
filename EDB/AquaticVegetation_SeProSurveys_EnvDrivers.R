@@ -126,8 +126,21 @@ vegd <- left_join(veg_clean,drivers) %>%
 #create nested data frame
 #a data frame of species abundances for each driver
 #vegd_nest <- vegd %>% 
-#  group_by(parameter) %>% 
-#  nest() 
+#  group_by(species) %>% 
+#  nest()
+
+#  mutate(
+#    gg1 = purrr::map(data, ~ ggplot(., aes(mean_score,value)) + geom_point()),
+    #gg2 = purrr::map(data, ~ ggplot(., aes(Sepal.Length, Petal.Width)) + geom_point()),
+#    g = purrr::pmap(list(gg1, gg2), ~ gridExtra::grid.arrange(..1, ..2, ..3))
+#  )
+
+
+#ys <- c("mpg","cyl","disp")
+#ys %>% map(function(y) 
+#  ggplot(mtcars, aes(hp)) + geom_point(aes_string(y=y)))
+
+
   #start looking at some relationships
 #  mutate(model = map(data, function(df) cor.test(score_mean ~ Temperature, data = df)))
 
