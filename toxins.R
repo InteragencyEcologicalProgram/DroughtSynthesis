@@ -1,19 +1,29 @@
+#This script organizes and graphs all the toxin data from a variety of sources
+#Rosemary Hartman
+#5/29/2022
+
 library(tidyverse)
 library(lubridate)
 library(sf)
 library(readxl)
 library(DroughtData)
+library(RColorBrewer)
+library(deltamapr)
+library(ggmap)
+library(ggsn)
 
-Toxins = read_csv("data/HABs/ToxinDataDWR2.csv") %>%
-  mutate(Date = mdy(Date))
-Toxins2 = pivot_wider(Toxins, id_cols = c(Date, Station), names_from = Analyte, 
-                      values_from = Result, values_fill = 0) 
+#set up a color palette for later
+HABcol = data.frame(Color = brewer.pal(7, "Dark2"),
+                    Genus = c( "Anabaenopsis", "Aphanizomenon","Cylindrospermopsis", "Dolichospermum" ,   
+                               "Microcystis","Oscillatoria","Planktothrix"))
 
-ggplot(Toxins2, aes(x = Date, y = MC, color = Station)) + geom_line(size = 1) + geom_point()+
-  scale_color_brewer(palette = "Set1")+ ylab("Microcystins (ug/L)") + theme_bw()
-
+#Toxin Data from DWR, recieved from Brianne Sakata Brianne.Sakata@water.ca.gov
+#We had to do a little post-processing to get them in the right format
 
 hab_samples <- read_excel("data/HABs/DWR_DFD_Cyanotoxin_results_2021 - JG.xlsx")
+
+#Get the species into a consistant format
+#I didn't end up using this in the report, but might be useful later.
 unique(hab_samples$`PTOX Species`)
 habs = mutate(hab_samples, Species = case_when(
   `PTOX Species` %in% c("Aphanizomenon cf. flos-aquae/klebahnii", 
@@ -25,32 +35,36 @@ habs = mutate(hab_samples, Species = case_when(
 ), Concentration = parse_number(`units/ml`))
 unique(habs$Species)
 
+#Now pivot wider then longer so I can add in zeros
 habs2 = pivot_wider(habs, id_cols = c(Station, Date), names_from = Species, 
                        values_from = Concentration, values_fill = 0, values_fn = sum) %>%
   dplyr::select(!`none observed`) %>%
   pivot_longer(cols = "Aphanizomenon":"cf. Chrysosporum", names_to = "Species") %>%
   filter(!is.na(value))
 
+#quick plot
 ggplot(habs2, aes(x = as.factor(Date), y = value, fill = Species)) + geom_bar(stat = "identity")
 
+#look at data from just 2021
 habs2021 = filter(habs2, year(Date)==2021, Station %in% c("Banks PP", "Clifton Court Forebay"),
                   value !=0) %>%
   mutate(Day = date(Date))
 
+#I used this plot in the Deceber 15 draft report, but cut it from the final version
 ggplot(habs2021, aes(x = as.factor(Date), y = value, fill = Species)) + geom_col() +
   facet_wrap(~Station)+ scale_fill_manual(breaks = HABcol$Genus, values = HABcol$Color) + theme_bw()+
   theme(axis.text.x = element_text(vjust = 1, hjust = 1, angle = 90))+
   ylab("units present") +xlab(NULL)
   
-HABcol = data.frame(Color = brewer.pal(7, "Dark2"),
-                    Genus = sort(unique(EMPHAB2$Genus)))
 
-
+#Now I'll look at the toxins
+#replace non-detects with zeros
 hab_samples = mutate(hab_samples, Result = case_when(
   `Result (ng/mL)` %in% c("ND", "ND*") ~"0",
   TRUE ~ `Result (ng/mL)`
 ), Result = as.numeric(Result))
 
+#Get rid of the species and just look at toxins at each station. 
 toxin3 = group_by(hab_samples, Station, Analyte, Date) %>%
   summarize(result = mean(Result, na.rm = T)) %>%
   mutate(result = case_when(
@@ -58,47 +72,34 @@ toxin3 = group_by(hab_samples, Station, Analyte, Date) %>%
     TRUE ~ result
   ), Year = year(Date))
 
-ggplot(toxin3, aes(x = Date, y = result)) + geom_line()
+ggplot(toxin3, aes(x = Date, y = result, color = Analyte)) + geom_line()
 
 ##############################################################
-#look at data from CEDEN
-ceden = read_csv("data/HABs/ceden_data_20220208093111.xls.csv")
-str(ceden)
-
-cdensf = st_as_sf(ceden, coords = c("TargetLongitude","TargetLatitude"), crs = st_crs(4326))
-
-regions = R_EDSM_Strata_1718P1%>%
-  st_transform(crs = st_crs(4326))
-
-cdensf = st_join(cdensf, regions)  
-cdensfin = st_intersection(cdensf, regions)  
-
-ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = regions)+
-  geom_sf(data = cdensfin)
-#UGH not helpful What am I doing wrong?
-
-#just filter by counties instead.
-
-cedensub = filter(ceden, county %in% c("Contra Costa", "San Joaquin", "Solano", "Sacramento"))
-
 ##########################################################
-#Now the data from USGS/DWR SPATT sudy
+#Now the data from USGS/DWR SPATT study
 
+#This is the data from the whole-water grab samples taken with the spats
 SpattWater = read_csv("data/HABs/USGS_DWR_fixed_station_WW_cyanotoxins_Rexport.csv")
 
+#This is data from teh spats themselves
 Spatt = read_csv("data/HABs/USGS_DWR_fixed_station_SPATT_cyanotoxins_Rexport.csv")
 
+#quick exploritory plot
 ggplot(SpattWater, aes(x = date_time, y = resultNum)) + geom_point()+
   facet_grid(class~Site, scales = "free_y")
 
+#Look at total concentration of all toxins in a category
 SpattWater2 = SpattWater %>%
- # filter(toxin %in% c("Total Anatoxin-a" , "Total BMAA",                
-  #                    "Total Saxitoxin", "Total Nodularin-R" , "Total Cylindrospermopsin","Total Anabaenopeptins")) %>%
   group_by(toxin)%>%
   summarize(Res = sum(resultNum, na.rm = T))
 
+#Subset all stations that had no toxins
 NoTox = filter(SpattWater2, Res ==0)
+
+#subset all stations with toxins detected
 Tox = filter(SpattWater, detect_tox == "Yes")
+
+#remove stations with no toxins
 SpattWaterX = filter(SpattWater, !toxin %in% NoTox$toxin, !is.na(resultNum)) %>%
   group_by(BGC_ID, Site, NWIS_site_no, Date, date_time, lab, Year, Month, DOY, class)%>%
   summarize(result = sum(resultNum, na.rm = T)) %>%
@@ -108,6 +109,7 @@ SpattWaterX = filter(SpattWater, !toxin %in% NoTox$toxin, !is.na(resultNum)) %>%
 ggplot(SpattWaterX, aes(x = date_time, y = result)) + geom_point()+
   facet_grid(class~Site, scales = "free_y")
 
+# Just total toxins with in a class per sample
 SpattWaterXX = SpattWater %>%
   group_by( Site, Date, date_time, Year, Month, DOY, class)%>%
   summarize(result = sum(resultNum, na.rm = T)) %>%
@@ -117,6 +119,9 @@ write.csv(SpattWaterXX, "USGSwater.csv")
 
 #######################################
 #Spatts
+#I didn't present the SPATT data because there were issues getting data
+#for part of hte year, and I wasn't quite sure how to make it comparable
+#to the water samples, but they might be useful for next year.
 
 Spatt2 = Spatt %>%
   # filter(toxin %in% c("Total Anatoxin-a" , "Total BMAA",                
@@ -145,6 +150,7 @@ unique(SpattWater$class)
 SpattWaterX = mutate(SpattWaterX, Analyte = class) %>%
   rename(Station = Site)
 
+#Bind the spatt data to DWR's data, changing the 'analyte' to the same names as 'class'
 allTox = bind_rows(SpattWaterX, filter(toxin3, Station %in% c("Banks PP", "Clifton Court Forebay"))) %>%
   filter(!Analyte %in% c("STX", "CYN", "PTOX Screen- toxin analysis not recommended"),
          Year == 2021) %>%
@@ -155,6 +161,8 @@ allTox = bind_rows(SpattWaterX, filter(toxin3, Station %in% c("Banks PP", "Clift
   ))
 
 #water board samples from Franks Tract
+#There were only a few samples and they were in a really 
+#weird format so it was easier to just copy them in this way
 Frk = data.frame(Station = c("FRK", "FRK", "FRK", "MI"), Analyte = c("Microcystins", "Microcystins", "Anatoxins", "Microcystins"),
                  Date = c(as.Date("2021-07-02"), as.Date("2021-08-06"),as.Date("2021-08-06"), as.Date("2021-07-02")),
                  result = c(0, 0.63, 0, 0.6))
@@ -167,6 +175,8 @@ allTox2 = bind_rows(allTox, Frk) %>%
 #East Bay Parks data
 EastBay = read_excel("data/HABs/HAB_Monitoring.xlsx", sheet = "East Bay")
 
+#read in the data, filter to just Big Break, keep the columns I need,
+#and replace non-detects with zeros
 EastBayX = dplyr::filter(EastBay, Water_Body == "Big Break Regional Shoreline") %>%
   dplyr::select(Station_Code, Site_Name, Actual_Latitude, Actual_Longitude, Sample_ID, `Microcystin (µg/L)\r\nELISA_Method`, Sample_Date) %>%
   rename(resultF = `Microcystin (µg/L)\r\nELISA_Method`, Date = Sample_Date) %>%
@@ -177,7 +187,7 @@ EastBayX = dplyr::filter(EastBay, Water_Body == "Big Break Regional Shoreline") 
   dplyr::filter(!is.na(result))
 
 
-#Nautilus data (whoever that is)
+#Nautilus data 
 
 Nautilus = read_excel("data/HABs/HAB_Monitoring.xlsx", sheet = "Nautalis")
 
@@ -209,36 +219,26 @@ preece = read_excel("data/HABs/Prop 1 data_4.1.22.xlsx", sheet = "preecedata") %
 
 
 #bind them all together!!
+#also get rid of saxitoxins, because no one ever found any
 allTox3 = bind_rows(allTox2, preece, Naut, EastBayX) %>%
   mutate(Date = case_when(is.na(Date) ~ date_time,
                           TRUE ~ Date)) %>%
   filter(Analyte != "Saxitoxins")
 
 #Attatch stations
-Stas =  read_excel("data/HABs/Prop 1 data_4.1.22.xlsx", sheet = "stations")
-allTox3a = left_join(allTox3, Stas) %>%
-  mutate(Longitude = as.numeric(Longitude))
-bleh = filter(allTox3a, is.na(Longitude))
-
-load("data/data package/Alltoxindata.RData")
-
+Stas =  read.csv("toxinstations.csv")
+allTox3a = left_join(allTox3, Stas) 
 
 #Alltoxsf = dplyr::select(Alltoxsf, Station, Date, Year, Month, Analyte, result, Study, Region, Stratum2, Stratum3)
 #save(Alltoxsf, file = "Alltoxindata.RData")
 
-Stastest = st_as_sf(Stas, coords = c("Latitude", "Longitude"), crs = 4326) %>%
-  st_join(reg3) %>%
-  extract(geometry, c('lat', 'lon'), '\\((.*), (.*)\\)') 
-write.csv(Stastest, "toxinstations.csv")
-
-Alltoxx = left_join(Alltox3, Stastest)
-
-Alltoxsf = st_as_sf(Alltoxx, coords = c("Latitude", "Longitude"), crs = 4326) 
+Alltoxsf = st_as_sf(allTox3a, coords = c("lat", "lon"), crs = 4326) 
 reg3crop = st_crop(reg3, xmin = -121.9, xmax = -121.2, ymin = 37.65, ymax = 38.4)
 
-library(deltamapr)
+Alltoxsf = dplyr::select(Alltoxsf, Station, Date, Year, Month, Analyte, result, Study, Region, Stratum2)
+save(Alltoxsf, file = "data/HABs/Alltoxindata.RData")
 
-library(RColorBrewer)
+
 mypal =  c(brewer.pal(10, "Set3"), "gray", "darkolivegreen")
 
 load("Regions.RData")
@@ -249,6 +249,8 @@ Alltoxsf = mutate(Alltoxsf, Study = case_when(
   TRUE ~ Study
 ))
 
+#Map all the toxin stations
+#This is plot 2-4 in the report
 ggplot()+
   geom_sf(data =reg3crop, aes(fill = Stratum2), alpha = 0.5)+
   scale_fill_manual(values = reg3crop$colors, name = NULL, guide = NULL)+
@@ -264,8 +266,6 @@ ggplot()+
   annotate("text", x = -121.6, y = 37.77, label = "Clifton Court")+
   scalebar(dist = 10, dist_unit = "km",
            transform = TRUE, st.dist = .1, x.min = -121.6, x.max = -121.8, y.min = 37.7, y.max = 37.9) +
-  
-  #there are a number of different optinos for north arrow symbols. ?north
   north(data = reg3crop, symbol = 2) +
   theme_bw()+ylab("")+xlab("")
 
@@ -274,36 +274,20 @@ ggsave(filename = "plots/Toxinmap.tiff", device = "tiff", width = 6, height = 6)
 ggsave(filename = "plots/Toxinmap.pdf", device = "pdf", width = 6, height = 6)
 
 
-ggplot()+geom_sf(data = Delta)+ geom_sf(data = filter(Alltoxsf, Analyte == "Microcystins"),
-                                        aes(color = Study, size = result)) 
 
-#regions to send to folks
-RegionsHABs = mutate(reg3, Colors = brewer.pal(10, "Set3"))
-
-ggplot(Alltoxsf, aes(x = Date, y = result, color = Station)) + geom_point()+
-  facet_grid(Analyte~Stratum3, scales = "free_y") +
-  theme_bw()
-
-Stas2 = group_by(Alltoxsf, Station, Year, Region) %>%
-  summarise(n = n())
-
-
+#To plot the toxin data, I want to put it in terms of the health
+#advisory levels from OEHHA. Here is a dataframe of those levels:
 health = data.frame(Analyte = c("Microcystins", "Microcystins", "Microcystins", "Anatoxins","Anatoxins"), Advisory = c(0.8, 6,20, .5, 20),
                     AdviseType = c("Caution\nTier I", "Warning \nTier II","Danger \nTier III", "Caution\nTier I", "Warning \nTier II")) %>%
   mutate(AdviseType = factor(AdviseType, levels = c("Caution\nTier I", "Warning \nTier II","Danger \nTier III")))
 
-ggplot(filter(Alltoxsf, Study == "EastBay", Analyte == "Microcystins"), aes(x = month(Date), y = result)) + geom_point()+
-    geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
-  scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
-  xlab("Month of 2021")+ ylab("Microcystin Concentration ug/L")+
-  scale_x_continuous(breaks = c(2,5,8,11))+
-  ggtitle("Big Break Regional Shoreline")+
-  theme_bw()
-ggsave(filename = "BigBreak2021.tiff", device = "tiff", width = 5, height = 5, units = "in")
-
+#The vernalis and Clifton court stations are outside the area I use for the
+#rest of the analysis, so I need to give them new region names
 Alltoxsf$Stratum2[which(Alltoxsf$Region == "Vernalis")] = "Vernalis"
 Alltoxsf$Stratum2[which(Alltoxsf$Region == "Clifton Court")] = "CCF"
 
+#Now plot all the toxin data except Big Break
+#This is figure 2-16
 ggplot(filter(Alltoxsf, Study != "EastBay", year(Date) == 2021, Analyte != "Saxitoxins"), aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
   geom_hline(data = filter(health, AdviseType != "Danger \nTier III"), aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
@@ -313,21 +297,9 @@ ggplot(filter(Alltoxsf, Study != "EastBay", year(Date) == 2021, Analyte != "Saxi
   theme_bw()+
   theme(legend.position = "bottom")
 
-ggsave(filename = "Toxins.tiff", device = "tiff", width = 11, height = 6, units = "in")
+ggsave(filename = "plots/Toxins.tiff", device = "tiff", width = 11, height = 6, units = "in")
 
-methods = group_by(SpattWater, toxin, method, class) %>%
-  summarize(n= n())
 
-#to a version without Anabaenopeptins, because those are confusing
-test = filter(Alltoxsf, Study != "EastBay", Analyte == "Microcystins", year(Date) == 2021)
-health2 = filter(health, Analyte == "Microcystins", AdviseType != "Danger \nTeir III")
-ggplot(test, aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
-  geom_hline(data = health2, aes(yintercept = Advisory, color = AdviseType))+
-  scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
-  facet_wrap(~Region, scales = "free_y") +
-  xlab("Month of 2021")+ ylab("Concentration ug/L")+
-  scale_x_continuous(breaks = c(2,5,8,11))+
-  theme_bw()
 
 ################################################################################
 #incident data
@@ -356,20 +328,17 @@ levels = filter(Alltoxsf, Analyte == "Microcystins") %>%
   distinct()%>%
   mutate(Advisory = factor(Max, levels = c(1,  2,3), labels = c("Caution",  "Warning","Danger")))
 
-
+#Combine incidents from our toxin levels with the ones reported to the Board
 incsf2 = bind_rows(incsf, levels) 
 inc2021 = 
   filter(incsf2, Year == 2021)
 
+#Now plot it. THis is figure 2-18 in the report
 ggplot()+
   geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
 
   geom_sf(data = reg3crop, aes(fill = Stratum2), alpha = 0.4) + 
   scale_fill_manual(values = reg3$colors, guide = NULL)+
-  geom_sf_text(data = reg3crop, aes(label = Stratum2), 
-                label.size = 0.05,
-                label.padding = unit(0.1, "lines"),
-                nudge_y = reg3$nudge, alpha = 0.8, fontface = "bold")+
   
   theme_bw()+ylab("")+xlab("")+
 
@@ -381,7 +350,7 @@ ggplot()+
   scale_x_continuous(limits = c(-121.9, -121.2)) +
   scale_y_continuous( limits = c(37.7, 38.4))
 
-ggsave("Incidentsmap.pdf", device = "pdf", width = 6, height = 6)
+ggsave("plots/Incidentsmap.pdf", device = "pdf", width = 6, height = 6)
 
 
 ggplot()+
@@ -395,55 +364,34 @@ ggplot()+
 
 ###############################################################
 #Big break
+#The data that East Bay Regional Parks sent me was a little different
+#Than what the water boards had, but it's the origional source, so it's what I'll use
 
 Bigbreak = read_excel("data/HABs/2015-22 BB HAB Monitoring.xlsx", sheet = "Sheet1")
 Bigbreak = filter(Bigbreak, Analyte == "Microcystins") %>%
   mutate(Year = year(Date), DOY = yday(Date))
 
+#This is Figure 2-30
 ggplot(Bigbreak, aes(x = DOY, y = Result)) + geom_point()+
   geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
   facet_wrap(~Year) + theme_bw() + ylab("Microcystin concentration ug/L")+
   scale_x_continuous(breaks = c(30, 91, 152, 213, 274, 335),
                      labels = c("Feb", "Apr", "Jun", "Aug", "Oct", "Dec"))
-ggsave(filename = "BigBreak.tiff", device = "tiff", width = 7, height = 6)
+ggsave(filename = "plots/BigBreak.tiff", device = "tiff", width = 7, height = 6)
 
+#This is figure 2-17 in the report
 ggplot(filter(Bigbreak, Year == 2021), aes(x = DOY, y = Result)) + geom_point()+
   geom_hline(data = filter(health, Analyte == "Microcystins"), aes(yintercept = Advisory, color = AdviseType))+
   scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
   facet_wrap(~Year) + theme_bw() + ylab("Microcystin concentration ug/L")+
   scale_x_continuous(breaks = c( 91, 152, 213, 274),
                      labels = c("Apr", "Jun", "Aug", "Oct"))
-ggsave(filename = "BigBreak2021.tiff", device = "tiff", width = 4, height = 4)
-
-#Can I plot all the 2021 toxin data in terms of warning levels?
-
-levels2 = filter(Alltoxsf, Analyte == "Microcystins", year(Date) == 2021) %>%
-  mutate(Advisory = case_when(result > 0.8 & result < 6 ~ "Caution",
-                              result >= 6 & result < 20 ~ "Warning",
-                              result >= 20 ~ "Danger",
-                              result < 0.8 ~ "No Advisory"),
-         Advisory2 = case_when(result > 0.8 & result < 6 ~ 1,
-                               result >= 6 & result < 20 ~ 2,
-                               result >= 20 ~ 3,
-                               result < 0.8 ~ 0))%>%
-  group_by(Station) %>%
-  mutate(Max = max(Advisory2)) %>%
-  dplyr::select(Max, Station) %>%
-  distinct()%>%
-  mutate(Advisory = factor(Max, levels = c(0,1,  2,3), labels = c("No Advisory",  "Caution",  "Warning","Danger")))
-
-ggplot()+
-  geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
-  geom_sf(data = levels2, aes(fill = Advisory), shape = 21, color = "black", size = 3)+
-  scale_fill_manual(values = c("yellow", "orange",  "red"), labels = c("No Advisery","Caution", "Danger"))+
-  theme_bw()+
-  scale_x_continuous(limits = c(-121.9, -121.2)) +
-  scale_y_continuous( limits = c(37.65, 38.4))
-
+ggsave(filename = "plotsBigBreak2021.tiff", device = "tiff", width = 4, height = 4)
 
 #############################3
-#add health adivsory levels to toxin data
+#add health adivsory levels to toxin data 
+#This is for the table in the appendix
 load("data/data package/Alltoxindata.RData")
 
 Alltox3 = mutate(Alltox3, Advisory = case_when(Analyte == "Microcystins" & result > 0.8 & result < 6 ~ "Caution",
@@ -455,27 +403,9 @@ Alltox3 = mutate(Alltox3, Advisory = case_when(Analyte == "Microcystins" & resul
                                                Analyte == "Anatoxins"  & result == 0 ~ "No Advisory"))
 
 write.csv(Alltox3, "Alltoxindata.csv")
+
+#Export a shapefile so that ICF can use it for the EJ chapter
 Alltoxsf = st_as_sf(Alltox3, coords = c("Latitude", "Longitude"), crs = 4326)
 st_write(Alltoxsf, "data/HABs/Toxindata.shp", )
 
 ############################################
-#
-ggplot()+
-  geom_sf(data =reg3crop, aes(fill = Stratum2), alpha = 0.5)+
-  scale_fill_manual(values = reg3crop$colors, name = NULL, guide = NULL)+
-  geom_sf(data = WW_Delta, color = "grey", fill = "lightblue")+ 
-  geom_sf(data = filter(Alltoxsf, Study == "Prop 1"))+
-  scale_color_brewer(palette = "Dark2")+
-  theme_bw()+
-  scale_x_continuous(limits = c(-121.9, -121.2)) +
-  scale_y_continuous( limits = c(37.65, 38.4))+
-  #geom_sf_text(data = Alltoxsf, aes(label = Station), size = 2)
-  geom_sf_text(data = filter(Alltoxsf, Study == "Prop 1"), aes(label = Station))+
-  annotate("text", x = -121.3, y = 37.7, label = "Vernalis")+
-  annotate("text", x = -121.6, y = 37.77, label = "Clifton Court")
-
-alltox2021 = Alltox3 %>%
-  mutate(Year = year(Date)) %>%
-  filter(Year == 2021)
-
-write.csv(alltox2021, "AllTox2021.csv", row.names = FALSE)

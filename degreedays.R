@@ -7,41 +7,18 @@ library(smonitr)
 library(readxl)
 library(pollen)
 library(sf)
+library(ggmap)
+library(deltamapr)
+library(ggsn)
 
 #quick check of hte nurient data
 load("Regions.RData")
 hab_nutr_chla_mvi <- read_csv("data/hab_nutr_chla_mvi.csv")
 
-#attach regions
-# nutsallsf = st_as_sf(hab_nutr_chla_mvi, coords = c("Longitude", "Latitude"), crs = 4326) %>%
-#   st_join(reg3) %>%
-#   dplyr::select(-nudge, -Stratum) %>%
-#   rename(Region = Stratum2)
-# 
-# save(nutsallsf, file = "nuts_w_regions.RData")
-
-Franks = filter(hab_nutr_chla_mvi, Station %in% c("D19")) %>%
-  mutate(Month = month(Date), Year = year(Date), Chlorophyll = as.numeric(Chlorophyll),
-         Nitrate = as.numeric(DissNitrateNitrite)) %>%
-  filter(Month %in%c(4, 5, 6,7,8,9))
-
 #replace values below the reporting limits with zeros
+#Note: There are better ways to do this, I was tired and I don't think it really matters that much
 
-
-ggplot(Franks, aes(x= Month, y = Chlorophyll, color = as.factor(Year)))+geom_point() + geom_line() +
-  xlab("month - 2021")+ ylab("chlorophyll ug/L")
-
-ggplot(Franks, aes(x= Month, y = Nitrate, color = as.factor(Year)))+geom_point() + geom_line() +
-  xlab("Month of Year")+ ylab("Nitrate mg/L")+ theme_bw() 
-
-
-
-ggplot(Franks, aes(x= Month, y = Nitrate, color = Station ))+geom_point() + geom_line() +
-  xlab("Month of Year")+ ylab("Nitrate")
-
-
-#Let's look at other areas in teh Delta
-
+#First start with just the data from 2021
 Nuts = mutate(hab_nutr_chla_mvi, Month = month(Date), 
               Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
               Nitrate = as.numeric(DissNitrateNitrite),
@@ -60,7 +37,7 @@ ggplot(Nuts, aes(x= Month, y = Nitrate, color = Station ))+geom_point() + geom_l
 
 
 
-
+#add the regional assignments
 nutssf = st_as_sf(Nuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
   st_join(reg3) %>%
   st_drop_geometry() %>%
@@ -71,9 +48,11 @@ nutssf = st_as_sf(Nuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
   mutate(Ammonium = case_when(DissAmmonia_Sign == "<" ~ 0,
                          TRUE ~ Ammonium))
 
+#make a color pallet
 library(RColorBrewer)
 pal = c(brewer.pal(8, "Set2"), brewer.pal(12, "Set3"), brewer.pal(9, "Set1"), brewer.pal(12, "Paired"), "black", "grey")
 
+#Plot all the nitrate data for 2021. This is figure 2-9
 nutssf %>%
   droplevels() %>%
   filter(!is.na(Nitrate)) %>%
@@ -95,6 +74,8 @@ nutssf %>%
 
 ggsave(filename = "Nitrate.tiff", device = "tiff", width = 10, height = 12)
 
+
+#Plot the ammonium data. This is figure 2-8
 nutssf %>%
   droplevels() %>%
   filter(!is.na(Ammonium)) %>%
@@ -119,7 +100,7 @@ nutssf %>%
 ggsave(filename = "Ammonium.tiff", device = "tiff", width = 10, height = 12)
 
 
-
+#Plot Chlorophyll. FIgure 2-7
 nutssf %>%
   droplevels() %>%
   filter(!is.na(Chlorophyll)) %>%
@@ -143,7 +124,7 @@ split(.$Stratum2) %>%
 ggsave(filename = "Chlorophyll.tiff", device = "tiff", width = 10, height = 12)
 
 
-
+#Plot ortho-phosphate, figure 2-10
 nutssf %>%
   droplevels() %>%
   filter(!is.na(Phosphorus)) %>%
@@ -165,15 +146,18 @@ nutssf %>%
 
 ggsave(filename = "Orthophos.tiff", device = "tiff", width = 10, height = 12)
 
+
+#P8 had some really high values. Is that normal?
 P8 = filter(mutate(hab_nutr_chla_mvi, Month = month(Date), 
                    Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
                    Nitrate = as.numeric(DissNitrateNitrite)), Station %in% c("P8", "D19", "OSJ", "C9"))
 ggplot(P8, aes(x = Date, y = Nitrate, color = Station)) + geom_line()
 ggplot(filter(P8, !is.na(DissAmmonia)), aes(x = Date, y = as.numeric(DissAmmonia), color = Station)) + geom_line()
-
+#OK, yes, it is normal
 
 ###########################################################
 #South Delta Nutrients by season and year
+#from 2014-2021
 SoNuts = mutate(hab_nutr_chla_mvi, Month = month(Date), 
                 Year = year(Date),Chlorophyll = as.numeric(Chlorophyll),
                 NitrateNitrite = as.numeric(DissNitrateNitrite),
@@ -189,6 +173,7 @@ SoNuts = mutate(hab_nutr_chla_mvi, Month = month(Date),
                                 TRUE ~ DissAmmonia))
 
 
+#Filter it to just the regions we are interested in, and add seasons
 Sonutssf = st_as_sf(SoNuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
   st_join(reg3) %>%
   st_drop_geometry() %>%
@@ -202,6 +187,8 @@ Sonutssf = st_as_sf(SoNuts, coords = c("Longitude", "Latitude"), crs = 4326) %>%
     Month %in% c(6,7,8) ~ "Summer",
     Month %in% c(9,10,11) ~ "Fall"
   ))
+
+#Calculate mean and standard error for each parameter
 SoNutsmean = Sonutssf %>%
   pivot_longer(cols = c(Ammonium, Chl, Nitrate, Phosphorus), names_to= "Analyte",
                values_to = "Concentration")  %>%
@@ -210,6 +197,7 @@ summarize(ConcentrationM = mean(Concentration, na.rm = T),
           SEc = sd(Concentration, na.rm = T)/sqrt(n())) %>%
   mutate(Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall")))
 
+#Plot all the nutrient data across years THis is figure 2-25
 ggplot(SoNutsmean, aes(x=Year, y = ConcentrationM, fill = Season)) + geom_col()+
   geom_errorbar(aes(ymin = ConcentrationM - SEc, ymax = ConcentrationM + SEc ))+
   facet_grid(Analyte~Season, scales = "free_y")+
@@ -224,23 +212,28 @@ library(lme4)
 library(lmerTest)
 library(emmeans)
 library(DHARMa)
+
+#First let's do nitrate. Heres's where the reportling limit thing could mess us sup.
 nit = lmer(log(Nitrate+0.04) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(nit)
 plot(nit)
 nitres = simulateResiduals(nit)
 plot(nitres)
-#OK, some issues
+#OK, some issues, but not terrible
 
+
+#Now the ammonium
 Amm = lmer(log(Ammonium+0.05) ~ as.factor(Year)+Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(Amm)
 plot(simulateResiduals(Amm))
 
 
-
+#Chlorophyll
 chl= lmer(log(Chl+0.01) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(chl)
 plot(simulateResiduals(chl))
 
+#orthophosphate
 Orth= lmer(log(Phosphorus+0.05) ~ as.factor(Year) + Season + (1|Month)+ (1|Station),  data = Sonutssf)
 summary(Orth)
 plot(Orth)
@@ -248,15 +241,7 @@ plot(simulateResiduals(Orth))
 
 
 #pllot for report##################
-ggplot(SoNutsmean, aes(x=Year, y = ConcentrationM, fill = Season)) + geom_col()+
-  geom_errorbar(aes(ymin = ConcentrationM - SEc, ymax = ConcentrationM + SEc ))+
-  facet_grid(Analyte~Season, scales = "free_y")+
-  scale_fill_brewer(palette = "Set2", guide = NULL)+
- # geom_text(data = tuk, aes(x = Year, y = 0, label = group), inherit.aes = FALSE)+
-  ylab("Concentration")+
-  theme_bw()
-
-#Meh, maybe I don't show the letters?
+#This is figure 2-26
 
 Amg = plot(emmeans(Amm, specs = "Year", by = "Season"), comparison = T)+
   xlab("Estimated Marginal Mean")+
@@ -282,53 +267,38 @@ ggsave(filename = "Nutsemmeans.tiff", device = "tiff", path = "plots/",
 ##########################################################################################
 
 #Now for the degree day calculations
-
-#load("data/WQ.RData")
-
-#summary(WQ)
-#unique(WQ$Analyte)
-
-#Temps = filter(WQ, Analyte == "Temp")
-
-#ggplot(Temps, aes(x = DateTime, y = Amount)) + geom_point()
+#Ted organized the water quality data for me.
 
 load("data/WQ.daily.RData")
 unique(WQ.daily$Site)
 library(pollen)
+
+#We just need teh temperature data
 TempsD = filter(WQ.daily, Analyte == "Temp")
 
-Degreedays = gdd(tmax = TempsD$Daily.Max, tmin = TempsD$Daily.Min, tbase = 19, tbase_max = 35)
-
+#use the 'gdd' function in the 'pollen' package to calculate number of degree-days above 19
+#Take out Franks from 2015, because we only have half the year.
 TempsDDD = mutate(TempsD, Year = year(Date), DOY = yday(Date)) %>%
   group_by(Site, Year) %>%
   mutate(Degreedays = gdd(tmax = Daily.Max, tmin = Daily.Min, tbase = 19, tbase_max = 35),
          MaxDD = max(Degreedays, na.rm = T)) %>%
   filter(!(Site == "FRK" & Year == 2015))
 
-ggplot(TempsDDD, aes(x =DOY, y = Degreedays, color = Year)) + geom_line()+
-  geom_hline(aes(yintercept = MaxDD, color = Year), linetype = 2)+
-  facet_grid(.~Site, scales = "free_x")
-
-ggplot(TempsDDD, aes(x =DOY, y = Degreedays, color = Year)) + geom_line()+
-  geom_hline(aes(yintercept = MaxDD, color = Year), linetype = 2)+
-  facet_grid(Year~Site, scales = "free_x")
-
-
+#quick exploritory plot
 ggplot(TempsDDD, aes(x =DOY, y = Degreedays, color = as.factor(Year))) + geom_line()+
   geom_hline(aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2)+
   facet_grid(.~Site, scales = "free_x")+ theme_bw()
 
+#See what the total number of degree days for each year is.
 DDs = group_by(TempsDDD, Year, Site) %>%
   summarize(MaxDD = first(MaxDD), firstDay = first(DOY[which(Degreedays > 0)]),
             lastDay = first(DOY[which(Degreedays == MaxDD)]), season = lastDay -firstDay)
 
+#2020 and 2015 were the hottest at all sites
 ggplot(DDs, aes(x = as.factor(Year), y = MaxDD))+geom_boxplot()
+
+#2015 also got hot earlier than other years
 ggplot(DDs, aes(x = as.factor(Year), y = firstDay))+geom_boxplot()
-
-
-ggplot(filter(TempsDDD, DOY >90, DOY <160), aes(x =DOY, y = Degreedays, color = as.factor(Year))) + geom_line()+
- # geom_hline(aes(yintercept = MaxDD, color = Year), linetype = 2)+
-  facet_grid(.~Site, scales = "free_x")
 
 ####################################################
 
@@ -342,6 +312,7 @@ DDyear = mutate(TempsD, Year = year(Date), DOY = yday(Date)) %>%
   mutate(Degreedays = gdd(tmax = Daily.Max, tmin = Daily.Min, tbase = 19, tbase_max = 35),
          MaxDD = max(Degreedays, na.rm = T)) 
 
+#plot the average degree days for all stations by year.
 ggplot(DDyear, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
   geom_line()+ coord_cartesian(xlim = c(85, 300))+
   geom_hline(aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2)+
@@ -352,20 +323,22 @@ ggplot(DDyear, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
 
 #OK, do air temperature real quick
 library(cder)
-library(cimir)
 
-Airtemp = cdec_query(c("HBP", "RRI", "MSD", "SJR"), 4, "E", start.date = ymd("2015-01-01"), end.date = ymd("2021-12-30"))
+#unfortunately, we don't have a lot of stations with air temperature
+Airtemp = cdec_query(c("RRI", "MSD", "SJR"), 4, "E", start.date = ymd("2015-01-01"), end.date = ymd("2021-12-30"))
 
+#Convert to celcius and calculate the mean, max and min temperature per day. 
 AirtempM = Airtemp %>%
-  dplyr::filter(Airtemp, StationID != "SJR") %>%
   mutate(Year = year(ObsDate), DOY = yday(ObsDate)) %>%
   group_by(Year, DOY, StationID) %>%
   summarise(Temp = mean(Value, na.rm = T), DailyMin = min(Value, na.rm = T), DailyMax = max(Value, na.rm = T)) %>%
   mutate(TempC = (Temp-32)*(5/9), DailyMinC = (DailyMin -32)*(5/9), DailyMaxC = (DailyMax -32)*(5/9))
 
+#average temperatures between stations
 AirtempM2 = group_by(AirtempM, Year, DOY) %>%
   summarise(TempC = mean(TempC, na.rm = T), Min = mean(DailyMinC, na.rm = T), Max = mean(DailyMaxC, na.rm = T))
 
+#plot it!
 ggplot(AirtempM, aes(x = DOY, y = TempC, color = as.factor(Year)))+
   geom_point(alpha = 0.5, size = 0.5)+
   geom_smooth()+
@@ -374,6 +347,8 @@ ggplot(AirtempM, aes(x = DOY, y = TempC, color = as.factor(Year)))+
   scale_color_brewer(palette = "Set2", name = NULL)+
   scale_x_continuous(breaks = c(91, 152, 213, 274), labels = c("Apr", "Jun", "Aug", "Oct"))+
   theme_bw()
+#Kinda gross
+
 
 ggplot(AirtempM2, aes(x = DOY, y = TempC, color = as.factor(Year)))+
   geom_point(alpha = 0.5, size = 0.5)+
@@ -392,9 +367,9 @@ AirDD = AirtempM2 %>%
          MaxDDA = max(DegreedaysA, na.rm = T))
 
 
-ggplot(AirDD, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
+ggplot(AirDD, aes(x = DOY, y = DegreedaysA, color = as.factor(Year)))+
   geom_line()+ coord_cartesian(xlim = c(85, 300))+
-  geom_hline(aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2)+
+  geom_hline(aes(yintercept = MaxDDA, color = as.factor(Year)), linetype = 2)+
   scale_color_brewer(palette = "Set2", name = NULL)+
   theme_bw()+
   ylab("Degree Days above 19C (air temp)")+
@@ -406,26 +381,21 @@ ggplot(AirDD, aes(x = DOY, y = Degreedays, color = as.factor(Year)))+
 
 alltemp = left_join(DDyear, AirDD)
 
+#plot air temp versus water temp
 ggplot(alltemp, aes(x = WaterMean, y = TempC, color = as.factor(Year))) + 
   geom_point()+
   scale_color_brewer(palette = "Set2", name = NULL)+
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm")+
+  ylab("Air Temperature")+ xlab("Water Temperature")
 
-ggplot(alltemp, aes(x = DOY, y = TempC, color = as.factor(Year))) + 
-  geom_point(alpha = 0.5)+
-  scale_color_brewer(palette = "Set2", name = NULL)+
-  geom_smooth(se = FALSE)
 
-ggplot(alltemp, aes(x = DOY, y = WaterMean, color = as.factor(Year))) + 
-  geom_point(alpha = 0.5)+
-  scale_color_brewer(palette = "Set2", name = NULL)+
-  geom_smooth(se = FALSE)
-
+#switch format for plotting
 alltemplong = alltemp %>%
   rename(Water = WaterMean, Air = TempC) %>%
   pivot_longer(cols = c(Water, Air), names_to = "Analyte", values_to = "MeanTemp")
 
 #TEMPERATURE PLOT FOR REPORT
+#this is figure 2-20
 ggplot(alltemplong, aes(x = DOY, y =`MeanTemp`, color = as.factor(Year))) + 
   geom_point(alpha = 0.1)+
   scale_color_brewer(palette = "Set2", name = NULL)+
@@ -445,6 +415,7 @@ allDDlong = alltemp %>%
   rename(Water = Degreedays, Air = DegreedaysA) %>%
   pivot_longer(cols = c(Water, Air), names_to = "Analyte", values_to = "DegreeDays")
 
+#Calculate maximum degree days to plot on the graph
 Maxes = alltemp %>%
   dplyr::select(MaxDD, MaxDDA, Year) %>%
   rename(Water = MaxDD, Air = MaxDDA) %>%
@@ -453,6 +424,7 @@ Maxes = alltemp %>%
   summarize(MaxDD = max(MaxDD, na.rm = T))
 
 #DEGREE DAYS PLOT FOR REPORT
+#this is figure 2-21
 ggplot(allDDlong, aes(x = DOY, y =`DegreeDays`, color = as.factor(Year))) + 
   coord_cartesian(xlim = c(70, 320))+
   geom_hline(data = Maxes, aes(yintercept = MaxDD, color = as.factor(Year)), linetype = 2, size = 1)+
@@ -467,6 +439,7 @@ ggplot(allDDlong, aes(x = DOY, y =`DegreeDays`, color = as.factor(Year))) +
 
 #####################################################################
 # water quality map
+#This is the basis for figure 2-5, but Ted tweaked it a bit in Illustrator
 nutsallsf = hab_nutr_chla_mvi %>%
   group_by(Source, Station, Longitude, Latitude) %>%
   summarize(N = n()) %>%
@@ -494,29 +467,6 @@ ggplot() + geom_sf(data=reg3, aes(fill = Stratum2), alpha = 0.7)+
   coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.7, 38.6))+
   xlab(NULL)+ ylab(NULL)
 
-ggsave("WQmap.tiff", device = "tiff", width = 7, height = 9)
+ggsave("plots/WQmap.tiff", device = "tiff", width = 7, height = 9)
 ggsave("plots/WQmap.pdf", device = "pdf", width = 7, height = 9)
 
-###############################################################
-#N:P ratio
-
-Ratios = read.csv("data/HABs/DWR_NutChl_NP_ratio.csv") %>%
-  mutate(Date = mdy(Date), Month = month(Date)) %>%
-  filter(RegionName != "Suisun")
-
-
-Ratiossum = group_by(Ratios, Year, Month, RegionName) %>%
-  summarize(NPratioM = mean(NPratio, na.rm = T), sdNP = sd(NPratio, na.rm = T), minNP = min(NPratio), maxNP = max(NPratio))
-
-ggplot(filter(Ratiossum, Month %in% c(6,7,8,9)), aes(x = Month, y = NPratioM)) + geom_col()+ facet_grid(RegionName~Year)+
- geom_hline(yintercept = 16, color = "red")+
-  geom_errorbar(aes(ymin = NPratioM-sdNP, ymax = NPratioM + sdNP))
-
-ggplot(Ratiossum, aes(x = Month, y = NPratioM, fill = RegionName)) + geom_col()+ 
-  facet_grid(RegionName~Year, scales = "free_y")+
-  geom_hline(yintercept = 16, color = "red")+
-  geom_errorbar(aes(ymin = minNP, ymax = maxNP))+
-  scale_fill_manual(values = reg3$colors, guide = NULL)+
-  scale_x_continuous(breaks = c(2,4,6,8,10))+
-  xlab("Month of Year")+ ylab("N:P Ratio")+
-  theme_bw()

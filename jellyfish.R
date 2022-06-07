@@ -93,18 +93,18 @@ BS00_08 = left_join(BSboat, BS2000) %>%
     is.na(Total) ~ 0,
     TRUE ~ Total
   ),
-  CPUE = Total/TowVolumeOLD) %>%
+  CPUE = Total/TowVolumeOLD*10000) %>%
   rename(Volume = TowVolumeOLD)
 
-BS2000 = pivot_wider(BS00_08, id_cols = c(Year, Survey,  Station, Net, Tow,
+BS2000a = pivot_wider(BS00_08, id_cols = c(Year, Survey,  Station, Net, Tow,
                         Volume),
             names_from = OrganismCode, values_from = CPUE, values_fill = 0) %>%
   pivot_longer(cols = 7:last_col(), names_to = "OrganismCode", values_to = "CPUE") %>%
   filter(OrganismCode != "NoJellies") %>%
   mutate(Station = as.character(Station), Net = as.character(Net))
   
-BSjelliesX = bind_rows(BSjellies, BS2000)  %>%
-  mutate(Month = month(SampleDate))
+BSjelliesX = bind_rows(BSjellies, BS2000a)  %>%
+  mutate(Month = Survey)
 
 
 ############################################################3
@@ -158,6 +158,9 @@ regionsb = read_csv("data/IEPstationsw_Regions.csv") %>%
   mutate(Station = as.character(Station))
 regions2 = read_csv("data/IEPstationsw_Regions.csv") %>%
   filter(Source == "20mm") %>%
+  mutate(Station = as.character(Station))
+regions3 = read_csv("data/IEPstationsw_Regions.csv") %>%
+  filter(Source == "STN") %>%
   mutate(Station = as.character(Station))
 
 #Join each data set to the regions lookup table and calculate
@@ -252,7 +255,7 @@ BSjellies3 = rename(BSjellies2, `BayStudy` = OrganismCode) %>%
   dplyr::select(StationID, Source, Region, SampleDate, 
          Latitude, Longitude, Volume, Year, Catch, CPUE,
          OrganismCode, Survey) %>%
-  mutate(Month = month(SampleDate), Source = "Bay Study")
+  mutate(Month = Survey, Source = "Bay Study")
 
 
 #I shouls also add in salinity, but I do't want to go back to the origional queries
@@ -325,16 +328,49 @@ Alljelliesx = bind_rows(Alljellies, SMjel3)
 ggplot(filter(Alljelliesx, Source %in% c("Bay Study", "Suisun")),
        aes(x = Volume)) + geom_histogram(bins = 30) + facet_wrap(~Source)
 
+ggplot(Alljelliesx,
+       aes(x = Volume)) + geom_histogram(bins = 30) + facet_wrap(~Source)
+
+
 group_by(Alljelliesx, Source) %>%
   summarize(Volume = mean(Volume, na.rm = T), CPUEmean = mean(CPUE, na.rm = T),
             CPUEmin = min(CPUE, na.rm = T), CPUEmax = max(CPUE, na.rm = T),
             Catchmax = max( Catch, na.rm = T))
 
+###################################################
+#STN data
+STN = read_csv("data/TNS.csv")
+names(STN)
+unique(STN$CommonName)
+STN = filter(STN, Year>2005) %>%
+  mutate(CPUE = Catch/TowVolm3*10000)
+
+STN0 = pivot_wider(STN, id_cols = c(StationCode, SampleDate, TowNumber, TemperatureTop, Secchi, ConductivityTop, TurbidityTop, TowVolm3),
+                   names_from = CommonName, values_from = CPUE, values_fill = 0) %>%
+  pivot_longer(cols = `Age-0 Striped Bass`:last_col(), values_to = "CPUE", names_to = "CommonName")
+
+STNx = left_join(STN0, OrgCodes) %>%
+  filter(OrganismCode %in% JelLookup$FMWT, !is.na(OrganismCode)) %>%
+  mutate(StationCode = as.character(StationCode), Source = "STN", SampleDate = mdy_hms(SampleDate), 
+         StationID = paste("STN", StationCode), Month = month(SampleDate),
+         Sal_surf = ec2pss(ConductivityTop/1000, t = 25), Year = year(SampleDate)) %>%
+  rename(Volume = TowVolm3, Temp_surf = TemperatureTop, FMWT = OrganismCode) %>%
+  left_join(dplyr::select(regions3, Station, Region), by = c("StationCode" = "Station")) %>%
+  filter(!is.na(Region))
+
+STNx2 = STNx %>%
+  left_join(JelLookup)
+
+ggplot(STNx, aes(x = SampleDate, y = CPUE)) + geom_point()
+
+Alljelliesxy = bind_rows(Alljelliesx, STNx2)
+
+ggplot(Alljelliesxy, aes(x = Year, y = CPUE)) + geom_point()+ facet_grid(Region~Source, scales = "free_y")
 
 ######################################################
 WYs <- read_csv("data/yearassignments.csv")
 
-Alljellies2 = mutate(Alljelliesx,
+Alljellies2 = mutate(Alljelliesxy,
                        Season = case_when(
                          Month %in% c(12,1,2)~"Winter",
                          Month %in% c(3,4,5) ~ "Spring",
@@ -349,21 +385,23 @@ Alljellies2 = mutate(Alljelliesx,
 
 ####################################################
 
+#Now filter so it's just maeotias, just 2007-present
 
+Alljellies2b = filter(Alljellies2, OrganismCode == "Maeotias", Source != "20mm", Year>2006)
 
 #total jelly catch per station
-AlljelliesTot = group_by(Alljellies2, Year, Yr_type, StationID, Source, Region, 
-                         Survey, Season, Index, Drought, ShortTerm, Month, Volume, Sal_surf, Temp_surf) %>%
-  summarize(TotJellies = sum(CPUE, na.rm = T), Totcatch = sum(Catch)) %>%
+AlljelliesTot = group_by(Alljellies2b, Year, Yr_type, StationID, Source, Region, 
+                         Season, Index, Drought, ShortTerm, Month, Volume, Sal_surf, Temp_surf) %>%
+  summarize(TotJellies = sum(CPUE, na.rm = T)) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) 
 
 #average jelly catch per region and month
-AlljelliesMean = group_by(AlljelliesTot, Year, Yr_type, Region, Season, ShortTerm, Drought, Index,
+AlljelliesMean = group_by(AlljelliesTot, Year, Index, Yr_type, Region, Season, ShortTerm, Drought,
                           Month) %>%
   summarize(meanJellies = mean(TotJellies, na.rm = T), sdJellies = sd(TotJellies), NTrawl = n(),
             Sal_mean = mean(Sal_surf, na.rm =T))
 
-save(AlljelliesTot, AlljelliesMean, Alljellies2, file = "jellyfish.RData")
+save(AlljelliesTot, AlljelliesMean, Alljellies2, Alljellies2b, file = "jellyfish.RData")
 write.csv(Alljellies2,"data/alljelly_4FEB2022.csv", row.names = FALSE)
 write.csv(AlljelliesTot,"data/alljelly_totalcatch_4FEB2022.csv", row.names = FALSE)
 write.csv(AlljelliesMean,"data/Jelly_meanRegionMonth_4FEB2022.csv", row.names = FALSE)
@@ -391,7 +429,7 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
   geom_col(aes(fill = Yr_type), position = "dodge")+
   scale_fill_manual(values = pal_yrtype)+
  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
-  ylab("Mean monthly jellyfish CPUE") + theme_bw()+
+  ylab("Mean monthly Maeotias CPUE") + theme_bw()+
   facet_wrap(~Region)
 
 ggplot(AlljelliesTot, aes(x = Temp_surf, y = TotJellies, 
@@ -408,6 +446,11 @@ ggplot(AlljelliesTot, aes(x = Month, y = TotJellies)) +
   scale_y_log10()
 
 
+ggplot(filter(AlljelliesTot,Source == "STN"), aes(x = Month, y = TotJellies)) +
+  geom_point()+ facet_wrap(~Region)+ 
+  scale_y_log10()
+
+
 ggplot(AlljelliesTot, aes(x = Drought, y = TotJellies)) +
   geom_point()+ facet_grid(Season~Region)
 
@@ -417,7 +460,7 @@ ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
   geom_boxplot()+ facet_wrap(~Region)
 
 
-Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10), Year >1999) #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
+Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10)) #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
 
 ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
 #  scale_fill_manual(guide = NULL, values = pal_drought)+
@@ -425,12 +468,14 @@ ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
   scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
   ylab("Mean monthly jellyfish CPUE (log-transformed)")
 
-ggplot(Allmeansub, aes(x = Yr_type, y = log(meanJellies+1), fill = Yr_type)) +
+##############
+#Box plot of year type by region (this is the one we like)
+ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
     scale_fill_manual(guide = NULL, values = pal_yrtype)+
   geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
  # scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
-  ylab("Mean monthly jellyfish CPUE (log-transformed)")
-
+  ylab("Mean summer jellyfish CPUE (log-transformed)")
+###############
 
 ggplot(Allmeansub, aes(x =Index, y = log(meanJellies+1))) +
   geom_smooth(method = "lm")+
@@ -502,7 +547,7 @@ jelz3 = glmmTMB(rJellies~ Yr_type*Region +(1|Yearf) + Month,  family = "nbinom2"
                data = AlljelliesMean2)
 summary(jelz3)
 ecf1 = emmeans(jelz3, specs=pairwise ~Yr_type*Region,adjust="sidak")
-plot(ecf1)
+plot(ecf1, comparisons = T)
 z3res = simulateResiduals(jelz3)
 plot(z3res)
 #Gross
@@ -532,8 +577,7 @@ library(visreg)
 visreg(jelz4, "Index", by = "Region", scale = "response")
 
 #check out species by year
-Alljellies2 = mutate(Alljellies2, OrganismCode = 
-                      case_when(OrganismCode == "Maeotius" ~ "Maeotias", 
-                                TRUE ~ OrganismCode))
+
 ggplot(filter(Alljellies2, CPUE != 0), aes(x = Year, y = CPUE, color = Source)) + geom_point()+
   facet_wrap(~OrganismCode)
+test = filter(Alljellies2, is.na(OrganismCode))

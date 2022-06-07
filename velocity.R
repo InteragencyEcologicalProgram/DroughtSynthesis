@@ -25,11 +25,23 @@ Flow = left_join(Flow2, Flow3) %>%
 
 Flow = mutate(Flow, MaxVel = max(abs(MinVLOCITY), abs(MaxVLOCITY)), Year = year(Date), Month = month(Date)) %>%
   filter(MaxVel < 5, FLOW > -10000, !(StationID == "RYF" & FLOW > 20000),
-         !(StationID == "SJC" & MaxVel > 2))
+         !(StationID == "SJC" & MaxVel > 2)) %>%
+  mutate(Season = case_when(Month %in% c(12,1,2) ~ "Winter",
+                            Month %in% c(3,4,5) ~ "Spring",
+                            Month %in% c(6,7,8) ~ "Summer",
+                            Month %in% c(9,10,11) ~ "Fall")) %>%
+  filter(Outflow < 200000)
 
 ggplot(Flow, aes(x= FLOW, y = MaxVel))+ geom_point()+ geom_smooth() + facet_wrap(~StationID, scales = "free")            
 ggplot(Flow, aes(x= Outflow, y = MaxVel))+ geom_point()+ geom_smooth() + facet_wrap(~StationID, scales = "free")            
 
+ggplot(filter(Flow, StationID != "SJJ"), aes(x= Outflow, y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + 
+  facet_grid(StationID~Season, scales = "free") +
+  ylab("Daily Maximum current speed")+ xlab("Daily Mean Delta OutFlow") 
+
+ggplot(filter(Flow, StationID != "SJJ"), aes(x= log(Outflow), y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + 
+  facet_grid(StationID~Season, scales = "free") +
+  ylab("Daily Maximum current speed")+ xlab("Log Daily Mean Delta OutFlow") 
 
 
 summerFlow = filter(Flow, Month %in% c(6,7,8), StationID != "SJJ", FLOW < 10000, Outflow < 100000)
@@ -38,4 +50,9 @@ ggplot(summerFlow, aes(x= FLOW, y = MaxVel))+ geom_point(aes(color = as.factor(Y
 ggplot(summerFlow, aes(x= Outflow, y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + facet_wrap(~StationID, scales = "free") 
 
 ggplot(summerFlow, aes(x= Outflow, y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + facet_wrap(~StationID, scales = "free") +
-  xlim(0, 10000) + ylab("Daily Maximum current speed")+ xlab("Daily Mean Delta Outflowv")
+  xlim(0, 10000) + ylab("Daily Maximum current speed")+ xlab("Daily Mean Delta Outflow")
+
+LIB = filter(flowdata, StationID == "LIB", SensorNumber == 21)
+
+
+ggplot(LIB, aes(x = DateTime, y = Value)) + geom_point() + geom_line()

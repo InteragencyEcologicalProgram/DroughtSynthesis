@@ -16,21 +16,14 @@ library(lubridate)
 library(here)
 
 i_am("HABanalysis.R")
+
 #import data with all the visual index data
 load("data/data package/HABs.RData")
 
-
-
-#load Barrier regions shapefile
-# regions = st_read(here("EDB/Spatial_data/EDB_Regions.shp")) %>%
-#   st_make_valid()
-
+#import shapefile with regions
 regions = st_read("data/HABregions.shp")
 
-# regions = R_EDSM_Strata_1718P1%>%
-#   st_transform(crs = st_crs(4326)) %>%
-#   filter(Stratum %in% c("Lower Sacramento", "Lower San Joaquin", "Southern Delta"))
-
+#convert HAB data to a spatial object and plot it
 HABssf = filter(HABs, !is.na(Longitude), !is.na(Latitude)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
 
@@ -40,33 +33,24 @@ ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = HABssf)+
 
 ############################################################################
 ###################################################################
-
-#look at regions across the Delta
-sumfall = filter(HABs, Month %in% c(6,7,8,9,10), !is.na(Microcystis))
-
-
-reg3 = regions
-#save(reg3, file= "Regions.RData")
-
-HABssf1 = filter(sumfall, !is.na(Longitude), !is.na(Latitude)) %>%
-  st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
-
 #Now let's do the entire year, by regions
-sfhaball2 = st_crop(HABssf, reg3)%>%
-  st_join(reg3)%>%
+sfhaball2 = st_crop(HABssf, regions)%>%
+  st_join(regions)%>%
   st_drop_geometry() %>%
   filter(!is.na(Stratum), !is.na(Microcystis)) %>%
   #        Stratum %in% c("Suisun Marsh", "Suisun Bay", "Lower Sacramento", "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel")) %>%
   mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
     "absent", "low", "med", "high", "v.high")))  
 
-mypal = reg3$colors
+#set up a color pallette for later use
+mypal = regions$colors
 
 # Map of regions for report ####################
-ggplot() + geom_sf(data = reg3, aes(fill = Stratum2), alpha = 0.7)+ 
+# This was the basis for figure 1-2, but then Ted tweaked it in Adobe Illustrator
+ggplot() + geom_sf(data = regions, aes(fill = Stratum2), alpha = 0.7)+ 
   geom_sf(data = WW_Delta, fill = "lightblue")+ # + geom_sf(data = HABssf1)+
-scale_fill_manual(values = reg3$colors, guide = NULL)+
-  geom_sf_label(data = reg3,aes(label = Stratum2))+
+scale_fill_manual(values = regions$colors, guide = NULL)+
+  geom_sf_label(data = regions,aes(label = Stratum2))+
   coord_sf(xlim = c(-121.3, -121.9), ylim = c(37.7, 38.6))+
   theme_bw()+
   xlab(NULL) + ylab(NULL)
@@ -74,23 +58,20 @@ scale_fill_manual(values = reg3$colors, guide = NULL)+
 ggsave("HABregionsmap.tiff", device = "tiff", width = 5, height = 7)
 #
 
-#crop it to the area we are interested in
-sfhab = st_crop(HABssf1, reg3)%>%
-  st_join(reg3)# %>%
-#filter(Year == 2021) 
 
 #do the whole delta, but broken up into subregions
 sfhaball = filter(HABs, !is.na(Microcystis), !is.na(Longitude), !is.na(Latitude)) %>%
   mutate(Year = year(Date)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326)) %>%
-st_crop(HABssf1, reg3)%>%
-  st_join(reg3)
+st_crop(regions)%>%
+  st_join(regions)
 
 
+#Now make sure we only have data with microcystis observations that are in the region of interest
 SFHall =   sfhaball %>%
     filter(!is.na(Stratum), !is.na(Microcystis)) %>%
-  #        Stratum %in% c("Suisun Marsh", "Suisun Bay", "Lower Sacramento", "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel")) %>%
-  mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
+  mutate(Yearf = as.factor(Year), Yearm = Year + (Month-1)/12, 
+         Mic = factor(Microcystis, levels = c(1,2,3,4,5), labels = c(
     "absent", "low", "med", "high", "v.high")))   
 
 
@@ -98,7 +79,8 @@ SFHall =   sfhaball %>%
 #plot of just 2021, all months
 #THIS IS THE PLOT FOR THE REPORT
 SFH2021 = filter(SFHall, Year == 2021)
-test = filter(sfhaball, Year == 2021)
+
+#This is figure 2-11 in the report
 ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(position = "fill", color = "grey")+
   facet_wrap(~Month, nrow = 3)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
@@ -109,6 +91,8 @@ ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(pos
 
 ggsave("HABs2021.tiff", device = "tiff", width = 6, height = 5)
 
+
+#Now summarize by month, year, and stratum and add zeros so we can plot it
 SFHall2 = group_by(SFHall, Yearm, Yearf, Year, Month, Mic, Stratum) %>%
   summarize(n = n()) %>%
   mutate(Yearm2 = as.factor(Yearm)) %>%
@@ -120,42 +104,17 @@ SFHallzeros =   pivot_wider(SFHall2, id_cols = c(Yearm, Yearf, Year, Month, Stra
   mutate(Mic = factor(Mic, levels = c(
     "absent", "low", "med", "high", "v.high")))
 
-#Time series plot for the report
-ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, fill = Mic, group = Mic)) + geom_area(position = "fill")+
-  facet_wrap(~Stratum, nrow = 4)+
-  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
-  theme_bw()+
-  theme(legend.position = "top")+
-  ylab(NULL) + xlab(NULL)
 
-#Bar graph plot for the report
-ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Year, y = n, fill = Mic, group = Mic)) + 
-  geom_col(position = "fill", color = "grey")+
-  facet_wrap(~Stratum, nrow = 4)+
-  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), name = "Microcystis") + 
-  theme_bw()+
-  theme(legend.position = "top")+
-  ylab(NULL) + xlab(NULL)
-
-ggsave("Microtimeseries.tiff", device = "tiff", width = 8, height = 6, units = "in")
-
-
-
-
-ggplot(filter(SFHallzeros, Stratum != "Western Delta"), aes(x = Yearm, y = n, color = Mic)) + geom_point()+
-  facet_wrap(~Stratum, nrow = 3) 
 
 SFH =   sfhab %>%
   st_drop_geometry() %>%
-  #  filter(!is.na(Stratum), !is.na(Microcystis), 
-  #        Stratum %in% c("Suisun Marsh", "Suisun Bay", "Lower Sacramento", "Cache Slough/Liberty Island", "Sac Deep Water Shipping Channel")) %>%
   mutate(Yearf = as.factor(Year),
          Month2 = factor(Month, levels = c(6,7,8,9,10),
                          labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))   
 
 
 
-Habs2 =   st_join(HABssf, reg3) %>%
+Habs2 =   st_join(HABssf, regions) %>%
   st_drop_geometry() %>%
   filter(!is.na(Stratum), !is.na(Microcystis)) %>% 
   mutate(Year = year(Date), Yearf = as.factor(Year),
@@ -167,23 +126,12 @@ Habs2 =   st_join(HABssf, reg3) %>%
 ####################################################################################
 #Models for HAB weed report
 
-
+#This is the data for table 2-2
 effort = group_by(Habs2, Year, Stratum2) %>%
   summarize(N = n()) %>%
   pivot_wider(id_cols = Stratum2, names_from = Year, values_from = N)
 
-write.csv(effort, "visualindexeffort.csv")
-
-SFH2 = mutate(Habs2, HABPA = case_when(
-  Microcystis == 1 ~ FALSE,
-  Microcystis > 1 ~ TRUE)) %>%
-  filter(Year >2013)
-
-#year types
-yeartypes = read_csv("data/yearassignments.csv")
-
-SFHwflow = left_join(SFH2, yeartypes)
-#now a glm (binomial)
+write.csv(effort, "outputs/visualindexeffort.csv")
 
 
 
@@ -216,8 +164,9 @@ tukcfg2 = cld(emmeans(ord2, pairwise ~ Stratum2), Letters = letters) %>%
   mutate( 
          Letter = str_trim(.group)) 
 
+#this is table 2-11
 Tuekyresults = bind_rows(tukcfg, tukcfg2)
-write.csv(Tuekyresults, "Pairwise_visualdata.csv")
+write.csv(Tuekyresults, "outputs/Pairwise_visualdata.csv")
 
 #write.csv(pairs, "visualdata_alldelta.csv")
 pr <- profile(ord2)
@@ -225,7 +174,7 @@ confint(pr)
 plot(pr)
 pairs(pr)
 
-
+#This is figure 2-27 
 #Plot across the whole Delta, just summer/fall
 ggplot(HABs3, aes(x = Year, fill = as.factor(Microcystis))) +
   geom_bar(position = "fill", color = "grey")+ 
@@ -242,28 +191,30 @@ ggsave("YearHAB.tiff", device = "tiff", width = 6, height = 5)
 p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 
 ## combined table
+#This is table 2-10
 (ctable <- cbind(ctable, "p value" = p))
-write.csv(ctable, "Visualindexmodel.csv")
+write.csv(ctable, "outputs/Visualindexmodel.csv")
 
 (ci <- confint(ord2))
 exp(cbind(OR = coef(ord2), ci))
 
 #By Region, just summer/fall
-ggplot(SFH2a, aes(x = Year, fill = as.factor(Microcystis))) +
-  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2)+
-  scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
-                    labels = c("absent", "low", "medium", "high", "very high"),
-                    name = "Microcystis")+ ylab("Relative Frequency") 
+# ggplot(SFH2a, aes(x = Year, fill = as.factor(Microcystis))) +
+#   geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2)+
+#   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
+#                     labels = c("absent", "low", "medium", "high", "very high"),
+#                     name = "Microcystis")+ ylab("Relative Frequency") 
 
 ###################################################
 
 
-#function for orgered logistic regression
+#Now we will do a seperate logistic regression for each region
 HabMod = nest_by(Habs2, Stratum2) %>%
   mutate(mod = list(polr(HABord ~Yearf, data = data, Hess = T)),
          pairs = list(emmeans(mod, pairwise ~ Yearf)),
          CLD = list(cld(pairs, Letters = letters)))
 
+#pairwise comparisons
 RegTuk = summarize(HabMod, broom::tidy(CLD))%>%
   mutate(Year = as.numeric(as.character(Yearf)), 
          Letter = str_trim(.group)) %>%
@@ -272,16 +223,18 @@ RegTuk = summarize(HabMod, broom::tidy(CLD))%>%
 regMod = summarize(HabMod, broom::tidy(mod)) %>%
   mutate(Yearf = str_sub(term, start = 6, end = 9))
 
+#table of coefficients
 ctable <- summarize(HabMod, ctab = coef(summary(mod)),
                     p = pnorm(abs(ctab[, "t value"]), lower.tail = FALSE) * 2)
 
 
-
+#Table for appendix A
 regMod2 = left_join(regMod, RegTuk) %>%
   bind_cols(ctable)
-write.csv(regMod2, "regionalresults.csv")
+write.csv(regMod2, "outputs/regionalresults.csv")
 
 #By Region, just summer/fall
+#This is plot 2-28
 ggplot(Habs2, aes(x = Year, fill = as.factor(Microcystis))) +
   geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2, nrow = 4)+
   scale_fill_manual(values = c("white", "tan2", "yellow", "red", "darkred"), 
@@ -297,14 +250,17 @@ ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
 
 library(RColorBrewer)
 library(smonitr)
+
+#set up a color pallete for later
 pal = c(brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
 
+#Use the integrated flow and temperature data from the drougth data package
 flowX = raw_hydro_1975_2021 %>%
   rename(Year = YearAdj)
 Temps = raw_wq_1975_2021 %>%
   rename(Year = YearAdj)
 
-
+#Get dayflow data 
 Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
 
 
@@ -322,7 +278,7 @@ DF2021 =  Dayflow$`Dayflow Results 2021` %>%
 DF = bind_rows(DF1997_2020, DF2021)
 
 
-
+#check and see if outflow and exports are correlated
 ggplot(filter(flowX, Outflow >0, Year > 2007), 
        aes(y = Outflow, x = Export, color = as.factor(Year))) + geom_point()+
   scale_y_log10()+ ylab("Daily Average Delta Outflow (CFS)")+
@@ -330,6 +286,7 @@ ggplot(filter(flowX, Outflow >0, Year > 2007),
   scale_color_manual(values = pal, name = NULL)+
   theme_bw()
 
+#now merge these data frames so we have flow and HAB and temperature dat atogether!
 names(DF)
 names(flowX)
 names(Temps)
@@ -341,70 +298,25 @@ test = left_join(Habs2, dplyr::select(flowX, -Year, -Season)) %>%
 
 
 
+#Note: All of these models take a long time to run. 
 
-#start with this. I may also want month or day of year in here.
-#Exports will be another interesting explanitory variable. I also need
-#to figure out if I"m using the right distribution
-
-#Note: All of these models take a long time to run. If you want to just get
-#the results and look at them, use:
-#load("HABsbrimsresults.RData")
-
-#Three terms and a random effect using all the data looks like its going to take days to run.
-#####################
-
-#let's simplify
+#Do a bayesian mixed model of HABs in the summer in the south and central delta regions
 
 SoDelta = dplyr::filter(test, Stratum2 %in% c("Lower SJ", "Lower Sac", "South Delta", "Franks", "OMR"))
 
 
-#OK, this is super, duper not working. WHat can I do here?
-
-M5.1 = brm(HABord ~ Temperature + Outflow + Export +  Yearf, data = SoDelta, family = acat,
-           iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
-           control = list(max_treedepth = 15),
-           chains = 2, cores=4, threads = threading(2))
-#Why did this one run so fast? 
-
-summary(M5.1)
-conditional_effects(M5.1, categorical = TRUE)
-max_mc1_effects <- conditional_effects(M5.1, "Temperature", categorical= TRUE)$Temperature
-ggplot(max_mc1_effects) + geom_smooth(aes(x = Temperature, y = estimate__, color = HABord)) +
-  geom_ribbon(aes(x = Temperature, ymin = lower__, ymax = upper__))
-
-
-#hmmm.... this one is definitley telling me that outflow is a better predictor than exports.
-#Oh, but I wanted to scale this. And maybe log-transform exports
+#Scale and center the variables and get ride of values where we have NAs
 SoDelta = mutate(SoDelta, day = yday(Date), Outscale = scale(OUT),
                  Exscale = scale(EXPORTS), SJRs = scale(SJR), Tempscale = scale(Temperature), Secchs = scale(Secchi)) %>%
   filter(!is.na(Outscale), !is.na(Tempscale), !is.na(SJRs), !is.na(Exscale), !is.na(Secchs))
 
-M5.2 = brm(HABord ~ Tempscale + Outscale + Exscale + (1|Yearf/day), data = SoDelta, family = cumulative,
-           iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
-           control = list(max_treedepth = 15),
-           chains = 2, cores=4, threads = threading(2))
-#Why did this one run so fast? 
+#now let's look at all possible combinations of temperature, outflow, exports, and secchi depth.
+#San Joaquin flow is too highly correlated with Outflow to use.
 
-summary(M5.2)
-conditional_effects(M5.2, categorical = TRUE)
-#hmmm.... this one is definitley telling me that outflow is a better predictor than exports.
-#what the actual fuck. Now it's super fast. 
-#was it the 'acat' instead of cumulative?
 M5.3 = brm(HABord ~ Tempscale + Outscale + Exscale + (1|Yearf) + (1|day), data = SoDelta, family = cumulative,
            iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
            control = list(max_treedepth = 15),
            chains = 2, cores=4, threads = threading(2))
-# Nope. Not that. 
-#Look at odds ratio. What does the cahnge in CFS change in probability of microcystis. 
-
-#Adding SJR to the model made things get wierd, i think it's too autocorrelated with outflow
-#but I should try turbidity/secchi
-
-
-# M5.4 = brm(HABord ~ Tempscale + Outscale + SJRs+ (1|Yearf) + (1|day), data = SoDelta, family = cumulative,
-#            iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
-#            control = list(max_treedepth = 15),
-#            chains = 2, cores=4, threads = threading(2))
 
 M5.41 = brm(HABord ~ Tempscale + Outscale + Secchs+ (1|Yearf) + (1|day), data = SoDelta, family = cumulative,
                       iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
@@ -497,9 +409,10 @@ M5.16 = brm(HABord ~  Exscale + Outscale+ Secchs + (1|Yearf) + (1|day), data = S
             control = list(max_treedepth = 15),
             chains = 2, cores=4, threads = threading(2))
 
+#Save your work!
 save.image()
 
-summary(M5.4)
+#add infermation criteria to each model
 M5.41 = add_criterion(M5.41, "loo")
 M5.41 = add_criterion(M5.41, "waic")
 M5.3 = add_criterion(M5.3, "loo")
@@ -524,18 +437,15 @@ M5.14 = add_criterion(M5.14, "waic")
 M5.15= add_criterion(M5.15, "waic")
 M5.16= add_criterion(M5.16, "waic")
 
-cex = conditional_effects(M5.41, categorical = TRUE)
-pp_check(M5.41)
 
-hypothesis(M5.4, c("Tempscale > Outscale", "Outscale > SJRs", "SJRs = 0"))
-
-test = waic(M5.41, M5.3, M5.5, M5.61, M5.71, M5.8, M5.91, M5.101, M5.11)
-
+#Compare WAIC scores and LOO scores
 test = loo_compare(M5.41, M5.3,  M5.5, M5.61, M5.71, M5.8, M5.91, M5.101, M5.11, criterion = "loo")
 test = loo_compare(M5.41, M5.3, M5.5, M5.61,  M5.71, M5.8, M5.91, M5.101, M5.11, 
                    M5.12, M5.13, M5.15, M5.14, M5.16, criterion = "waic")
-write.csv(test, "WAICscores.csv")
+write.csv(test, "outputs/WAICscores.csv")
 
+# So, the best model was M5.61, but M5.5 was close behind
+#this checks our assumptions and plots the conditional effects
 pp_check(M5.5)
 cex5.5 = conditional_effects(M5.5, categorical = TRUE)
 cex5.5
@@ -544,14 +454,10 @@ pp_check(M5.61)
 cex5.61 = conditional_effects(M5.61, categorical = TRUE)
 cex5.61
 
-pp_check(M5.4)
-cex5.4= conditional_effects(M5.4, categorical = TRUE)
-cex5.4a= conditional_effects(M5.4, effects = "Outscale", conditions = data.frame(SJRs = c(-1,0,1,2), Tempscale = c(0,0,0,0)),categorical = TRUE)
-cex5.4
-
-
+#save all our work
 save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels30mar2022")
 
+#double check we don't have weird correlations
 ggplot(SoDelta, aes(x = day, y = Export, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x = day, y = Outflow, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =Export, y = Outflow, color = Yearf)) + geom_point()
@@ -568,10 +474,8 @@ ggplot(SoDelta, aes(x = day, y = Temperature, color = Yearf)) + geom_point()+
 ggplot(SoDelta, aes(x = Temperature, y = Outflow, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
 
-summary(M5.3)
-pp_check(M5.3)
-ce = conditional_effects(M5.3, categorical = TRUE)
-
+# I want prettier plots of the conditional effects
+# These are plots 2-31, 2-32, and 2-33
 #I should write a function for thsi. 
 #plot temperature effect
   temp = cex5.61$`Tempscale:cats__`
@@ -601,38 +505,11 @@ ce = conditional_effects(M5.3, categorical = TRUE)
     annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
   
-  ggsave("MicTemp2.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+  ggsave("plots/MicTemp2.tiff", device = "tiff", width = 6, height = 4, units = "in") 
   
-   ggsave("MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+   ggsave("plots/MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
-   
-   #now outflow
-  # outs = cex5.4$`Outscale:cats__`
-  # lmO = lm(OUT ~Outscale, data = SoDelta)
-  # foo = as.data.frame(summary(lmO)$coefficients)
-  # newdataO = mutate(outs, Outflow = Outscale*foo$Estimate[2] + foo$Estimate[1])
-  # 
-  # 
-  # 
-  # ggplot(newdataO, aes(x = Outflow, y = estimate__)) +
-  #   geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
-  #   geom_line(aes(color = cats__))+
-  # #  scale_fill_manual(values = c("blue", "orange", "red"), 
-  # #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
-  #  # scale_color_manual(values = c("blue", "orange", "red"), 
-  #   #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
-  #   xlab("Delta Outflow (cfs)")+
-  #   ylab("Probability")+
-  #  geom_vline(xintercept = 3000, color = "black", linetype = 2)+
-  #   geom_vline(xintercept = 4000, color = "black")+
-  #   annotate("text", x = 2300, y = 0.4, label = "TUCP Outflow", angle = 90)+
-  #   annotate("text", x = 4500, y = 0.4, label = "D-1641 Outflow", angle = 90)+
-  #   theme_bw()
-  # 
-  # ggsave("MicOutflow.tiff", device = "tiff", width = 6, height = 4, units = "in")
-  
-  #Check baseline conditions from the origional TUCP. 
-  
+ 
   ex = cex5.61$`Exscale:cats__`
   lmE = lm(Export ~Exscale, data = SoDelta)
   fooE = as.data.frame(summary(lmE)$coefficients)
@@ -655,14 +532,9 @@ ce = conditional_effects(M5.3, categorical = TRUE)
     geom_vline(xintercept = 1500, linetype = 2)+
     annotate("text", x = 1300, y = 0.4, label = "TUCP Export Limit", angle = 90)+
     theme_bw()
-  ggsave("MicExports2.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicExports2.tiff", device = "tiff", width = 6, height = 4, units = "in")
 
 
-#definitley a lower outflow effect and a bigger export effect when you take day of year into account
-#save(M5.3, M5.2, M5.1, file = "HABsbrimsresults.RData")
-  
-  
-  
   turb = cex5.61$`Secchs:cats__`
   lmS = lm(Secchi ~Secchs, data = SoDelta)
   fooS = as.data.frame(summary(lmS)$coefficients)
@@ -687,11 +559,15 @@ ce = conditional_effects(M5.3, categorical = TRUE)
     annotate("text", x = 70, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     
     theme_bw()
-  ggsave("MicSecchi2.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicSecchi2.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
 
+  #######################################################################
+  #Now I want to use our model to say how big an effect the TUCP had. BUt that's hard
+  #because we don't have a great "no TUCP" export scenario
 
-#compare probability of HABs for 2020 (no TUCP, dry) to 2021
+#First lets calculate the mean exports, outflow, temperature, and secchi that
+  #were actually observed.
 SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
   summarize(Exscale = mean(Exscale), Outscale = mean(Outscale), Export = mean(Export), 
             Outflow = mean(Outflow), Tempscale = mean(Tempscale), 
@@ -703,75 +579,8 @@ SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
 
 save(SoDelta, SoDeltasum, file = "SoDelta.RData")
 
-newdata2 = data.frame(Exscale = filter(SoDeltasum, Yearf == '2021')$Exscale, 
-                      Outscale = c(-.47, -.47, -.569157, -.586204), 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 224, 255), Yearf = "2021", Scenario = "NoTUCP")
-
-newdata3 = data.frame(Exscale = filter(SoDeltasum, Yearf == '2021')$Exscale, 
-                      Outscale = filter(SoDeltasum, Yearf == '2021')$Outscale, 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 224, 255), Yearf = "2021", Scenario = "TUCP")
-allnew = bind_rows(newdata2, newdata3)
-
-prede = predict(M5.61, newdata = SoDeltasum)
-SoDeltasum = bind_cols(SoDeltasum, prede)
-ggplot(SoDeltasum, aes(x = Outscale, y = `P(Y = High)`)) + geom_point()
-ggplot(SoDeltasum, aes(x = Exscale, y = `P(Y = High)`)) + geom_point()
-ggplot(SoDeltasum, aes(x = Tempscale, y = `P(Y = High)`)) + geom_point()
-
-prede = as.data.frame(predict(M5.3, newdata = allnew, allow_new_levels = TRUE)) %>%
-#  mutate(Scenario = c(rep("NoTUCP", 5), rep("TUCP", 5))) %>%
-  bind_cols(allnew)
-
-Predictions = prede %>%
-  pivot_longer(cols = c("P(Y = absent)","P(Y = Low)","P(Y = High)"), names_to = "HABs", values_to = "Probability")
-
-ggplot(Predictions, aes(x = Scenario, y = Probability, fill = HABs)) + geom_col(position = "dodge") +
-  facet_wrap(~day)
-
-ggplot(filter(Predictions, day < 225),  aes(x = as.factor(day), y = Probability, fill = Scenario)) + 
-         geom_col(position = "dodge") +
-  facet_wrap(~HABs)+
-  scale_x_discrete(labels = c("June", "July", "August"))
-
-diff = group_by(Predictions, HABs, day) %>%
-  summarize(Difference = Probability[1]-Probability[2])
-
-#What is a "normal" level of exports for the summer?
-
-Exes = filter(SoDelta, Yearf %in% c("2016", "2018", "2020")) %>%
-  group_by(Month2) %>%
-           summarize(Exports = mean(Export), Exscale = mean(Exscale))
-
-newdata2 = data.frame(Exscale = Exes$Exscale, Outscale = c(-.47, -.47, -.569157, -.586204, -.5245), 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      day = c(165,190, 221, 252, 293), Yearf = "2021")
-
-#Eh. I really don't know what a good point of comparison would be here.
-#maybe start with just Outflow?
-newdata2 = data.frame(Exscale =  filter(SoDeltasum, Yearf == '2021')$Exscale, Outscale = c(-.47, -.47,-.569157, -.586204, -.5245), 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      day = c(165,190, 221, 252, 293), Yearf = "2021")
-
-#OK, so a lot hinges on exports. 
-
-#Instead of "With and without TUCP" I"m just going to say "With an outflow of 3,000 CFS versus 4,000 CFS
 
 
-
-#San JOaquin flow may also be important. Exports from New Melones were big.
-
-M5.4 = brm(HABord ~ Tempscale + Outscale + Exscale + Yearf +Stratum2+ (1|day), data = SoDelta, family = cumulative,
-           iter = 2000,   backend = "cmdstanr", normalize = FALSE, 
-           control = list(max_treedepth = 15),
-           chains = 2, cores=4, threads = threading(2))
-
-summary(M5.4)
-ce2 = conditional_effects(M5.4, categorical = TRUE)
-ce2
 
 #Exports of 1500 CFS = -1.18 exscale
 summary(lmE)
@@ -781,43 +590,10 @@ summary(lmO)
 (3000-7460)/6893
 (4000-7460)/6893
 
-#OK! So, if we hold the Exports constant at 1500, what's the difference between 3,000 and 4000 CFS outflow?
+#OK! So, if we hold the Exports constant at 1500, what's the difference between 1500 and 2500 CFS exports?
 
 
-
-newdata2 = data.frame(Exscale = rep(-1.18, 5), Outscale = rep(-.502, 5), 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 220, 252, 293), Yearf = "2021", Scenario = "4000 CFS")
-
-newdata3 = data.frame(Exscale = rep(-1.18, 5), Outscale = rep(-.647, 5), 
-                      Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
-                      Secchs = filter(SoDeltasum, Yearf == '2021')$Secchs,
-                      day = c(165,190, 220, 252, 293), Yearf = "2021", Scenario = "3000 CFS")
-allnew = bind_rows(newdata2, newdata3)
-
-
-prede = as.data.frame(predict(M5.3, newdata = allnew)) %>%
-  bind_cols(allnew)
-
-Predictions = prede %>%
-  pivot_longer(cols = c("P(Y = absent)","P(Y = Low)","P(Y = High)"), names_to = "HABs", values_to = "Probability") %>%
-  mutate(HABs = factor(HABs, levels = c("P(Y = absent)","P(Y = Low)","P(Y = High)"), labels = c("Absent", "Low", "High")))
-
-
-ggplot(filter(Predictions, day < 225),  aes(x = as.factor(day), y = Probability, fill = Scenario)) + 
-  geom_col(position = "dodge") +
-  facet_wrap(~HABs)+
-  scale_fill_discrete(name = "Outflow Scenario")+
-  scale_x_discrete(labels = c("June", "July", "August"), name = "Month")+
-  theme_bw()
-
-diff = group_by(Predictions, HABs, day) %>%
-  summarize(Difference = Probability[1]-Probability[2])
-
-
-#Now let's do the same thing with exports. Try 1500 CFS versus 3000 CFS
-
+#create new dataframes where outflow, temperatures, and secchi depth are what was actually observed and only exports changes
 
 newdata2e = data.frame(Exscale = rep(-1.18, 5), Outscale = rep(-.647, 5), 
                       Tempscale = filter(SoDeltasum, Yearf == '2021')$Tempscale,
@@ -840,6 +616,7 @@ library(tidybayes)
 Predictionse = add_epred_draws(allnewe, M5.61)%>%
   median_qi(.epred)
 
+#This is Figure 2-34 in the report
 ggplot(filter(Predictionse),  aes(x = as.factor(day), y = .epred, fill = Scenario)) + 
   geom_col(position = "dodge") +
   geom_errorbar(aes(ymin = .lower, ymax = .upper, group = Scenario), position = "dodge")+
@@ -852,10 +629,3 @@ diffe = group_by(Predictionse, HABs, day) %>%
   summarize(Difference = Probability[1]-Probability[2])
 
 
-
-##########################################################################
-#fhab portal
-
-fhab_bloomreport_portal <- read_csv("data/HABs/fhab_bloomreport_portal.csv")
-
-fhabdelta = 
