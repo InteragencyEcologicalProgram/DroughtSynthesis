@@ -57,6 +57,24 @@ ggplot(filter(DFlong2, DOY >120, DOY <270) )+
   scale_color_brewer(palette = "Set2", name = NULL)+
   xlab("Date")+ ylab("Flow (CFS - seven day average)")
 
+#Facet by metric to be easier to show in presentation
+ann_text <- data.frame(Metric = c("EXPORTS", "OUT", "OUT","EXPORTS", "OUT", "OUT"), 
+                       Line = c("TUCP", "D1641", "TUCP", "TUCP", "D1641", "TUCP"),
+                       Sevenday = c(1500, 4000, 3000, 1500, 4000, 3000),
+                       DOY = c(121, 152, 152, 213, 213, 213))
+
+ggplot(filter(DFlong2, DOY >120, DOY <270) )+
+  geom_line(aes(x = DOY, y = Sevenday,  linetype = Metric2), size = 1)+
+  theme_bw()+
+  geom_line(data = ann_text,mapping = aes(x = DOY, y = Sevenday, color = Line), size = 1)+
+  scale_x_continuous(breaks = c(121, 152, 182, 213, 244, 274), labels = c("May", "Jun", "Jul", "Aug", "Sep", "Oct"))+
+  scale_linetype(name = NULL)+
+  scale_color_brewer(palette = "Set2", name = NULL)+
+  facet_wrap(~Metric, nrow = 3, scales = "free_y")+
+  xlab("Date")+ ylab("Flow (CFS - seven day average)")
+
+
+
 DFmonth = mutate(DFlong2, Month = month(Date)) %>%
   group_by(Metric, Metric2, Month) %>%
   summarize(Min = min(CFS, na.rm = T), Max = max(CFS, na.rm = T), mean = mean(CFS, na.rm = T))

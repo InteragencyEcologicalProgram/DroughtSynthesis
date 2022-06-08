@@ -34,10 +34,13 @@ nc = mutate(nc, NH4_umolL= Ammonium_mgL*71.43,
             Year = year(Date),
             month = month(Date))
 
-
+#To calculate residual chlorophyll, residual nitrogen concentration was converted to chlorophyll 
+#using the ratio 1 micromole N: 1 microgram chlorophyll-a (Cloern and Jassby 2012; Gowen et al. 1992). 
+#Residual nitrogen was calculated by summing all the dissolved inorganic nitrogen species (nitrate + nitrite + ammonium) in units of molar mass N. 
+#Potential chlorophyll-a was compared with measured chlorophyll-a for each region of the Delta for the summers of 2014–2020, and for summer 2021.
 
 #Pivot longer for graphing
-lo = pivot_longer(nc, cols = c(Chla_ugL, PotChla_ugL), names_to = "Analyte", values_to = "mgL")
+lo = pivot_longer(nc, cols = c(Chla_ugL, DIN_umolL), names_to = "Analyte", values_to = "mgL")
 
 #mean value per month and region
 lomean = group_by(lo, Region, Year, month, Analyte) %>%
@@ -45,7 +48,7 @@ lomean = group_by(lo, Region, Year, month, Analyte) %>%
 
 #Just the summer months
 cs<-subset(lomean, month>3 & month<10)
-cs$Analyte<-factor(cs$Analyte, levels=c("PotChla_ugL","Chla_ugL"))
+cs$Analyte<-factor(cs$Analyte, levels=c("DIN_umolL","Chla_ugL"))
 cs$Region<-factor(cs$Region, levels=c("Cache/Liberty","Upper Sac","Lower Sac","East Delta","Lower SJ","Franks","OMR","South Delta"))
 
 #Plot potentail chlorophyll and measuredchlorophyll by month and region
