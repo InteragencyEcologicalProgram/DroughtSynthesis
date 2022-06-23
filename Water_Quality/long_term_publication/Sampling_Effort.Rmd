@@ -45,12 +45,27 @@ library(tidyverse)
 library(lubridate)
 library(scales)
 library(DroughtData)
+library(discretewq)
+```
+
+```{r session info}
+# Run session info to display package versions
+devtools::session_info()
 ```
 
 
 # Import and Prepare Data
 
 ```{r prepare data}
+# Define factor level for Region
+region_lev <- c(
+  "North",
+  "SouthCentral",
+  "Confluence",
+  "Suisun Bay",
+  "Suisun Marsh"
+)
+
 # Create a nested data frame and prepare to run the summary plot function on
 ndf_lt_wq <- 
   tibble(
@@ -70,23 +85,14 @@ ndf_lt_wq <-
     )
   ) %>% 
   mutate(
-    df_data_c = map(
-      df_data,
-      ~mutate(
-        .x,
-        Month = fct_rev(month(Date, label = TRUE)),
-        Region = factor(
-          Region,
-          levels = c(
-            "North",
-            "SouthCentral",
-            "Confluence",
-            "Suisun Bay",
-            "Suisun Marsh"
-          )
-        ),
-         YearAdj = factor(YearAdj)
-      )
+    df_data_c = map2(
+      df_data, 
+      Parameter,
+      ~ drop_na(.x, all_of(.y)) %>% 
+        mutate(
+          Month = fct_rev(month(Date, label = TRUE)),
+          Region = factor(Region, levels = region_lev)
+        )
     )
   )
 ```
@@ -95,14 +101,13 @@ ndf_lt_wq <-
 
 ```{r plot func}
 # Create function for sampling effort plots
-plot_samp_effort <- function(df, param) {
+plot_samp_effort <- function(df, grp_var, yr_var) {
   df %>% 
-    drop_na(.data[[param]]) %>% 
-    count(YearAdj, Month, Region, name = "num_samples") %>% 
-    ggplot(aes(x = YearAdj, y = Month, fill = num_samples)) +
+    count(.data[[yr_var]], Month, .data[[grp_var]], name = "num_samples") %>% 
+    ggplot(aes(x = .data[[yr_var]], y = Month, fill = num_samples)) +
     geom_tile() +
-    facet_grid(rows = vars(Region), drop = FALSE) +
-    scale_x_discrete(drop = FALSE) +
+    facet_grid(rows = vars(.data[[grp_var]]), drop = FALSE) +
+    scale_x_continuous(breaks = breaks_pretty(20), expand = expansion()) +
     scale_y_discrete(drop = FALSE) +
     scale_fill_viridis_c(name = "Number of Samples") +
     theme_bw() +
@@ -115,7 +120,8 @@ plot_samp_effort <- function(df, param) {
 
 ```{r create plots}
 # Create plots for each Parameter
-ndf_lt_wq_plt <- ndf_lt_wq %>% mutate(plt = map2(df_data_c, Parameter, .f = plot_samp_effort))
+ndf_lt_wq_plt <- ndf_lt_wq %>% 
+  mutate(plt = map(df_data_c, .f = plot_samp_effort, grp_var = "Region", yr_var = "YearAdj"))
 ```
 
 # Sampling Effort {.tabset .tabset-pills}
@@ -129,4 +135,45 @@ for (i in 1:nrow(ndf_lt_wq_plt)) {
   cat("\n\n")
 }
 ```
+
+# Secchi Sampling Effort for North region
+
+The secchi depth data has a large hole from Jan-Aug in 2017-2021 in the North region, which seems suspicious. Let's look at the sampling effort for secchi for each station in the North region.
+
+```{r plot secchi sampling effort north, fig.width = 8.5, fig.height = 7}
+ndf_lt_wq$df_data_c[[3]] %>% 
+  filter(Region == "North") %>%
+  plot_samp_effort(grp_var = "Station", yr_var = "YearAdj")
+```
+
+Hmmm, the problem seems to be coming from the one current EMP station (C3A) in the North region. Let's look at the data directly from the `discretewq` package (version 2.3.2) to see if other current EMP stations have secchi depth data during the same time period.
+
+# Secchi Sampling Effort for current EMP stations
+
+```{r plot secchi sampling effort all EMP, fig.width = 8.5, fig.height = 17}
+# Pull out secchi depth data from EMP dataset within discretewq
+EMP_secchi <- discretewq::EMP %>% 
+  transmute(
+    Station,
+    Date = date(Date),
+    Year = year(Date),
+    Month = fct_rev(month(Date, label = TRUE)),
+    Secchi
+  ) %>% 
+  drop_na(Secchi)
+
+# Create vector of EMP stations with data collected since 2010 to only look at
+  # recent or current stations
+EMP_sta_rec <- EMP_secchi %>% 
+  filter(Year >= 2010) %>% 
+  distinct(Station) %>% 
+  pull(Station)
+
+# Plot sampling effort for secchi depth for recent or current EMP stations
+EMP_secchi %>% 
+  filter(Station %in% EMP_sta_rec) %>% 
+  plot_samp_effort(grp_var = "Station", yr_var = "Year")
+```
+
+It looks like only station C3A has this issue of missing secchi depth data from 2017-2021.
 
