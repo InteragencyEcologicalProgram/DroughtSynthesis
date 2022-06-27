@@ -146,34 +146,58 @@ ndf_lt_wq$df_data_c[[3]] %>%
   plot_samp_effort(grp_var = "Station", yr_var = "YearAdj")
 ```
 
-Hmmm, the problem seems to be coming from the one current EMP station (C3A) in the North region. Let's look at the data directly from the `discretewq` package (version 2.3.2) to see if other current EMP stations have secchi depth data during the same time period.
+Hmmm, the problem seems to be coming from the one current EMP station (C3A) in the North region. Let's look at the data directly from the `discretewq` package (version 2.3.2) to see if other current EMP stations have WQ data during the same time period.
 
-# Secchi Sampling Effort for current EMP stations
+# WQ Sampling Effort for current EMP stations {.tabset .tabset-pills}
 
-```{r plot secchi sampling effort all EMP, fig.width = 8.5, fig.height = 17}
-# Pull out secchi depth data from EMP dataset within discretewq
-EMP_secchi <- discretewq::EMP %>% 
+```{r wq sampling effort all EMP, message = FALSE}
+# Import EMP station metadata from most recent EDI publication to use for status designation
+df_emp_meta <- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=edi.458.6&entityid=ecf241d54a8335a49f8dfc8813d75609")
+
+# Create vector of stations with active status
+emp_sta_active <- df_emp_meta %>% 
+  filter(Status == "Active") %>% 
+  pull(Station)
+
+# Pull out water quality data from EMP dataset within discretewq
+emp_wq <- discretewq::EMP %>% 
   transmute(
     Station,
     Date = date(Date),
     Year = year(Date),
     Month = fct_rev(month(Date, label = TRUE)),
+    Conductivity,
+    Temperature,
     Secchi
   ) %>% 
-  drop_na(Secchi)
+  # Only include active stations
+  filter(Station %in% emp_sta_active)
 
-# Create vector of EMP stations with data collected since 2010 to only look at
-  # recent or current stations
-EMP_sta_rec <- EMP_secchi %>% 
-  filter(Year >= 2010) %>% 
-  distinct(Station) %>% 
-  pull(Station)
-
-# Plot sampling effort for secchi depth for recent or current EMP stations
-EMP_secchi %>% 
-  filter(Station %in% EMP_sta_rec) %>% 
-  plot_samp_effort(grp_var = "Station", yr_var = "Year")
+# Create a nested data frame and run the summary plot function on each WQ parameter
+ndf_emp_wq <- 
+  tibble(
+    Parameter = c(
+      "Conductivity",
+      "Temperature",
+      "Secchi"
+    ),
+    df_data = rep(list(emp_wq), 3)
+  ) %>% 
+  mutate(
+    df_data_c = map2(df_data, Parameter, ~ drop_na(.x, all_of(.y))),
+    plt = map(df_data_c, .f = plot_samp_effort, grp_var = "Station", yr_var = "Year")
+  )
 ```
 
-It looks like only station C3A has this issue of missing secchi depth data from 2017-2021.
+It looks like only the shore-based stations (C3A, C10A, C9) have the issue of missing secchi depth data in recent years. Sarah Perry confirmed that EMP doesn't collect secchi depth data at their shore-based stations anymore, so that explains what's going on here.
+
+```{r print emp plots, echo = FALSE, results = "asis", fig.width = 8.5, fig.height = 17}
+for (i in 1:nrow(ndf_emp_wq)) {
+  # Create subheadings for each Parameter
+  cat("## ", ndf_emp_wq$Parameter[i], "\n\n")
+  # Print plot
+  print(ndf_emp_wq$plt[[i]])
+  cat("\n\n")
+}
+```
 
