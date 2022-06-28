@@ -8,6 +8,8 @@ library(tidyverse)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
+library(sf)
+library(ggmap)
 
 #Hi Rosemary, below is the code for NP ratio calculations and potential Chl a. 
 #These calculations were used to add the columns to the DWR_NutChl.csv spreadsheet that I emailed you previously. 
@@ -171,7 +173,7 @@ nutssf %>%
         guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
   cowplot::plot_grid(plotlist = ., nrow = 4)
 
-ggsave(filename = "Nitrate.tiff", device = "tiff", width = 10, height = 12)
+#ggsave(filename = "Nitrate.tiff", device = "tiff", width = 10, height = 12)
 
 
 #Plot the ammonium data. This is figure 2-8
@@ -196,7 +198,7 @@ nutssf %>%
         guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
   cowplot::plot_grid(plotlist = ., nrow = 4)
 
-ggsave(filename = "Ammonium.tiff", device = "tiff", width = 10, height = 12)
+#ggsave(filename = "Ammonium.tiff", device = "tiff", width = 10, height = 12)
 
 
 #Plot Chlorophyll. FIgure 2-7
@@ -220,7 +222,7 @@ nutssf %>%
         guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
   cowplot::plot_grid(plotlist = ., nrow = 4)
 
-ggsave(filename = "Chlorophyll.tiff", device = "tiff", width = 10, height = 12)
+#ggsave(filename = "Chlorophyll.tiff", device = "tiff", width = 10, height = 12)
 
 
 #Plot ortho-phosphate, figure 2-10
@@ -243,7 +245,7 @@ nutssf %>%
         guides(color = guide_legend(override.aes = list(size = 1), nrow = 7))) %>%
   cowplot::plot_grid(plotlist = ., nrow = 4)
 
-ggsave(filename = "Orthophos.tiff", device = "tiff", width = 10, height = 12)
+#ggsave(filename = "Orthophos.tiff", device = "tiff", width = 10, height = 12)
 
 
 #P8 had some really high values. Is that normal?
