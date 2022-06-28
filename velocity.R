@@ -5,7 +5,7 @@ library(tidyverse)
 library(lubridate)
 
 
-flowdata = cdec_query(c("SVR", "LIB", "SJC", "RYF", "C31", "SJJ"), c(20, 21), "E", ymd("2010-01-01"), ymd("2021-12-31"))
+flowdata = cdec_query(c("SRV", "LIB", "SJC", "RYF", "C31", "SJJ", "GES", "HOL"), c(20, 21), "E", ymd("2010-01-01"), ymd("2021-12-31"))
 Outflow = cdec_query(c("DTO"), c(23), "D", ymd("2010-01-01"), ymd("2021-12-31")) %>%
   mutate(Date = date(DateTime), Year = year(Date), Month = month(Date), StationID = NULL) %>%
   rename(Outflow = Value)
@@ -49,7 +49,8 @@ ggplot(summerFlow, aes(x= FLOW, y = MaxVel))+ geom_point(aes(color = as.factor(Y
   ylab("Daily Maximum current speed")+ xlab("Daily Mean Flow")
 ggplot(summerFlow, aes(x= Outflow, y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + facet_wrap(~StationID, scales = "free") 
 
-ggplot(summerFlow, aes(x= Outflow, y = MaxVel))+ geom_point(aes(color = as.factor(Year)))+ geom_smooth() + facet_wrap(~StationID, scales = "free") +
+ggplot(summerFlow, aes(x= Outflow, y = MaxVel))+ geom_point()+#geom_point(aes(color = as.factor(Year)))+ 
+  geom_smooth() + facet_wrap(~StationID, scales = "free") +
   xlim(0, 10000) + ylab("Daily Maximum current speed")+ xlab("Daily Mean Delta Outflow")
 
 LIB = filter(flowdata, StationID == "LIB", SensorNumber == 21)

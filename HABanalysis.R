@@ -12,13 +12,15 @@ library(MASS)
 library(car)
 library(DroughtData)
 library(lubridate)
-
+library(cmdstanr)
 library(here)
 
 i_am("HABanalysis.R")
 
 #import data with all the visual index data
 load("data/data package/HABs.RData")
+
+HABs = read_csv("data/mc_vis_index_wq.csv")
 
 #import shapefile with regions
 regions = st_read("data/HABregions.shp")
@@ -250,6 +252,7 @@ ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
 
 library(RColorBrewer)
 library(smonitr)
+library(DroughtData)
 
 #set up a color pallete for later
 pal = c(brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
@@ -304,11 +307,14 @@ test = left_join(Habs2, dplyr::select(flowX, -Year, -Season)) %>%
 
 SoDelta = dplyr::filter(test, Stratum2 %in% c("Lower SJ", "Lower Sac", "South Delta", "Franks", "OMR"))
 
+ggplot(SoDelta, aes(x = Date, y = Secchi, color = Source))+ geom_point()
 
 #Scale and center the variables and get ride of values where we have NAs
 SoDelta = mutate(SoDelta, day = yday(Date), Outscale = scale(OUT),
                  Exscale = scale(EXPORTS), SJRs = scale(SJR), Tempscale = scale(Temperature), Secchs = scale(Secchi)) %>%
-  filter(!is.na(Outscale), !is.na(Tempscale), !is.na(SJRs), !is.na(Exscale), !is.na(Secchs))
+  filter(!is.na(Outscale), !is.na(Tempscale), !is.na(SJRs), !is.na(Exscale), !is.na(Secchs), Month %in% c(6:10))
+
+ggplot(SoDelta, aes(x = Date, y = Secchi, color = Source))+ geom_point()
 
 #now let's look at all possible combinations of temperature, outflow, exports, and secchi depth.
 #San Joaquin flow is too highly correlated with Outflow to use.
@@ -439,10 +445,10 @@ M5.16= add_criterion(M5.16, "waic")
 
 
 #Compare WAIC scores and LOO scores
-test = loo_compare(M5.41, M5.3,  M5.5, M5.61, M5.71, M5.8, M5.91, M5.101, M5.11, criterion = "loo")
+testloo = loo_compare(M5.41, M5.3,  M5.5, M5.61, M5.71, M5.8, M5.91, M5.101, M5.11, criterion = "loo")
 test = loo_compare(M5.41, M5.3, M5.5, M5.61,  M5.71, M5.8, M5.91, M5.101, M5.11, 
                    M5.12, M5.13, M5.15, M5.14, M5.16, criterion = "waic")
-write.csv(test, "outputs/WAICscores.csv")
+write.csv(test, "outputs/WAICscores-june.csv")
 
 # So, the best model was M5.61, but M5.5 was close behind
 #this checks our assumptions and plots the conditional effects
@@ -455,7 +461,7 @@ cex5.61 = conditional_effects(M5.61, categorical = TRUE)
 cex5.61
 
 #save all our work
-save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels30mar2022")
+save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels13jun2022")
 
 #double check we don't have weird correlations
 ggplot(SoDelta, aes(x = day, y = Export, color = Yearf)) + geom_point()
@@ -467,12 +473,30 @@ ggplot(SoDelta, aes(x =Export, y = EXPORTS, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =EXPORTS, y = SJR, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =OUT, y = SJR, color = Yearf)) + geom_point()+
 coord_cartesian(xlim = c(0, 20000))
-load("MCmodels30mar2022")
+load("MCmodels13jun2022")
 
 ggplot(SoDelta, aes(x = day, y = Temperature, color = Yearf)) + geom_point()+
   ylab("Water Temperature, degrees C") + xlab("Day of the Year")
 ggplot(SoDelta, aes(x = Temperature, y = Outflow, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
+ggplot(SoDelta, aes(x = Secchi, y = Outflow, color = Yearf)) + geom_point()
+ggplot(SoDelta, aes(x = Secchi, y = Export, color = Yearf)) + geom_point()
+
+
+#First lets calculate the mean exports, outflow, temperature, and secchi that
+#were actually observed.
+SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
+  summarize(Exscale = mean(Exscale), Outscale = mean(Outscale), Export = mean(Export), 
+            Outflow = mean(Outflow), Tempscale = mean(Tempscale), 
+            Secchs = mean(Secchs),
+            Secchi = mean(Secchi),
+            Temperature = mean(Temperature), day = median(day)) %>%
+  filter(Yearf %in% c("2021", "2020")) %>%
+  droplevels()
+
+save(SoDelta, SoDeltasum, file = "SoDelta.RData")
+
+
 
 # I want prettier plots of the conditional effects
 # These are plots 2-31, 2-32, and 2-33
@@ -486,17 +510,17 @@ ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
   newdata = mutate(temp, Temperature = Tempscale*foo$Estimate[2] + foo$Estimate[1])
   
   
-  ggplot(filter(newdata, cats__ != "absent"), aes(x = Temperature, y = estimate__)) +
+  ggplot(filter(newdata), aes(x = Temperature, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    # scale_fill_manual(values = c("blue", "orange", "red"), 
-    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    # scale_color_manual(values = c("blue", "orange", "red"), 
-    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_fill_manual(values = c("orange", "red"), 
-                      labels = c("Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("orange", "red"), 
-                       labels = c("Low", "High"), name = "Microcystis")+
+    scale_fill_manual(values = c("blue", "orange", "red"), 
+                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
+     scale_color_manual(values = c("blue", "orange", "red"), 
+                        labels = c("Absent", "Low", "High"), name = "Microcystis")+
+   # scale_fill_manual(values = c("orange", "red"), 
+  #                    labels = c("Low", "High"), name = "Microcystis")+
+  #  scale_color_manual(values = c("orange", "red"), 
+  #                     labels = c("Low", "High"), name = "Microcystis")+
     
     xlab("Temperature C")+
     ylab("Probability")+
@@ -505,7 +529,7 @@ ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
     annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
   
-  ggsave("plots/MicTemp2.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+  ggsave("plots/MicTemp_jun.tiff", device = "tiff", width = 6, height = 4, units = "in") 
   
    ggsave("plots/MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
@@ -516,23 +540,23 @@ ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
   newdataE = mutate(ex, Exports = Exscale*fooE$Estimate[2] + fooE$Estimate[1])
   
   
-  ggplot(filter(newdataE, cats__ != "absent"), aes(x = Exports, y = estimate__)) +
+  ggplot(filter(newdataE), aes(x = Exports, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    # scale_fill_manual(values = c("blue", "orange", "red"), 
-    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    # scale_color_manual(values = c("blue", "orange", "red"), 
-    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_fill_manual(values = c("orange", "red"), 
-                      labels = c("Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("orange", "red"), 
-                       labels = c("Low", "High"), name = "Microcystis")+
+    scale_fill_manual(values = c("blue", "orange", "red"), 
+                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
+     scale_color_manual(values = c("blue", "orange", "red"), 
+                        labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    #scale_fill_manual(values = c("orange", "red"), 
+    #                  labels = c("Low", "High"), name = "Microcystis")+
+    #scale_color_manual(values = c("orange", "red"), 
+    #                   labels = c("Low", "High"), name = "Microcystis")+
     xlab("Project Exports (cfs)")+
     ylab("Probability")+
     geom_vline(xintercept = 1500, linetype = 2)+
     annotate("text", x = 1300, y = 0.4, label = "TUCP Export Limit", angle = 90)+
     theme_bw()
-  ggsave("plots/MicExports2.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicExports_jun.tiff", device = "tiff", width = 6, height = 4, units = "in")
 
 
   turb = cex5.61$`Secchs:cats__`
@@ -541,44 +565,30 @@ ggplot(SoDelta, aes(x = Temperature, y = Export, color = Yearf)) + geom_point()
   newdataS = mutate(turb, Secchi = Secchs*fooS$Estimate[2] + fooS$Estimate[1])
   
   
-  ggplot(filter(newdataS, cats__ != "absent"), aes(x = Secchi, y = estimate__)) +
+  ggplot(filter(newdataS), aes(x = Secchi, y = estimate__)) +
     geom_ribbon(aes(ymin = lower__, ymax = upper__, fill = cats__), alpha = 0.3)+
     geom_line(aes(color = cats__))+
-    # scale_fill_manual(values = c("blue", "orange", "red"), 
-    #                   labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    # scale_color_manual(values = c("blue", "orange", "red"), 
-    #                    labels = c("Absent", "Low", "High"), name = "Microcystis")+
-    scale_fill_manual(values = c("orange", "red"), 
-                      labels = c("Low", "High"), name = "Microcystis")+
-    scale_color_manual(values = c("orange", "red"), 
-                       labels = c("Low", "High"), name = "Microcystis")+
+     scale_fill_manual(values = c("blue", "orange", "red"), 
+                       labels = c("Absent", "Low", "High"), name = "Microcystis")+
+     scale_color_manual(values = c("blue", "orange", "red"), 
+                        labels = c("Absent", "Low", "High"), name = "Microcystis")+
+    # scale_fill_manual(values = c("orange", "red"), 
+    #                   labels = c("Low", "High"), name = "Microcystis")+
+    # scale_color_manual(values = c("orange", "red"), 
+    #                    labels = c("Low", "High"), name = "Microcystis")+
     xlab("Secchi Depth (cm)")+
     ylab("Probability")+
     geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Secchi),
                linetype = 2)+
-    annotate("text", x = 70, y = 0.5, angle = 90, label = "Mean Jul 2021")+
+    annotate("text", x = 80, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     
     theme_bw()
-  ggsave("plots/MicSecchi2.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicSecchi_jun.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
 
   #######################################################################
   #Now I want to use our model to say how big an effect the TUCP had. BUt that's hard
   #because we don't have a great "no TUCP" export scenario
-
-#First lets calculate the mean exports, outflow, temperature, and secchi that
-  #were actually observed.
-SoDeltasum = group_by(SoDelta, Year, Yearf, Month2) %>%
-  summarize(Exscale = mean(Exscale), Outscale = mean(Outscale), Export = mean(Export), 
-            Outflow = mean(Outflow), Tempscale = mean(Tempscale), 
-            Secchs = mean(Secchs),
-            Secchi = mean(Secchi),
-            Temperature = mean(Temperature), day = median(day)) %>%
-  filter(Yearf %in% c("2021", "2020")) %>%
-  droplevels()
-
-save(SoDelta, SoDeltasum, file = "SoDelta.RData")
-
 
 
 
@@ -629,3 +639,4 @@ diffe = group_by(Predictionse, HABs, day) %>%
   summarize(Difference = Probability[1]-Probability[2])
 
 
+head(HABssf)

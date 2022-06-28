@@ -37,9 +37,13 @@ DFmean = group_by(DFlong, Metric, DOY) %>%
   summarize(Sevenday = exp(mean(log(Sevenday), na.rm = T)), CFS = mean(CFS, na.rm = T)) %>%
   mutate(Metric2 = "Historic Mean")
 
+#get rid of spurious negative data
+
 DFlong2 = mutate(DFlong, Metric2 = "2021") %>%
-  filter(Date > ymd("2021-05-01")) %>%
+  filter(Date > ymd("2021-05-01"), CFS > 0) %>%
   bind_rows(DFmean)
+
+write.csv(DFlong2, "outputs/Flow_2021.csv", row.names = FALSE)
 
 #some quick plots
 ggplot(filter(DFlong, Date > ymd("2021-05-01"), CFS >0), aes(x = Date, y = CFS, color = Metric))+
@@ -100,6 +104,8 @@ ggplot(filter(DFlong, DOY >120, DOY <270, Year > 2014) )+
   scale_color_brewer(palette = "Set2", name = NULL)+
   facet_wrap(~Metric, nrow = 3, scales = "free_y")+
   xlab("Day of Year")+ ylab("Flow (CFS - seven day average)")
+
+write.csv(DFlong, "outputs/Dayflow2014_2021.csv", row.names = FALSE)
 
 #average summer outflow by water year type
 yeartypes = read.csv("data/yearassignments.csv")

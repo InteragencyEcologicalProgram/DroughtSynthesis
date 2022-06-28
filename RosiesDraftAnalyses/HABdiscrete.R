@@ -54,7 +54,7 @@ NCRO3 = left_join(NCRO2, stas) %>%
   mutate(Source = "NCRO") %>%
   rename(Chlorophyll = `Chlorophyll_ug/L`, Temperature = Temp_C, 
          Turbidity = Turbidity_FNU, Salinity = Salinity_ppt, Conductivity = `SpCond_uS/cm`, Station = StationCode) %>%
-  mutate(Secchi = `Secchi (m)`/100, Month = month(Date), Year = year(Date)) %>%
+  mutate(Secchi = `Secchi (m)`*100, Month = month(Date), Year = year(Date)) %>%
   dplyr::select(Source, Station, Date, Secchi, Microcystis, Chlorophyll, Salinity, Conductivity, Temperature,
          Turbidity, Latitude, Longitude, Year, Month)
 names(NCRO3)
@@ -122,6 +122,7 @@ HABsX = bind_rows(HABs, FMWT2, EMP2)
 HABs = HABsX
 #save the combined visual index data
 save(HABs, file = "data/data package/HABs.RData")
+save(HABs, file = "data/HABs.RData")
 
 #############################################################################
 #look at how chlorophyll measured by the YSI compares to grab samples, just for fun.

@@ -231,12 +231,13 @@ allTox3a = left_join(allTox3, Stas)
 
 #Alltoxsf = dplyr::select(Alltoxsf, Station, Date, Year, Month, Analyte, result, Study, Region, Stratum2, Stratum3)
 #save(Alltoxsf, file = "Alltoxindata.RData")
-
+load("Regions.RData")
 Alltoxsf = st_as_sf(allTox3a, coords = c("lat", "lon"), crs = 4326) 
 reg3crop = st_crop(reg3, xmin = -121.9, xmax = -121.2, ymin = 37.65, ymax = 38.4)
 
 Alltoxsf = dplyr::select(Alltoxsf, Station, Date, Year, Month, Analyte, result, Study, Region, Stratum2)
 save(Alltoxsf, file = "data/HABs/Alltoxindata.RData")
+load(file = "data/HABs/Alltoxindata.RData")
 
 
 mypal =  c(brewer.pal(10, "Set3"), "gray", "darkolivegreen")
@@ -299,7 +300,18 @@ ggplot(filter(Alltoxsf, Study != "EastBay", year(Date) == 2021, Analyte != "Saxi
 
 ggsave(filename = "plots/Toxins.tiff", device = "tiff", width = 11, height = 6, units = "in")
 
+#Take out Anabaneopeptins
 
+filter(Alltoxsf, Study != "EastBay", year(Date) == 2021, Analyte != "Saxitoxins", Analyte != "Anabaenopeptins",
+       Stratum2 != "Upper Sac", Stratum2 != "Vernalis") %>%
+  ggplot(aes(x = month(Date), y = result)) + geom_point(aes(shape = Study))+
+  geom_hline(data = filter(health, AdviseType != "Danger \nTier III"), aes(yintercept = Advisory, color = AdviseType))+
+  scale_color_manual(values = c("yellow", "orange", "red"), name = "Recreational \nAdvisory")+
+  facet_grid(Analyte~Stratum2, scales = "free_y") +
+  xlab("Month of 2021")+ ylab("Concentration ug/L")+
+  scale_x_continuous(breaks = c(2,5,8,11))+
+  theme_bw()+
+  theme(legend.position = "bottom")
 
 ################################################################################
 #incident data

@@ -281,7 +281,7 @@ SM = read_csv("data/SuisunFish.csv")
 #the only jellyfish they record is "maeotius". I have the feeling there are
 #other species that get ID'd as maeotius
 
-SMjell = filter(SM, OrganismCode == "MAEOTIAS", MethodCode == "OTR") 
+SMjell = filter(SM, OrganismCode == "MAEOTIAS", MethodCode == "OTR", CatchCnt != 0) 
 SMjell = mutate(SMjell, SampleDate =  mdy_hms(SampleDate), OrganismCode = "Maeotias",
                 Source = "SuisunMarsh", Month = month(SampleDate), Year = year(SampleDate),
                 Region = "Suisun Marsh") %>%
@@ -296,7 +296,7 @@ max(dplyr::filter(SMjell, Count != 0)$Year)
 library(LTMRdata)
 unique(Suisun$Taxa)
 
-SMtest = filter(Suisun, Taxa == "Maeotias marginata", Method == "Otter trawl", remove_unknown_lengths=FALSE) 
+SMtest = dplyr::filter(Suisun, Taxa == "Maeotias marginata", Method == "Otter trawl", remove_unknown_lengths=FALSE) 
 #Bleh. He doesn't have volume or zeros either
 
 #Oh, but wait! He made a function for that
@@ -393,7 +393,7 @@ Alljellies2b = filter(Alljellies2, OrganismCode == "Maeotias", Source != "20mm",
 AlljelliesTot = group_by(Alljellies2b, Year, Yr_type, StationID, Source, Region, 
                          Season, Index, Drought, ShortTerm, Month, Volume, Sal_surf, Temp_surf) %>%
   summarize(TotJellies = sum(CPUE, na.rm = T)) %>%
-  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) 
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"), ordered = T)) 
 
 #average jelly catch per region and month
 AlljelliesMean = group_by(AlljelliesTot, Year, Index, Yr_type, Region, Season, ShortTerm, Drought,
@@ -411,173 +411,3 @@ write.csv(AlljelliesMean,"data/Jelly_meanRegionMonth_4FEB2022.csv", row.names = 
 #AlljelliesMean = read_csv("data/Jelly_meanRegionMonth_4FEB2022.csv")
 #AlljelliesTot = read_csv("data/alljelly_totalcatch_4FEB2022.csv")
 #let's explore!
-
-load("jellyfish.RData")
-ggplot(filter(AlljelliesMean, Year == 2017), aes(x = Month, y = meanJellies)) +
-  geom_col()+ facet_grid(Region~Year)
-
-ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
-  geom_col()+ facet_wrap(~Region)
-
-
-
-ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
-  geom_col()+ facet_wrap(~Region)
-
-pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055") 
-ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
-  geom_col(aes(fill = Yr_type), position = "dodge")+
-  scale_fill_manual(values = pal_yrtype)+
- # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
-  ylab("Mean monthly Maeotias CPUE") + theme_bw()+
-  facet_wrap(~Region)
-
-ggplot(AlljelliesTot, aes(x = Temp_surf, y = TotJellies, 
-                          color = Yr_type)) +
-  geom_point()+ facet_wrap(~Region)
-
-ggplot(AlljelliesTot, aes(x = Year, y = TotJellies, 
-                          color = Yr_type)) +
-  geom_point()+ facet_wrap(~Region)
-
-
-ggplot(AlljelliesTot, aes(x = Month, y = TotJellies)) +
-  geom_point()+ facet_wrap(~Region)+ 
-  scale_y_log10()
-
-
-ggplot(filter(AlljelliesTot,Source == "STN"), aes(x = Month, y = TotJellies)) +
-  geom_point()+ facet_wrap(~Region)+ 
-  scale_y_log10()
-
-
-ggplot(AlljelliesTot, aes(x = Drought, y = TotJellies)) +
-  geom_point()+ facet_grid(Season~Region)
-
-Alltotsub = filter(AlljelliesTot, Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
-
-ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
-  geom_boxplot()+ facet_wrap(~Region)
-
-
-Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10)) #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
-
-ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
-#  scale_fill_manual(guide = NULL, values = pal_drought)+
-  geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
-  scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
-  ylab("Mean monthly jellyfish CPUE (log-transformed)")
-
-##############
-#Box plot of year type by region (this is the one we like)
-ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
-    scale_fill_manual(guide = NULL, values = pal_yrtype)+
-  geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
- # scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
-  ylab("Mean summer jellyfish CPUE (log-transformed)")
-###############
-
-ggplot(Allmeansub, aes(x =Index, y = log(meanJellies+1))) +
-  geom_smooth(method = "lm")+
-  geom_point()+ facet_wrap(~Region) + theme_bw()+
-  # scale_x_discrete(labels = c("Drought", "Neutral", "Wet"))+
-  ylab("Mean monthly jellyfish CPUE (log-transformed)")
-
-
-Allmeansub2 = filter(AlljelliesMean, Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
-
-###############################################################################
-#What kind of analysis can we do on this?
-
-hist(AlljelliesMean$meanJellies)
-hist(Allmeansub2$meanJellies)
-hist(log(Allmeansub2$meanJellies+1))
-#slightly zero-inflated
-
-#hmmm... or I could do it right and use count and the offset instead of the mean, then it's sure to be zero-inflated
-AlljelliesMean2 = mutate(AlljelliesMean, rJellies = round(meanJellies), Yearf = as.factor(Year)) %>%
-  filter( Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
-
-
-#OK, this is teh best model so far, but it's still not great.
-jelz1 = glmmTMB(rJellies~ Region*Yr_type + (1|Month) + (1|Year), zi = ~Region + (1|Month), 
-               family = "nbinom2", data = AlljelliesMean2)
-
-summary(jelz1)
-
-ecf1 = emmeans(jelz1, specs=pairwise ~Yr_type*Region,adjust="sidak")
-plot(ecf1)
-resz1 = simulateResiduals(jelz1)
-plot(resz1)
-#I'm just so confused
-jelz1 = glmmTMB(rJellies~ Region*ShortTerm + (1|Month) + (1|Year), zi = ~Region, 
-                family = "nbinom2", data = AlljelliesMean2)
-
-summary(jelz1)
-
-ecf1 = emmeans(jelz1, specs=pairwise ~ShortTerm*Region,adjust="sidak")
-plot(ecf1)
-
-z1res = simulateResiduals(jelz1)
-plot(z1res)
-
-library(MASS)
-
-jelnb = glmmTMB(rJellies~ Region + Drought + (1|Month) + (1|Year), 
-                family = "nbinom2", data = AlljelliesMean2)
-summary(jelnb)
-ecf1 = emmeans(jelnb, specs=pairwise ~Drought,adjust="sidak")
-plot(ecf1)
-
-
-#UGH. 
-
-
-hist(Alltotsub$TotJellies)
-hist(log(Alltotsub$TotJellies+1))
-
-jelz2 = glmmTMB(Totcatch ~ Region + Yr_type, offset = Volume, zi=~ Region, family = "nbinom2", data = Alltotsub)
-summary(jelz2)
-ecf1 = emmeans(jelz2, specs=pairwise ~Region,adjust="sidak")
-plot(ecf1)
-#ZThis is weird
-
-#############BEST MODEL!!!!!!!!!!!!!!
-jelz3 = glmmTMB(rJellies~ Yr_type*Region +(1|Yearf) + Month,  family = "nbinom2", 
-               data = AlljelliesMean2)
-summary(jelz3)
-ecf1 = emmeans(jelz3, specs=pairwise ~Yr_type*Region,adjust="sidak")
-plot(ecf1, comparisons = T)
-z3res = simulateResiduals(jelz3)
-plot(z3res)
-#Gross
-
-
-##############################################Salinity plots
-ggplot(AlljelliesMean2, aes(x = Sal_mean, y = rJellies)) + geom_point(aes(color = Yr_type))+
-  facet_wrap(~Region)
-
-
-ggplot(filter(AlljelliesTot, Month %in% c(6,7,8,9,10), Year > 1999), aes(x = Sal_surf, y = log(TotJellies+1))) + 
-  geom_point(aes(color = Yr_type))+
- facet_wrap(~Region, scales = "free") + 
-  geom_smooth()+
-  ylab("Ln Jellyfish per m3")+
-  xlab("Salinity (PSU)")
-
-ggplot(filter(Alljellies2, Month %in% c(6,7,8,9,10), Year > 1999), aes(x = Sal_surf, y = log(CPUE+1))) + 
-  geom_point(aes(color = Region))+
-facet_wrap(~OrganismCode) 
-
-
-jelz4 = glmmTMB(rJellies~ Index*Region ,  family = "nbinom2", 
-                data = AlljelliesMean2)
-summary(jelz4)
-library(visreg)
-visreg(jelz4, "Index", by = "Region", scale = "response")
-
-#check out species by year
-
-ggplot(filter(Alljellies2, CPUE != 0), aes(x = Year, y = CPUE, color = Source)) + geom_point()+
-  facet_wrap(~OrganismCode)
-test = filter(Alljellies2, is.na(OrganismCode))
