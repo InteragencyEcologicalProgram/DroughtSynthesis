@@ -77,6 +77,7 @@ ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
 
 Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10)) #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
 
+  
 ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
   #  scale_fill_manual(guide = NULL, values = pal_drought)+
   geom_boxplot()+ facet_wrap(~Region) + theme_bw()+
@@ -208,6 +209,13 @@ ggplot(filter(Alltotsub, TotJellies != 0), aes(x = Sal_surf)) + geom_histogram()
 
 summary(filter(Alltotsub, TotJellies != 0)$Sal_surf)
 
+library(Hmisc)
+
+msal = wtd.mean(Alltotsub$Sal_surf, Alltotsub$TotJellies)
+sdsal = sqrt(wtd.var(Alltotsub$Sal_surf, Alltotsub$TotJellies))
+minsal = msal-sdsal
+maxsal = msal+sdsal
+
 #OK, bin by salinity and see which bins have th ehighest percentage of catch
 weighted = mutate(Alltotsub, weightedSal = Sal_surf*TotJellies) %>%
   filter(!is.na(Sal_surf)) %>%
@@ -220,27 +228,25 @@ ggplot(weighted, aes(x= Salbin, y = TotJellies/15)) + geom_col(aes(fill = Salbin
   theme_bw()
 
 Saliniteis = group_by(weighted, Salbin2) %>%
-  summarize(percent = sum(TotJellies)/sum(weighted$TotJellies))
+  dplyr::summarize(percent = sum(TotJellies)/sum(weighted$TotJellies))
 
 #most catch is between 4.5 and 7.5. Rerun model to see if water year type is still significant.
-sweetspot = filter(Alltotsub, Sal_surf >4.5, Sal_surf <7.5)
+sweetspot = filter(AlljelliesMean2, Sal_mean >minsal, Sal_mean <maxsal)
 
-ggplot(sweetspot, aes(x = Yr_type, y = log(TotJellies+1))) + geom_boxplot()
+ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1))) + geom_boxplot()
 
 
 #plot of catch between 4.5 and 7.5
-ggplot(sweetspot, aes(x = Yr_type, y = log(TotJellies+1), fill = Yr_type)) + geom_boxplot(alpha = 0.8)  +
+ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1), fill = Yr_type)) + geom_boxplot(alpha = 0.8)  +
   # facet_wrap(~Region)+
   scale_fill_manual(values = pal_yrtype2) +
   ylab("log-trasnformed Maeotias CPUE") + xlab("Water Year Type")+
   theme_bw()
 ggsave("Maeotias4_7ppt.tiff", device = "tiff", height = 6, width = 6)
 
-ssmean = group_by(sweetspot, Month, Yr_type, Region, Yearf) %>%
-  summarize(meanJellies = mean(TotJellies, na.rm = T))
 
 jelz3ss = lmer(log(meanJellies+1)~ Yr_type*Region + (1|Month) + (1|Yearf), 
-               data = ssmean)
+               data = sweetspot)
 
 summary(jelz3ss)
 res2 = simulateResiduals(jelz3ss)
@@ -249,7 +255,7 @@ plot(res2)
 #but wet years do seem to be higher. Maybe if I remove region?
 
 jelz3ss2 = lmer(log(meanJellies+1)~ Yr_type + (1|Month) + (1|Yearf), 
-                data = ssmean)
+                data = sweetspot)
 
 summary(jelz3ss2)
 #Nope. Odd.
@@ -307,7 +313,7 @@ Alljelsum = left_join(Alljelsum, DFmonth) %>%
   filter(!is.nan(Meandist), jellies >20)
 
 save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
-
+load("data/JellieswDistance.Rdata")
 Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
 
 #Facet by month
@@ -415,3 +421,35 @@ ggplot(centers, aes(x = Distance, y = Outlfow)) +
   coord_cartesian(ylim = c(2500, 16000))
 
 #Huh. I'm not sure whether this is better or not. It shows the same general trends though. 
+######################################################################
+
+#OK, now try one more method
+# install.packages("remotes")
+#remotes::install_github("pbs-assess/sdmTMB", dependencies = TRUE)
+#library(sdmTMB)
+#library(INLA)
+
+#We start by creating a mesh object that contains matrices to apply the SPDE approach.
+#mesh = make_mesh(Alljelx, xy_cols = c("Longitude", "Latitude"), cutoff = .001)
+#BLEHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+####################################################
+#how unbalanced are my samples?
+
+ggplot(Alljelx, aes(x = Distance)) +geom_histogram()+
+  facet_grid(Month~Year)
+
+#Actually pretty well balanced bewteen years, just not between months
+
+ggplot(Alljelx, aes(x = Distance, y = log(rJel))) +geom_point()+
+  facet_grid(Month~Year)
+
+#Try a single gam with month and yearas blocking terms like Sam suggested
+Alljelx = mutate(Alljelx, Yearf = as.factor(Year), Yearm = as.factor(paste(Yearf, Month)))
+
+GAMtest3 = gam(rJel ~ s(Distance, k =6, by = Yearm), data = Alljelx, family = nb)
+GAMtest3
+
+#Bleh. THis is taking forever and probably not working. I could do it by year, but not month and year. 
+#I'm tempted to stick with the individual GAMs I had before. However, given the general
+#good coverage for my dataset (versus the clams one) I don't know that I even have to worry about this too much.
+#I want it to be as similar as possible, but I think I'm OK.

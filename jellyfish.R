@@ -392,13 +392,13 @@ Alljellies2b = filter(Alljellies2, OrganismCode == "Maeotias", Source != "20mm",
 #total jelly catch per station
 AlljelliesTot = group_by(Alljellies2b, Year, Yr_type, StationID, Source, Region, 
                          Season, Index, Drought, ShortTerm, Month, Volume, Sal_surf, Temp_surf) %>%
-  summarize(TotJellies = sum(CPUE, na.rm = T)) %>%
+  dplyr::summarize(TotJellies = sum(CPUE, na.rm = T)) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"), ordered = T)) 
 
 #average jelly catch per region and month
 AlljelliesMean = group_by(AlljelliesTot, Year, Index, Yr_type, Region, Season, ShortTerm, Drought,
                           Month) %>%
-  summarize(meanJellies = mean(TotJellies, na.rm = T), sdJellies = sd(TotJellies), NTrawl = n(),
+  dplyr::summarize(meanJellies = mean(TotJellies, na.rm = T), sdJellies = sd(TotJellies), NTrawl = n(),
             Sal_mean = mean(Sal_surf, na.rm =T))
 
 save(AlljelliesTot, AlljelliesMean, Alljellies2, Alljellies2b, file = "jellyfish.RData")
