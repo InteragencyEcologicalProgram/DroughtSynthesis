@@ -20,18 +20,43 @@ i_am("HABanalysis.R")
 #import data with all the visual index data
 load("data/data package/HABs.RData")
 
-HABs = read_csv("data/mc_vis_index_wq.csv")
+#HABs = read_csv("data/mc_vis_index_wq.csv")
 
 #import shapefile with regions
 regions = st_read("data/HABregions.shp")
 
+
+
+# ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = HABssf)+
+#   geom_sf_label(data = HABssf, aes(label = Station), 
+#                 position = "jitter", label.size = 0.05)
+
+
+
+#check a few plots for outliers
+ggplot(HABs, aes(x = Temperature)) + geom_histogram()
+summary(HABs$Temperature)
+filter(HABs, Temperature <5)
+#missing 120 rows, and some of those are 0s, definitely wrong.
+HABs = filter(HABs, Temperature >5)
+
+ggplot(HABs, aes(x = Secchi)) + geom_histogram()
+summary(HABs$Secchi)
+test =filter(HABs, Secchi <10)
+
+group_by(HABs, Source) %>%
+  summarize(secm = min(Secchi, na.rm = T), secM = max(Secchi, na.rm = T))
+
+#Ugh, definitely some more rows where Secchi is in meters, not centemeters. But its not consistent!
+
+HABs = mutate(HABs, Secchi = case_when(Secchi <5 ~Secchi *100,
+                                       TRUE ~ Secchi))
+summary(HABs$Secchi)
+summary(HABs$Temperature)
+
 #convert HAB data to a spatial object and plot it
 HABssf = filter(HABs, !is.na(Longitude), !is.na(Latitude)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
-
-ggplot() + geom_sf(data = WW_Delta) + geom_sf(data = HABssf)+
-  geom_sf_label(data = HABssf, aes(label = Station), 
-                position = "jitter", label.size = 0.05)
 
 ############################################################################
 ###################################################################
@@ -57,7 +82,7 @@ scale_fill_manual(values = regions$colors, guide = NULL)+
   theme_bw()+
   xlab(NULL) + ylab(NULL)
 
-ggsave("HABregionsmap.tiff", device = "tiff", width = 5, height = 7)
+#ggsave("HABregionsmap.tiff", device = "tiff", width = 5, height = 7)
 #
 
 
@@ -91,7 +116,7 @@ ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(pos
   ylab(NULL) + xlab(NULL)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
-ggsave("HABs2021.tiff", device = "tiff", width = 6, height = 5)
+#ggsave("HABs2021.tiff", device = "tiff", width = 6, height = 5)
 
 
 #Now summarize by month, year, and stratum and add zeros so we can plot it
@@ -108,7 +133,7 @@ SFHallzeros =   pivot_wider(SFHall2, id_cols = c(Yearm, Yearf, Year, Month, Stra
 
 
 
-SFH =   sfhab %>%
+SFH =   sfhaball %>%
   st_drop_geometry() %>%
   mutate(Yearf = as.factor(Year),
          Month2 = factor(Month, levels = c(6,7,8,9,10),
@@ -168,9 +193,9 @@ tukcfg2 = cld(emmeans(ord2, pairwise ~ Stratum2), Letters = letters) %>%
 
 #this is table 2-11
 Tuekyresults = bind_rows(tukcfg, tukcfg2)
-write.csv(Tuekyresults, "outputs/Pairwise_visualdata.csv")
+write.csv(Tuekyresults, "outputs/Pairwise_visualdata_July.csv")
 
-#write.csv(pairs, "visualdata_alldelta.csv")
+write.csv(pairs, "visualdata_alldelta_July.csv")
 pr <- profile(ord2)
 confint(pr)
 plot(pr)
@@ -185,8 +210,28 @@ ggplot(HABs3, aes(x = Year, fill = as.factor(Microcystis))) +
                     name = "Microcystis")+ ylab("Relative Frequency") +
   geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
 
-ggsave("YearHAB.tiff", device = "tiff", width = 6, height = 5)
+#ggsave("YearHAB.tiff", device = "tiff", width = 6, height = 5)
 
+
+#Plot for paper with just three categories
+# I should think about whether we want to include all the surveys, DOP looks odd.
+ggplot(Habs2, aes(x = Year, fill = HABord)) +
+  geom_bar(position = "fill", color = "grey")+ 
+  scale_fill_manual(values = c("white", "orange", "red"), 
+                    labels = c("absent", "low", "high"),
+                    name = "Microcystis")+ ylab("Relative Frequency") +
+  geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
+ggsave("plots/YearHAB_3cat.tiff", device = "tiff", width = 6, height = 5)
+
+
+ggplot(filter(Habs2, Source != "DOP"), aes(x = Year, fill = HABord)) +
+  geom_bar(position = "fill", color = "grey")+ 
+  scale_fill_manual(values = c("white", "orange", "red"), 
+                    labels = c("absent", "low", "high"),
+                    name = "Microcystis")+ ylab("Relative Frequency") +
+  geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
+
+#Meh, those aren't that different. I'll keep them all.
 
 (ctable <- coef(summary(ord2)))
 ## calculate and store p values
@@ -195,7 +240,7 @@ p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ## combined table
 #This is table 2-10
 (ctable <- cbind(ctable, "p value" = p))
-write.csv(ctable, "outputs/Visualindexmodel.csv")
+write.csv(ctable, "outputs/Visualindexmodel_july.csv")
 
 (ci <- confint(ord2))
 exp(cbind(OR = coef(ord2), ci))
@@ -461,7 +506,7 @@ cex5.61 = conditional_effects(M5.61, categorical = TRUE)
 cex5.61
 
 #save all our work
-save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels13jun2022")
+save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels8jul2022")
 
 #double check we don't have weird correlations
 ggplot(SoDelta, aes(x = day, y = Export, color = Yearf)) + geom_point()
@@ -473,7 +518,7 @@ ggplot(SoDelta, aes(x =Export, y = EXPORTS, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =EXPORTS, y = SJR, color = Yearf)) + geom_point()
 ggplot(SoDelta, aes(x =OUT, y = SJR, color = Yearf)) + geom_point()+
 coord_cartesian(xlim = c(0, 20000))
-load("MCmodels13jun2022")
+load("MCmodels8jul2022")
 
 ggplot(SoDelta, aes(x = day, y = Temperature, color = Yearf)) + geom_point()+
   ylab("Water Temperature, degrees C") + xlab("Day of the Year")
@@ -529,9 +574,9 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
   
-  ggsave("plots/MicTemp_jun.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+  ggsave("plots/MicTemp_jul.tiff", device = "tiff", width = 6, height = 4, units = "in") 
   
-   ggsave("plots/MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+   #ggsave("plots/MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
  
   ex = cex5.61$`Exscale:cats__`
@@ -556,7 +601,7 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     geom_vline(xintercept = 1500, linetype = 2)+
     annotate("text", x = 1300, y = 0.4, label = "TUCP Export Limit", angle = 90)+
     theme_bw()
-  ggsave("plots/MicExports_jun.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicExports_jul.tiff", device = "tiff", width = 6, height = 4, units = "in")
 
 
   turb = cex5.61$`Secchs:cats__`
@@ -583,7 +628,7 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     annotate("text", x = 80, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     
     theme_bw()
-  ggsave("plots/MicSecchi_jun.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicSecchi_jul.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
 
   #######################################################################

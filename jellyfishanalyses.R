@@ -46,6 +46,14 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
   ylab("Mean monthly Maeotias CPUE") + theme_bw()+
   facet_wrap(~Region)
 
+ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
+  geom_boxplot(aes(fill = Yr_type))+
+  scale_fill_manual(values = pal_yrtype)+
+  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
+  ylab("Log Maeotias CPUE") + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))+
+  facet_wrap(~Region)
+
 ggplot(AlljelliesTot, aes(x = Temp_surf, y = TotJellies, 
                           color = Yr_type)) +
   geom_point()+ facet_wrap(~Region)
@@ -117,6 +125,16 @@ hist(log(Allmeansub2$meanJellies+1))
 AlljelliesMean2 = mutate(AlljelliesMean, rJellies = round(meanJellies), Yearf = as.factor(Year)) %>%
   filter( Month %in% c(6,7,8,9,10), Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
 #
+jelz3a = glmmTMB(TotJellies~ Yr_type*Region + (1|Month) + (1|Yearf),  family = "nbinom2", 
+                 data = Alltotsub)
+z3res = simulateResiduals(jelz3a)
+plot(z3res)
+
+
+emmeans(jelz3a, pairwise ~ Yr_type|Region)
+
+plot(emmeans(jelz3a, pairwise ~ Yr_type|Region), comparisons = T)
+
 
 
 #############Try it with monthly means
@@ -135,7 +153,12 @@ testZeroInflation(jelz3b)
 testOutliers(jelz3b, type = 'bootstrap')
 #good there
 testDispersion(jelz3b)
+testZeroInflation(jelz3b)
 #good there too 
+
+emmeans(jelz3b, pairwise ~ Yr_type|Region)
+
+plot(emmeans(jelz3b, pairwise ~ Yr_type|Region), comparisons = T)
 
 #######################################3
 #THIS IS THE MODEL FOR THE PAPER
@@ -152,11 +175,13 @@ write.csv(summary(jelz3c)$coefficients, "JellyfishCPUEmodel.csv")
 #now let's do some post hoc comparisons
 library(effects)
 library(emmeans)
+library(visreg)
 pcs = emmeans(jelz3c, pairwise ~ "Yr_type*Region")
 plot(pcs)
 pcs
 
 plot(allEffects(jelz3c))
+visreg(jelz3c, xvar = "Yr_type", by = "Region")
 
 plot(emmeans(jelz3c,pairwise ~ Yr_type|Region), comparison = T)
 plot(emmeans(jelz3c,pairwise ~ Region|Yr_type))
@@ -303,58 +328,58 @@ Alljelsum = mutate(Alljel, weightedD = Distance*TotJellies) %>%
 
 #get dayflow outflow
 #(Grab Dayflow from the flowplots.R file)
-load("Dayflow.RData")
+load("data/Dayflow.RData")
 DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
   group_by(Month, Year) %>%
   summarize(Outlfow = mean(OUT))
-
-#Take out all samples with no jellies, or less than 20 total jellies
-Alljelsum = left_join(Alljelsum, DFmonth) %>%
-  filter(!is.nan(Meandist), jellies >20)
-
-save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
-load("data/JellieswDistance.Rdata")
-Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
-
-#Facet by month
-ggplot(Alljelsum, aes(x = Meandist, y = Outlfow)) + 
-  geom_point(aes(color = as.factor(Year))) + geom_smooth(method = "lm")+
-  facet_wrap(~Month)
-
-################
-#linear model 
-
-#convert cubic feet to cubic meters
-Alljelsum = mutate(Alljelsum, Yearr = as.factor(Year),
-                   OutflowM = Outlfow*0.0283168,
-                   DistK = Meandist/1000)
-jl1 = lmer(DistK~ OutflowM + (1|Yearr), data = Alljelsum)
-summary(jl1)
-plot(jl1)
-res = simulateResiduals(jl1)
-plot(res)
-jl1s = summary(jl1)
-R2 = r.squaredGLMM(jl1)
-
-write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
-
-#format an equation to print on the graph
-EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 2), " + ",
-           b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
-           r2 = format(R2[1], digits = 3), sep = "")
-EQ
-
-pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
-
-#Plot of outflow versus center of distribution for paper
-ggplot(droplevels(Alljelsum), aes(x = DistK, y = OutflowM)) + 
-  geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
-  scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
-  xlab("Center of Maeotias distribution \n(Km from Golden Gate)")+
-  ylab("Monthly Mean Delta Outflow (m3/sec)") +
-  annotate("text", x = 70, y = 320, label = EQ)+
-  theme_bw()
-ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
+# 
+# #Take out all samples with no jellies, or less than 20 total jellies
+# Alljelsum = left_join(Alljelsum, DFmonth) %>%
+#   filter(!is.nan(Meandist), jellies >20)
+# 
+# save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
+# load("data/JellieswDistance.Rdata")
+# Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
+# 
+# #Facet by month
+# ggplot(Alljelsum, aes(x = Meandist, y = Outlfow)) + 
+#   geom_point(aes(color = as.factor(Year))) + geom_smooth(method = "lm")+
+#   facet_wrap(~Month)
+# 
+# ################
+# #linear model 
+# 
+# #convert cubic feet to cubic meters
+# Alljelsum = mutate(Alljelsum, Yearr = as.factor(Year),
+#                    OutflowM = Outlfow*0.0283168,
+#                    DistK = Meandist/1000)
+# jl1 = lmer(DistK~ OutflowM + (1|Yearr), data = Alljelsum)
+# summary(jl1)
+# plot(jl1)
+# res = simulateResiduals(jl1)
+# plot(res)
+# jl1s = summary(jl1)
+# R2 = r.squaredGLMM(jl1)
+# 
+# write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
+# 
+# #format an equation to print on the graph
+# EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 2), " + ",
+#            b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
+#            r2 = format(R2[1], digits = 3), sep = "")
+# EQ
+# 
+# pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
+# 
+# #Plot of outflow versus center of distribution for paper
+# ggplot(droplevels(Alljelsum), aes(x = DistK, y = OutflowM)) + 
+#   geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
+#   scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
+#   xlab("Center of Maeotias distribution \n(Km from Golden Gate)")+
+#   ylab("Monthly Mean Delta Outflow (m3/sec)") +
+#   annotate("text", x = 70, y = 320, label = EQ)+
+#   theme_bw()
+# ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
 
 ######################################################################
 #I think I need to weight distance differently
@@ -416,11 +441,43 @@ Centers = group_by(Alljelx, Year, Month) %>%
 centers = left_join(Centers, DFmonth) %>%
  # filter(Distance < 140000, Max > 20) %>%
   left_join(Yeartypes)
-ggplot(centers, aes(x = Distance, y = Outlfow)) + 
-  geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") +
-  coord_cartesian(ylim = c(2500, 16000))
 
-#Huh. I'm not sure whether this is better or not. It shows the same general trends though. 
+
+
+centers = mutate(centers, Yearr = as.factor(Year),
+                   OutflowM = Outlfow*0.0283168,
+                   DistK = Distance/1000)
+jl1 = lmer(DistK~ OutflowM + (1|Yearr) + (1|Month), data = centers)
+summary(jl1)
+plot(jl1)
+res = simulateResiduals(jl1)
+plot(res)
+jl1s = summary(jl1)
+R2 = r.squaredGLMM(jl1)
+
+write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
+
+
+#format an equation to print on the graph
+EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 2), " + ",
+           b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
+           r2 = format(R2[1], digits = 3), sep = "")
+EQ
+
+pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
+
+
+ggplot(centers, aes(x = DistK, y = OutflowM)) + 
+  geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") +
+  coord_cartesian(ylim = c(50, 400)) +
+  scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
+  xlab("Center of Maeotias distribution per month \n(Km from Golden Gate)")+
+  ylab("Monthly Mean Delta Outflow (m3/sec)") +
+  annotate("text", x = 70, y = 320, label = EQ)+
+  theme_bw()
+
+#We'll go with that one
+ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
 ######################################################################
 
 #OK, now try one more method
@@ -435,7 +492,7 @@ ggplot(centers, aes(x = Distance, y = Outlfow)) +
 ####################################################
 #how unbalanced are my samples?
 
-ggplot(Alljelx, aes(x = Distance)) +geom_histogram()+
+ggplot(AlljelliesTot, aes(x = Distance)) +geom_histogram()+
   facet_grid(Month~Year)
 
 #Actually pretty well balanced bewteen years, just not between months
