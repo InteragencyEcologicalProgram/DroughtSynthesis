@@ -3,6 +3,7 @@
 library(smonitr)
 library(tidyverse)
 library(lubridate)
+library(readxl)
 
 #Get the Dayflow data from the CNRA portal
 Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
@@ -118,3 +119,8 @@ ggplot(Bruce, aes(x = Drought, y = sjr_pred_full)) + geom_boxplot()
 ggplot(Bruce, aes(x = ag_div, y = GCD, color = Year)) + geom_point()
 ggplot(Bruce, aes(x = Year, y = GCD, color = month_fifteen)) + geom_point()
 ggplot(Bruce, aes(x = Year, y = ag_div, color = month_fifteen)) + geom_point()
+
+
+##############################################################################
+#OK, Apparently i'm going to have to re-do his model fitting excercise with the new modeled outputs from Shey
+Shey = read_excel("data/")
