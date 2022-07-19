@@ -17,18 +17,35 @@ library(LTMRdata)
 #Import the query with all the FMWT catch data
 FMWTjellies = read_excel("data/Qry_Jellies Step 1_7feb.xlsx")
 
+#add in all the stations, 'cause some didn't ever catch jellies
+stations = read_csv("data/AllIEPstations_20200220.csv") %>%
+  filter(Survey == "FMWT") %>%
+  mutate(Source = "FMWT", Survey = NULL)
+
+
+
+FMWTjellies1 = left_join(stations, FMWTjellies)
+stasandyears = tidyr::expand(FMWTjellies1, Month, StationCode, Year, OrganismCode) %>%
+  filter(Month %in%c(9,10,11,12))
+
+FMWTjellies2 = left_join(stasandyears, FMWTjellies) %>%
+  filter(!is.na(Year), !is.na(OrganismCode))
+
 #let's add the zeros back in and filter out the jellyfish
 names(FMWTjellies)
-JellyWide = pivot_wider(FMWTjellies, id_cols = c(Year, Month, SurveyNumber, StationCode, MeterStart, MeterEnd),
+JellyWide = pivot_wider(FMWTjellies2, id_cols = c(Year, Month, SurveyNumber, StationCode, MeterStart, MeterEnd),
                         names_from = OrganismCode, values_from = Catch, values_fill = 0) %>%
-  pivot_longer(cols = 7:last_col(), names_to = "OrganismCode", values_to = "Catch")
+  pivot_longer(cols = 7:last_col(), names_to = "OrganismCode", values_to = "Catch") %>%
+  mutate(Catch = case_when(is.na(Catch)~0,
+                           TRUE ~ Catch))
 #Let's go grab common names
 
 OrgCodes = read_excel("data/OrganismsLookUp.xlsx") %>%
   dplyr::select(OrganismCode, CommonName)
 JellyFMWT = left_join(JellyWide, OrgCodes) %>%
   mutate(Volume = (MeterEnd-MeterStart)*0.2875,
-         CPUE = Catch/Volume*10000)
+         CPUE = case_when(Catch == 0 ~0,
+                          TRUE ~ Catch/Volume*10000))
 
 ##################################################
 #Now the Bay Study Data.
@@ -173,6 +190,7 @@ X20b2 = left_join(regions2, X20wide)%>%
 #Calculate total Jelly CPUE (all species) for each station
 X20tot = group_by(X20b2, Year, Station, Survey, Region, Month, Temp, Secchi, Sal_surf) %>%
   summarize(totJellies = sum(CPUE)) 
+
 
 
 JellyFMWT2 = left_join(JellyFMWT, regionsf, by =  c("StationCode" = "Station"))%>%
@@ -341,11 +359,19 @@ group_by(Alljelliesx, Source) %>%
 #STN data
 STN = read_csv("data/TNS.csv")
 names(STN)
+#add lats and longs
+stations = read_csv("data/AllIEPstations_20200220.csv") %>%
+  filter(Survey == "TNS") %>%
+  mutate(Source = "STN", Survey = NULL)
+
+STN = mutate(STN, StationCode = as.character(StationCode)) %>%
+  left_join(stations)
+
 unique(STN$CommonName)
 STN = filter(STN, Year>2005) %>%
   mutate(CPUE = Catch/TowVolm3*10000)
 
-STN0 = pivot_wider(STN, id_cols = c(StationCode, SampleDate, TowNumber, TemperatureTop, Secchi, ConductivityTop, TurbidityTop, TowVolm3),
+STN0 = pivot_wider(STN, id_cols = c(StationCode, SampleDate, Latitude, Longitude,TowNumber, TemperatureTop, Secchi, ConductivityTop, TurbidityTop, TowVolm3),
                    names_from = CommonName, values_from = CPUE, values_fill = 0) %>%
   pivot_longer(cols = `Age-0 Striped Bass`:last_col(), values_to = "CPUE", names_to = "CommonName")
 
@@ -411,3 +437,33 @@ write.csv(AlljelliesMean,"data/Jelly_meanRegionMonth_4FEB2022.csv", row.names = 
 #AlljelliesMean = read_csv("data/Jelly_meanRegionMonth_4FEB2022.csv")
 #AlljelliesTot = read_csv("data/alljelly_totalcatch_4FEB2022.csv")
 #let's explore!
+
+
+#Jellyfish map
+library(deltamapr)
+
+load("DroughtRegions.RData")
+load("jellyfish.RData")
+
+jellysta = dplyr::select(Alljellies2, Station, StationID, Source, Latitude, Longitude) %>%
+ filter(!is.na(Latitude), Source != "20mm") %>%
+  distinct()
+
+jellystasf = st_as_sf(jellysta, coords = c("Longitude", "Latitude"), crs = 4326)
+
+ggplot()+
+  geom_sf(data = WW_Delta)+
+  geom_sf(data = jellystasf, aes(shape = Source))+
+  geom_sf(data = Regions,
+          aes(fill=Region), alpha = 0.2)+
+  theme_bw()+
+  theme(legend.position="none")+
+  scalebar(data = Regions, transform = TRUE, dist = 10, dist_unit = "km", model = "WGS84") +
+  #  north(data = FLOATlong, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")+
+  scale_fill_discrete(guide = NULL)+
+  geom_sf_label(data = Regions, aes(label = Region), 
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"),
+                fontface = "bold")+
+  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))

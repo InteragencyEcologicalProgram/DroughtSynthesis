@@ -278,7 +278,7 @@ ctable <- summarize(HabMod, ctab = coef(summary(mod)),
 #Table for appendix A
 regMod2 = left_join(regMod, RegTuk) %>%
   bind_cols(ctable)
-write.csv(regMod2, "outputs/regionalresults.csv")
+#write.csv(regMod2, "outputs/regionalresults.csv")
 
 #By Region, just summer/fall
 #This is plot 2-28
@@ -290,7 +290,17 @@ ggplot(Habs2, aes(x = Year, fill = as.factor(Microcystis))) +
   geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
   theme_bw()+ theme(legend.position = "top", legend.key = element_rect(color = "black"))
 
-ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
+#ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
+
+#now with just three categories
+ggplot(Habs2, aes(x = Year, fill = HABord)) +
+  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2, nrow = 4)+
+  scale_fill_manual(values = c("white", "orange",  "red"), 
+                    labels = c("absent", "low", "high"),
+                    name = "Microcystis")+ ylab("Relative Frequency") +
+  geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
+  theme_bw()+ theme(legend.position = "top", legend.key = element_rect(color = "black"))
+
 
 ##############################################################################
 #Now the flow analysis

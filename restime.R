@@ -4,6 +4,8 @@ library(smonitr)
 library(tidyverse)
 library(lubridate)
 library(readxl)
+library(visreg)
+library(MuMIn)
 
 #Get the Dayflow data from the CNRA portal
 Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
@@ -123,4 +125,175 @@ ggplot(Bruce, aes(x = Year, y = ag_div, color = month_fifteen)) + geom_point()
 
 ##############################################################################
 #OK, Apparently i'm going to have to re-do his model fitting excercise with the new modeled outputs from Shey
-Shey = read_excel("data/")
+Shey = read_excel("data/Ag_diversions_fromShey.xlsx") %>%
+  rename(Yearmonth = concantonate_2) %>%
+  mutate(Month = month(Yearmonth))  %>%
+  select(Yearmonth, Month, mod, water_year_sam)
+
+Bruce2 = read_excel("data/rt_df_merged.xlsx", sheet = "rt_df_merged")
+str(Bruce2)
+BruceDSMRT = filter(Bruce2, !is.na(mean_sac_rt), pumping == "yes") %>%
+  mutate(Month = as.numeric(factor(month_fifteen, levels = c("January","February",  "March","April", "May", 
+                                                  "June", "July","August","September","October", "November","December")))) %>%
+  left_join(Shey) %>%
+  select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
+  mutate(mod_m = mod/35.315, LogSac = log(SAC_m, base = 10), LogSJR = log(SJR_m),
+         logRT_sac = log(mean_sac_rt, base = 10), 
+         logRT_sjr = log(mean_sjr_rt, base = 10),
+         pump = SWP_m + CVP_m)
+
+lm_sac = glm(logRT_sac ~LogSac + mod_m + pump, data = BruceDSMRT)
+summary(lm_sac)
+
+lm_sac2 = glm(logRT_sac ~LogSac + ag_div_m + pump, data = BruceDSMRT)
+summary(lm_sac2)
+plot(lm_sac)
+
+anova(lm_sac, lm_sac2)
+
+visreg(lm_sac)
+
+#Use the same method of checking all possible models that Bruce did
+global_sac = glm(logRT_sac ~LogSac + mod_m + pump + pump*LogSac + mod_m*LogSac,
+                 data = BruceDSMRT, na.action = na.fail)
+sac1 = dredge(global_sac)
+#Should I use the top model? Or average the top two? Or top three?
+topmod = get.models(sac1, subset = delta <3)
+lm_sac_best = model.avg(topmod)
+summary(lm_sac_best)
+
+lm_sac_best2 = glm(logRT_sac ~LogSac*pump, data = BruceDSMRT)
+summary(lm_sac_best2)
+
+global_sac2 = glm(logRT_sac ~LogSac + ag_div_m + pump + pump*LogSac + ag_div_m*LogSac,
+                 data = BruceDSMRT, na.action = na.fail)
+dredge(global_sac2)
+bruce_sac_best = glm(logRT_sac ~LogSac +  pump*LogSac + ag_div_m*LogSac,
+                     data = BruceDSMRT, na.action = na.fail)
+
+#Huh. 
+
+#Now predict based on both my model and Bruce's model, I guess
+BruceDSMRT = mutate(BruceDSMRT, preds_rosie1 = predict(lm_sac_best), preds_rosie2 = predict(lm_sac_best2),
+                    preds_Bruce = predict(bruce_sac_best))
+
+long_rt = pivot_longer(BruceDSMRT, cols = c(logRT_sac, preds_rosie1, preds_rosie2, preds_Bruce),
+                       names_to = "Model", values_to = "LogRT"
+                       ) %>%
+  mutate(yearmonth = water_year_sam + (Month-1)/12)
+ggplot(long_rt, aes(x=Month, y = LogRT, color = Model))+ geom_point()+ geom_line()+
+  facet_wrap(~water_year_sam)
+
+########################################################
+#OK, as far as the data we have so far, My model and Bruce's model are almost identical (for Sac)
+#let's look at historic data
+Bruce_historic = filter(Bruce2,  pumping == "yes", water_year_sam > 1979) %>%
+  mutate(Month = as.numeric(factor(month_fifteen, levels = c("January","February",  "March","April", "May", 
+                                                             "June", "July","August","September","October", "November","December")))) %>%
+  left_join(Shey) %>%
+  select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
+  mutate(mod_m = mod/35.315, LogSac = log(SAC_m, base = 10), LogSJR = log(SJR_m), logRT_sac = log(mean_sac_rt, base = 10),
+         logRT_sjr = log(mean_sjr_rt, base = 10),
+         pump = SWP_m + CVP_m)
+
+Bruce_historic = mutate(Bruce_historic, preds_rosie1 =predict(lm_sac_best, newdata = Bruce_historic), preds_rosie2 = predict(lm_sac_best2, newdata = Bruce_historic),
+                    preds_Bruce = predict(bruce_sac_best, newdata = Bruce_historic))
+
+long_rt_his1 = pivot_longer(Bruce_historic, cols = c(logRT_sac, preds_rosie1, preds_rosie2, preds_Bruce),
+                       names_to = "Model", values_to = "LogRT"
+) %>%
+  mutate(yearmonth = water_year_sam + (Month-1)/12)
+ggplot(long_rt_his1, aes(x=yearmonth, y = LogRT, color = Model))+ geom_point()+ geom_line()
+
+#Now back-transform and re-plot residence time
+long_rt_his1 = mutate(long_rt_his1, ResTime = LogRT^10)
+ggplot(long_rt_his1, aes(x=yearmonth, y = ResTime, color = Model))+ geom_point()+ geom_line()
+
+#now the san joaquin
+#############################################################
+
+#Use the same method of checking all possible models that Bruce did
+global_sjr = glm(logRT_sjr ~LogSJR + mod_m + pump + pump*LogSJR + mod_m*LogSJR,
+                 data = BruceDSMRT, na.action = na.fail)
+sj1 = dredge(global_sjr)
+#Should I use the top model? Or average the top two? Or top three?
+
+lm_sj_best = get.models(sj1, subset = delta <1)[[1]]
+summary(lm_sj_best)
+#why doesn't this work with "predict?"
+lm_sj_best = glm(logRT_sjr ~LogSJR + mod_m + pump + pump*LogSJR + mod_m*LogSJR,
+                 data = BruceDSMRT, na.action = na.fail)
+summary(lm_sj_best)
+
+
+global_sj2 = glm(logRT_sjr ~LogSJR + ag_div_m + pump + pump*LogSJR + ag_div_m*LogSJR,
+                  data = BruceDSMRT, na.action = na.fail)
+sj2 = dredge(global_sj2)
+
+bruce_sj_best = get.models(sj2, subset = delta <1)[[1]]
+summary(bruce_sj_best)
+bruce_sj_best = glm(logRT_sjr ~LogSJR + ag_div_m + pump + pump*LogSJR + ag_div_m*LogSJR,
+                 data = BruceDSMRT, na.action = na.fail)
+
+
+#Huh. 
+
+#Now predict based on both my model and Bruce's model, I guess
+BruceDSMRT = mutate(BruceDSMRT, preds_rosie1 = predict(lm_sj_best),
+                    preds_Bruce = predict(bruce_sj_best))
+
+long_rt = pivot_longer(BruceDSMRT, cols = c(logRT_sjr, preds_rosie1, preds_Bruce),
+                       names_to = "Model", values_to = "LogRT"
+) %>%
+  mutate(yearmonth = water_year_sam + (Month-1)/12)
+ggplot(long_rt, aes(x=Month, y = LogRT, color = Model))+ geom_point()+ geom_line()+
+  facet_wrap(~water_year_sam)
+#the fit is not as good on the San Joaquin side. but my model and Bruce's model fit similarly 
+
+
+########################################################
+#OK, as far as the data we have so far, My model and Bruce's model are almost identical (for Sac)
+#let's look at historic data
+
+Bruce_historic2 = mutate(Bruce_historic, preds_rosie1 =predict(lm_sj_best, newdata = Bruce_historic), 
+                        preds_Bruce = predict(bruce_sj_best, newdata = Bruce_historic))
+
+long_rt_his = pivot_longer(Bruce_historic2, cols = c(logRT_sjr, preds_rosie1, preds_Bruce),
+                           names_to = "Model", values_to = "LogRTSJ"
+) %>%
+  mutate(yearmonth = water_year_sam + (Month-1)/12)
+ggplot(long_rt_his, aes(x=yearmonth, y = LogRTSJ, color = Model))+ geom_point()+ geom_line()
+
+#Now back-transform and re-plot residence time
+long_rt_his = mutate(long_rt_his, ResTime = LogRTSJ^10)
+ggplot(long_rt_his, aes(x=yearmonth, y = ResTime, color = Model))+ geom_point()+ geom_line()
+
+#now average residence time for AUg, sept, oct
+
+all_hist = filter(long_rt_his1, Model != "preds_rosie2") %>%
+  mutate(River = "Sac") %>%
+  bind_rows(mutate(long_rt_his, River = "SJR"))
+
+ggplot(all_hist, aes(x=yearmonth, y = ResTime, color = Model))+ geom_point()+ geom_line()+
+  facet_wrap(~River, nrow = 2)
+
+
+#Just summer-fall
+sumfall = filter(all_hist, Month %in% c(8,9,10)) %>%
+  group_by(water_year_sam, River, Model) %>%
+  summarize(aveRT = mean(ResTime))
+
+
+ggplot(sumfall, aes(x=water_year_sam, y = aveRT, color = Model))+ geom_point()+ geom_line()+
+  facet_wrap(~River, nrow = 2)
+
+#2014 and 2015 on the SJR side aren't lining up.
+
+test2014 = filter(all_hist, water_year_sam %in% c(2014, 2015))
+ggplot(all_hist, aes(x=yearmonth, y = LogSJR))+geom_point() + geom_line()
+ggplot(all_hist, aes(x=yearmonth, y = SJR_m))+geom_point() + geom_line()
+
+ggplot(all_hist, aes(x=yearmonth, y = LogSac))+geom_point() + geom_line()
+ggplot(all_hist, aes(x=yearmonth, y = mod_m))+geom_point() + geom_line()
+ggplot(all_hist, aes(x=ag_div_m, y = mod_m))+geom_point() + geom_smooth(method = "lm")
+       
