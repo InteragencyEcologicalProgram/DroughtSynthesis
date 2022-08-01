@@ -29,6 +29,7 @@ load("jellyfish.RData")
 ggplot(filter(AlljelliesMean, Year == 2017), aes(x = Month, y = meanJellies)) +
   geom_col()+ facet_grid(Region~Year)
 
+
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
   geom_col()+ facet_wrap(~Region)
 
@@ -101,6 +102,15 @@ ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
   ylab("Mean summer jellyfish CPUE (log-transformed)")
 #ggsave("plots/Jelliesboxplot.tiff", device = "tiff", width = 6, height = 5)
 
+library(rphylopic)
+jelly = image_data("ef63437d-d6f4-4583-9d75-a8c9b19a203d", size = 256)[[1]]
+
+ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
+  add_phylopic(jelly)+
+  scale_fill_manual(guide = NULL, values = pal_yrtype)+
+  geom_boxplot( alpha = 0.8)+ facet_wrap(~Region) + theme_bw()+
+  scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Wet"))+
+  ylab("Mean summer jellyfish CPUE (log-transformed)")
 ###############
 
 ggplot(Allmeansub, aes(x =Index, y = log(meanJellies+1))) +
@@ -182,6 +192,13 @@ pcs
 
 plot(allEffects(jelz3c))
 visreg(jelz3c, xvar = "Yr_type", by = "Region")
+
+effs = allEffects(jelz3c)
+foo = predictorEffect("Yr_type", jelz3c)
+foo2 = predictorEffect("Yr_type", jelz3c, residuals = TRUE)
+
+plot(foo, lines = list(multiline = TRUE), confint=list(style="auto"))
+plot(foo2, lattice = list(key.args = list(columns = 3)))
 
 plot(emmeans(jelz3c,pairwise ~ Yr_type|Region), comparison = T)
 plot(emmeans(jelz3c,pairwise ~ Region|Yr_type))
@@ -289,39 +306,23 @@ emmeans(jelz3ss2, pairwise ~ Yr_type)
 ####################################################################################
 #center of distribution from the Golden Gate
 
-stations = read_csv("data/IEPstationsw_Regions.csv")
+jellysta = dplyr::select(Alljellies2, Station, StationID, Source, Latitude, Longitude) %>%
+  filter(!is.na(Latitude), Source != "20mm") %>%
+  distinct()
 
-#I need suisun station gps
-Suisun = read_csv("data/StationsLookUp.csv") %>%
-  rename(StationID = StationCode, Latitude = y_WGS84, Longitude = x_WGS84) %>%
-  mutate(Source = "Suisun", Region = "Suisun Marsh") %>%
-  dplyr::select(Source, Region, StationID, Latitude, Longitude)
-
-stations = bind_rows(Suisun, stations) %>%
-  dplyr::select(-SubRegion)
-
-AlljelliesTot2 = left_join(AlljelliesTot, stations) %>%
-  filter(!is.na(Latitude)) 
-
-Alljelliessta = group_by(AlljelliesTot2, StationID, Latitude, Longitude, Source) %>%
-  summarize(n = n()) %>%
-  mutate(Station = paste(Source, StationID))
-
-AlljelliesTotsf = left_join(AlljelliesTot, stations) %>%
-  filter(!is.na(Latitude)) %>%
-  st_as_sf(coords = c( "Longitude","Latitude"), crs = 4326)
-
-distance<-GGdist(Water_map = spacetools::Delta, Points = Alljelliessta, Latitude_column = Latitude,
-                 Longitude_column = Longitude, PointID_column = Station)
+distance<-GGdist(Water_map = spacetools::Delta, Points = jellysta, Latitude_column = Latitude,
+                 Longitude_column = Longitude, PointID_column = StationID) 
+distance =  distinct(distance)
 
 #Do I want to calculate the average distance for all sites where Meaotias was caught? 
 #OR do I weight the stations by the number caught?
 #I want to weight it.
-distancex = left_join(distance, Alljelliessta) %>%
-  dplyr::select(-Station)
+distancex = left_join(distance, jellysta) %>%
+  dplyr::select(-Station) 
 
-Alljel = left_join(AlljelliesTot2, distancex) 
+Alljel = left_join(AlljelliesTot, distancex) 
 Alljelsum = mutate(Alljel, weightedD = Distance*TotJellies) %>%
+  filter(!is.na(Distance)) %>%
   group_by(Month, Year, Yr_type, Index) %>%
   summarize(Meandist = sum(weightedD)/(sum(TotJellies, na.rm = T)), jellies = sum(TotJellies, na.rm = t)) %>%
   droplevels()
@@ -333,27 +334,121 @@ DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
   group_by(Month, Year) %>%
   summarize(Outlfow = mean(OUT))
 # 
-# #Take out all samples with no jellies, or less than 20 total jellies
-# Alljelsum = left_join(Alljelsum, DFmonth) %>%
-#   filter(!is.nan(Meandist), jellies >20)
+ #Take out all samples with no jellies, or less than 20 total jellies
+ Alljelsum = left_join(Alljelsum, DFmonth) %>%
+   filter(!is.nan(Meandist), jellies >20)
 # 
 # save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
 # load("data/JellieswDistance.Rdata")
-# Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
+ Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
 # 
 # #Facet by month
-# ggplot(Alljelsum, aes(x = Meandist, y = Outlfow)) + 
-#   geom_point(aes(color = as.factor(Year))) + geom_smooth(method = "lm")+
-#   facet_wrap(~Month)
+ ggplot(Alljelsum, aes(x = Meandist, y = Outlfow)) + 
+   geom_point(aes(color = as.factor(Year))) + geom_smooth(method = "lm")+
+   facet_wrap(~Month)
 # 
 # ################
 # #linear model 
 # 
 # #convert cubic feet to cubic meters
-# Alljelsum = mutate(Alljelsum, Yearr = as.factor(Year),
+ Alljelsum = mutate(Alljelsum, Yearr = as.factor(Year),
+                    OutflowM = Outlfow*0.0283168,
+                    DistK = Meandist/1000)
+ jl1 = lmer(DistK~ OutflowM + (1|Yearr), data = Alljelsum)
+ summary(jl1)
+ plot(jl1)
+ res = simulateResiduals(jl1)
+ plot(res)
+ jl1s = summary(jl1)
+ R2 = r.squaredGLMM(jl1)
+# 
+write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
+# 
+# #format an equation to print on the graph
+EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
+            b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
+            r2 = format(R2[1], digits = 3), sep = "")
+ EQ
+# 
+ pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
+# 
+# #Plot of outflow versus center of distribution for paper
+ ggplot(droplevels(Alljelsum), aes(x = DistK, y = OutflowM)) + 
+   geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
+   scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
+   xlab("Center of Maeotias distribution \n(Km from Golden Gate)")+
+   ylab("Monthly Mean Delta Outflow (m3/sec)") +
+   annotate("text", x = 70, y = 320, label = EQ)+
+   theme_bw()
+ ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
+
+######################################################################
+#I think I need to weight distance differently
+# library(mgcv)
+# ggplot(Alljel, aes(x = Distance, y = log(TotJellies+1))) + geom_point() + geom_smooth()
+# 
+# #What if I did a GAM for each month and calculated the distance at the maximum catch?
+# test = filter(Alljel, Year == 2019, Month == 8) %>%
+#   mutate(rJel = round(TotJellies))
+# GAMtest = gamm(rJel ~ s(Distance, k =4), random = list(StationID=~1), data = test, family = nb)
+# GAMtest
+# vis.gam(GAMtest)
+# 
+# #Huh, not sure how to calculate distance to maximum with the stations as a random. 
+# 
+# GAMtest2 = gam(rJel ~ s(Distance, k =6),  data = test, family = nb)
+# summary(GAMtest2)
+# plot(GAMtest2)
+# gam.check(GAMtest2)
+# 
+# #Now use predict to find the maximum
+# Newdat = data.frame(Distance = 50000:140000)
+# preds = as.data.frame(predict(GAMtest2, newdata = Newdat, type = "response")) %>%
+#   rename(Predictions = `predict(GAMtest2, newdata = Newdat, type = "response")`)
+# Newdat = bind_cols(Newdat, preds)
+# max(Newdat$Predictions)
+# Newdat$Distance[which(Newdat$Predictions== max(Newdat$Predictions))]
+# 
+# #OK, now try applying this to all months I'll make a function
+# 
+# CenterMod = function(dat) {
+# datx = filter(dat, rJel != 0)
+# if(nrow(datx)>0) {
+#   GAM = gam(rJel ~ s(Distance, k =6),  data = dat, family = nb)
+#   
+#   Newdat = data.frame(Distance = min(datx$Distance):max(datx$Distance))
+#   preds = as.data.frame(predict(GAM, newdata = Newdat, type = "response")) %>%
+#     rename(Predictions = `predict(GAM, newdata = Newdat, type = "response")`)
+#   Newdat = bind_cols(Newdat, preds)
+#   CenterX = data.frame(Max = max(Newdat$Predictions),Distance =  Newdat$Distance[which(Newdat$Predictions== max(Newdat$Predictions))])
+#   Center =CenterX } else
+#     Center = data.frame(Max = 0, Distance = NA)
+#   
+#   return(Center)
+# }
+# 
+# #make sure the function works
+# CenterMod(test)
+# 
+# #filter to just the summer
+# Alljelx = mutate(Alljel, rJel = round(TotJellies)) %>%
+#   filter(Month %in% c(5,6,7,8,9,10,11))
+# 
+# #apply center of distribution function to each month
+# Centers = group_by(Alljelx, Year, Month) %>%
+#   do(CenterMod(.)) 
+# 
+# #months with very low catch got weird
+# centers = left_join(Centers, DFmonth) %>%
+#  # filter(Distance < 140000, Max > 20) %>%
+#   left_join(Yeartypes)
+# 
+# 
+# 
+# centers = mutate(centers, Yearr = as.factor(Year),
 #                    OutflowM = Outlfow*0.0283168,
-#                    DistK = Meandist/1000)
-# jl1 = lmer(DistK~ OutflowM + (1|Yearr), data = Alljelsum)
+#                    DistK = Distance/1000)
+# jl1 = lmer(DistK~ OutflowM + (1|Yearr) + (1|Month), data = centers)
 # summary(jl1)
 # plot(jl1)
 # res = simulateResiduals(jl1)
@@ -363,6 +458,7 @@ DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
 # 
 # write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
 # 
+# 
 # #format an equation to print on the graph
 # EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 2), " + ",
 #            b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
@@ -371,113 +467,18 @@ DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
 # 
 # pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
 # 
-# #Plot of outflow versus center of distribution for paper
-# ggplot(droplevels(Alljelsum), aes(x = DistK, y = OutflowM)) + 
-#   geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
+# 
+# ggplot(centers, aes(x = DistK, y = OutflowM)) + 
+#   geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") +
+#   coord_cartesian(ylim = c(50, 400)) +
 #   scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
-#   xlab("Center of Maeotias distribution \n(Km from Golden Gate)")+
+#   xlab("Center of Maeotias distribution per month \n(Km from Golden Gate)")+
 #   ylab("Monthly Mean Delta Outflow (m3/sec)") +
 #   annotate("text", x = 70, y = 320, label = EQ)+
 #   theme_bw()
+# 
+# #Never mind
 # ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
-
-######################################################################
-#I think I need to weight distance differently
-library(mgcv)
-ggplot(Alljel, aes(x = Distance, y = log(TotJellies+1))) + geom_point() + geom_smooth()
-
-#What if I did a GAM for each month and calculated the distance at the maximum catch?
-test = filter(Alljel, Year == 2019, Month == 8) %>%
-  mutate(rJel = round(TotJellies))
-GAMtest = gamm(rJel ~ s(Distance, k =4), random = list(StationID=~1), data = test, family = nb)
-GAMtest
-vis.gam(GAMtest)
-
-#Huh, not sure how to calculate distance to maximum with the stations as a random. 
-
-GAMtest2 = gam(rJel ~ s(Distance, k =6),  data = test, family = nb)
-summary(GAMtest2)
-plot(GAMtest2)
-gam.check(GAMtest2)
-
-#Now use predict to find the maximum
-Newdat = data.frame(Distance = 50000:140000)
-preds = as.data.frame(predict(GAMtest2, newdata = Newdat, type = "response")) %>%
-  rename(Predictions = `predict(GAMtest2, newdata = Newdat, type = "response")`)
-Newdat = bind_cols(Newdat, preds)
-max(Newdat$Predictions)
-Newdat$Distance[which(Newdat$Predictions== max(Newdat$Predictions))]
-
-#OK, now try applying this to all months I'll make a function
-
-CenterMod = function(dat) {
-datx = filter(dat, rJel != 0)
-if(nrow(datx)>0) {
-  GAM = gam(rJel ~ s(Distance, k =6),  data = dat, family = nb)
-  
-  Newdat = data.frame(Distance = min(datx$Distance):max(datx$Distance))
-  preds = as.data.frame(predict(GAM, newdata = Newdat, type = "response")) %>%
-    rename(Predictions = `predict(GAM, newdata = Newdat, type = "response")`)
-  Newdat = bind_cols(Newdat, preds)
-  CenterX = data.frame(Max = max(Newdat$Predictions),Distance =  Newdat$Distance[which(Newdat$Predictions== max(Newdat$Predictions))])
-  Center =CenterX } else
-    Center = data.frame(Max = 0, Distance = NA)
-  
-  return(Center)
-}
-
-#make sure the function works
-CenterMod(test)
-
-#filter to just the summer
-Alljelx = mutate(Alljel, rJel = round(TotJellies)) %>%
-  filter(Month %in% c(5,6,7,8,9,10,11))
-
-#apply center of distribution function to each month
-Centers = group_by(Alljelx, Year, Month) %>%
-  do(CenterMod(.)) 
-
-#months with very low catch got weird
-centers = left_join(Centers, DFmonth) %>%
- # filter(Distance < 140000, Max > 20) %>%
-  left_join(Yeartypes)
-
-
-
-centers = mutate(centers, Yearr = as.factor(Year),
-                   OutflowM = Outlfow*0.0283168,
-                   DistK = Distance/1000)
-jl1 = lmer(DistK~ OutflowM + (1|Yearr) + (1|Month), data = centers)
-summary(jl1)
-plot(jl1)
-res = simulateResiduals(jl1)
-plot(res)
-jl1s = summary(jl1)
-R2 = r.squaredGLMM(jl1)
-
-write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
-
-
-#format an equation to print on the graph
-EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 2), " + ",
-           b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
-           r2 = format(R2[1], digits = 3), sep = "")
-EQ
-
-pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
-
-
-ggplot(centers, aes(x = DistK, y = OutflowM)) + 
-  geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") +
-  coord_cartesian(ylim = c(50, 400)) +
-  scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
-  xlab("Center of Maeotias distribution per month \n(Km from Golden Gate)")+
-  ylab("Monthly Mean Delta Outflow (m3/sec)") +
-  annotate("text", x = 70, y = 320, label = EQ)+
-  theme_bw()
-
-#We'll go with that one
-ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
 ######################################################################
 
 #OK, now try one more method
@@ -496,15 +497,6 @@ ggplot(AlljelliesTot, aes(x = Distance)) +geom_histogram()+
   facet_grid(Month~Year)
 
 #Actually pretty well balanced bewteen years, just not between months
-
-ggplot(Alljelx, aes(x = Distance, y = log(rJel))) +geom_point()+
-  facet_grid(Month~Year)
-
-#Try a single gam with month and yearas blocking terms like Sam suggested
-Alljelx = mutate(Alljelx, Yearf = as.factor(Year), Yearm = as.factor(paste(Yearf, Month)))
-
-GAMtest3 = gam(rJel ~ s(Distance, k =6, by = Yearm), data = Alljelx, family = nb)
-GAMtest3
 
 #Bleh. THis is taking forever and probably not working. I could do it by year, but not month and year. 
 #I'm tempted to stick with the individual GAMs I had before. However, given the general

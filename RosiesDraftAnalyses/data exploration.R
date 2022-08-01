@@ -14,14 +14,13 @@ Fish <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
   dplyr::select(Year, Season, Sbindex, SmeltIndex, LongfinIndex, AmShadIndex) %>%
   rename(YearAdj = Year)
 
-yrs = read_csv("data/yearassignments.csv"
-)
+yrs = read_csv("data/yearassignments.csv") 
 
 #grab zooplankton data from Arthur
 zoopsBPUE_seasonal = read_csv("data/zoop_drought_lt_bpue_szn.csv") %>%
-  rename(YearAdj = water_year, ZoopBPUE = BPUE_ug)
+  rename(YearAdj = water_year, ZoopBPUE = s_BPUE)
 zoopsBPUE_regional = read_csv("data/zoop_drought_lt_bpue_reg.csv") %>%
-  rename(YearAdj = water_year)
+  rename(YearAdj = water_year,  ZoopBPUE = r_BPUE)
 Integrated_data = left_join(Integrated_data_set, zoopsBPUE_seasonal) %>%
   left_join(Fish)
 
@@ -41,7 +40,29 @@ Chl2reg = group_by(Chl, Region, Season, month, ds_year) %>%
   group_by( Region, Season, ds_year) %>%
   summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
   rename(Year = ds_year) %>%
-  left_join(yrs)
+  left_join(yrs) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+
+#plot of chlorophyll by water year type
+ggplot(Chl2reg, aes(x = Yr_type, y = logChl, fill = Yr_type))+
+  geom_boxplot(alpha = 0.7)+
+  facet_grid(Season~Region)+
+  drt_color_pal_yrtype()+
+  ylab("Chlorophyl ug/L (log-transformed)")+
+  xlab("Year Type")+
+  theme_bw()+
+  scale_x_discrete(labels = c("C", "D", "B", "A", "W"))
+
+#plot of raw chlrophyll data by day of year
+Chl = mutate(Chl, Yday = yday(Date), Yr_type = factor(ds_year_type, 
+                                                      levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
+
+ggplot(Chl, aes(x = Yday, y = chlaAvg_log10, color = Yr_type))+
+  geom_point(alpha = 0.3, shape = "circle open" )+
+  geom_smooth()+
+  drt_color_pal_yrtype(aes_type = "color")+
+  facet_wrap(~Region)+
+  theme_bw()
 
 Integrated = left_join(Integrated_data, Chl2)
 
@@ -77,175 +98,185 @@ ggplot(filter(zoo, Season == "Fall"), aes(x = Drought, y = Value)) + geom_boxplo
 Temp = filter(IntLong, Metric == "Temperature", Drought != "N")
 ggplot(Temp, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season, scales = "free_y")
 
+###################################################################################################
+#i'm gonna want regions in stead of seasons for some metrics, probalby more interesting
 
+#summarize chlorophyll by region, fix region names, and make a regional metric 
+Chl2regB = group_by(Chl2reg, Year, Region) %>%
+  summarize(Chla = mean(Chla, na.rm = T), logChla = mean(logChl, na.rm = T)) %>%
+  rename(YearAdj = Year) %>%
+  mutate(Region = case_when(Region == "South-Central Delta" ~ "SouthCentral",
+                            Region == "North Delta" ~ "North",
+                            TRUE ~ Region),
+         Metric = paste("logChla", Region)) %>%
+  rename(Value = logChla)
+
+#reigonal metric label
+Zoops = mutate(zoopsBPUE_regional, Metric = paste("ZoopBPUE", Region)) %>%
+  rename(Value = ZoopBPUE)
+
+#bring in other hydrology
+hyro = pivot_longer(lt_seasonal, cols = c(Outflow, Export, X2), names_to = "Metric", values_to = "Value") %>%
+  group_by(YearAdj,Metric) %>%
+          summarize (Value = mean(Value))
+
+#water quality is pretty consistant, both seasonally and regionally. Let's just do the annual mean
+WQreg = pivot_longer(lt_regional, cols = c(Temperature, Salinity, Secchi),
+                     names_to = "Metric", values_to = "Value") %>%
+  group_by(YearAdj, Metric) %>%
+  summarize(Value = mean(Value, na.rm = T))
+
+#Just to FMWT for fish
+Fish2 = filter(Fish, Season == "Fall") %>%
+  pivot_longer(cols = c(Sbindex, SmeltIndex, LongfinIndex, AmShadIndex), names_to = "Metric",
+               values_to = "Value") %>%
+  mutate(Value = log(Value+1))
+
+load("ResidenceTime.RData")
+RTlong = ungroup(DFRTann) %>%
+  pivot_longer(cols = c(SACRT, SJRT), names_to = "Metric", values_to = "Value") %>%
+  rename(YearAdj = WY) %>%
+  dplyr::select(YearAdj, Metric, Value)
+
+
+#Bind them together
+integratd_data2 = bind_rows(Chl2regB, Zoops, WQreg, Fish2, RTlong, hyro) %>%
+  dplyr::select(YearAdj, Metric, Value) %>%
+  rename(Year = YearAdj)
+
+Int2 = left_join(integratd_data2, yrs) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")),
+         MetricL = factor(Metric, levels =  c("Outflow", "Export", "X2","SACRT", "SJRT", "Salinity",  "Secchi","Temperature" , "logChla Confluence", 
+                                            "logChla North", "logChla SouthCentral", "logChla Suisun Bay",
+                                           "ZoopBPUE Confluence","ZoopBPUE SouthCentral","ZoopBPUE Suisun Bay", 
+                                           "ZoopBPUE Suisun Marsh",              
+                                 "Sbindex", "SmeltIndex", "LongfinIndex", "AmShadIndex"), 
+                                labels = c("Outflow (CFS)", "SWP + CVP \nExports (CFS)", "X2", "Sacramento\nResidence Time (days)", "San Joaquin\nResidence Time, (days)",
+                                           "Salinity (PSU)",  "Secchi Depth \n(cm)",
+                                           "Temperature (C)" , "Chlorophyll\nConfluence (log(ug/L))", 
+                                           "Chlorophyll\nNorth (log(ug/L))", "Chlorophyll\nSouthCentral (log(ug/L))", 
+                                           "Chlorophyll\n Suisun Bay (log(ug/L))",
+                                           "Zooplankton\nConfluence (ugC/L)","Zooplankton\nSouthCentral (ugC/L)",
+                                           "Zooplankton\nSuisun Bay  (ugC/L)", 
+                                           "Zooplankton\nSuisun Marsh  (ugC/L)",              
+                                           "Striped Bass \nlog FMWT Index", "Delta Smelt\nlog FMWT Index", 
+                                           "Longfin  \nlog FMWT Index", 
+                                           "Am Shad  \nlog FMWT Index")))
+
+
+#look at it without the "not drought or wet" years
+ggplot(filter(Int2, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot() +
+  facet_wrap(MetricL~., scales = "free_y")
+
+ggplot(Int2, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
+  facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()
+
+ggplot(Int2, aes(x = Yr_type, y = Value, fill = Yr_type)) + geom_boxplot() +
+  facet_wrap(MetricL~., scales = "free_y") + drt_color_pal_yrtype()+
+  theme_bw()
+
+# rework it so residence time is a column
+
+Int3 = left_join(ungroup(Int2), dplyr::select(rename(ungroup(DFRTann), Year = WY), Year, SACRT, SJRT))
+
+ggplot(Int3, aes(x = SACRT, y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth()+
+  facet_wrap(~MetricL, scales = "free_y")+
+  theme_bw()
+
+
+# Now do outflow
+
+Int4 = rename(lt_seasonal, Year = YearAdj) %>%
+   dplyr::select( Year, Outflow) %>%
+  group_by(Year) %>%
+  summarize(Outflow = mean(Outflow, na.rm = T)) %>%
+  right_join(ungroup(Int2)) %>%
+  filter(Metric != "Outflow")
+
+ggplot(Int4, aes(x = log(Outflow), y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth()+
+  facet_wrap(~MetricL, scales = "free_y")+
+  theme_bw()
+
+
+##############################################################################################
 #Let's make a rough "Drought impact" index. I"m just making this up tho.
+library(effsize)
 
 DroughtImpact = group_by(IntLong, Season, Metric, Drought) %>%
   summarize(Mean = mean(Value, na.rm = T)) %>% 
   pivot_wider(names_from = Drought, values_from = Mean) %>%
   mutate(Index = (D-W)/mean(c(D,N, W), na.rm = T), IndexB = D/W)
 
-#
+#Let's try it again and use Cohen's D
+DroughtImpact2 = filter(Int2, Drought != "N") %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(Metric) %>%
+  summarize(Cohen = cohen.d(Value ~ Drought, na.rm = T)$estimate, 
+            magnitude = cohen.d(Value ~ Drought, na.rm = T)$magnitude)
 
-#Now let's try scaling all the variables first and then creating a drought index
-#also limit it to just the FMWT index for fish
-#and get rid of winter zoops cause i don't have a lot of those
-DrIm2 = Int %>%
-  mutate(SmeltIndex = case_when(
-    Season == "Fall" ~ SmeltIndex,
-  ),
-  logzoopB = case_when(
-    Season %in% c("Fall", "Spring", "Summer") ~ logzoopB
-  ),
-  Turbidity = Secchi *-1) %>%
-  mutate(across(`Outflow`:Turbidity, scale)) %>%
-  pivot_longer(cols = `Outflow`:Turbidity, names_to = "Metric", values_to = "Value") %>%
-  group_by(Season, Metric, Drought) %>%
-  summarize(Mean = mean(Value, na.rm = T)) %>% 
-  pivot_wider(names_from = Drought, values_from = Mean) %>%
-  mutate(Index = (D-W), IndexB = D/W)
-
-ggplot(DroughtImpact, aes(x = Season, y = Index)) + facet_wrap(~Metric)+
-  geom_col()
-
-ggplot(DrIm2, aes(x = Season, y = Index)) + facet_wrap(~Metric)+
-  geom_col()
-
-#the fish have such a huge difference it's hard to see everything else.
-ggplot(DrIm2, 
-       aes(x = Metric, y = Index, fill = Index)) + facet_wrap(~Season)+
-  geom_col()+
-  scale_fill_gradient2(low = "red", high = "blue", mid = "grey") + theme_bw()
+#now try combining not-drought and wet years
+DroughtImpact2b = mutate(Int2, Drought2 = case_when(Drought == "D" ~ "D",
+                                                   TRUE ~ "W"),
+                        Drought2 = as.factor(Drought2)) %>%
+  group_by(Metric) %>%
+  summarize(Cohen = cohen.d(Value ~ Drought2, na.rm = T)$estimate, 
+            magnitude = cohen.d(Value ~ Drought2, na.rm = T)$magnitude)
 
 
-#Some sort of threshold?
-#Some sort of good/bad indicator. 
-Cats = read_excel("data/Integrated data set.xlsx", sheet = "Categories")
-DrIm2b = left_join(DrIm2, Cats) %>%
-  mutate(Index2 = abs(Index), colr = case_when(
-    Index <0 ~ "red",
-    Index >0 ~ "blue"
-  )) %>%
-  filter(!is.na(colr), Metric %in% c("DeltaExport", "Delta Outflow", "DissAmmonia", "DissNitrateNitrite",
-                                     "logChla", "logzoopB", "Salinity", "Sbindex",  "Turbidity",
-                                     "SmeltIndex", "Temperature"))
+#what about the slope of the residence time line?
+Int3 = filter(Int3, !is.na(Value), !is.nan(Value))
+Resmetric = filter(Int3, !is.na(Value), !is.nan(Value), Metric != "SACRT") %>%
+  group_by(MetricL) %>%
+  summarize(intercept = coef(lm(Value ~ SACRT))[1],
+            grad = coef(lm(Value ~ SACRT))[2],
+            r2 = summary(lm(Value ~ SACRT))$r.squared,
+            P =  summary(lm(Value ~ SACRT))$coefficients[2,4],
+            Y = max(Value)) 
 
-DrIm2b = mutate(DrIm2b, 
-                Metric = factor(Metric,  levels =  c("DeltaExport", "Delta Outflow",
-                                                     "Turbidity","Salinity",  "Temperature",
-                                                     "DissAmmonia", "DissNitrateNitrite",
-                  "logChla", "logzoopB", "Sbindex", "SmeltIndex"), 
-                                        labels = 
-                                          c("Exports", "Outflow","Turbidity", 
-                                            "Salinity", "Temperature",
-                                            "Ammonium", "Nitrate",
-                                            "Chla", "Zoops", "Stripers", 
-                                            "Smelt")))
-
-ggplot(DrIm2b, aes(x=Category, group = Metric)) +
-  geom_col(aes(fill = colr, y = Index2, alpha = Index2), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
-  scale_fill_manual(values = c("blue", "red"), labels = c("increase", "decrease"),
-                    name = "Direction of \n Drought Impact")+
-  coord_polar() + theme_bw()+
-  scale_alpha(guide = NULL)+
-  scale_y_continuous( name = NULL) + facet_wrap(~Season)
+#linear models of stuff versus residence time
+ggplot(filter(Int3, Metric != "SACRT"), aes(x = SACRT, y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth(method = "lm")+
+  geom_text(data = Resmetric, aes(x = 50, y = Y, 
+                                  label = paste("y = x", round(grad, 3),
+                                                "+", round(intercept, 3), "\n R2 =", round(r2, 4),
+                                                " P = ", round(P, 4), sep = "")),
+            size = 3, nudge_y = -1)+
+ xlab("Sacramento Residence Time (days)")+
+  facet_wrap(~MetricL, scales = "free_y")+
+  theme_bw()
 
 
+#now versus net delta outflow
 
-ggplot(DrIm2b, aes(x=Category, group = Metric)) +
-  geom_col(aes(fill = colr, y = Index, alpha = Index2), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  #geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
-  scale_fill_manual(values = c("blue", "red"), labels = c("increase", "decrease"),
-                    name = "Direction of \n Drought Impact")+
-  geom_text(aes(x = Category, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-   theme_bw()+
-  scale_y_continuous( name = NULL) + facet_grid(.~Season, space = "free")
+Outmetric = Int4 %>%
+  group_by(MetricL) %>%
+  summarize(intercept = coef(lm(Value ~ log(Outflow)))[1],
+            grad = coef(lm(Value ~ log(Outflow)))[2],
+            r2 = summary(lm(Value ~ log(Outflow)))$r.squared,
+            P =  summary(lm(Value ~ log(Outflow)))$coefficients[2,4],
+            Y = max(Value)) 
 
 
-#Color code by good versus bad
-ggplot(DrIm2b, aes(x=Category, group = Metric)) +
-  geom_col(aes(fill = GoodBad, y = Index, alpha = Index2), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  #geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
-  scale_fill_manual(values = c("red", "blue"), labels = c("Stressor", "Good Thing"),
-                    name = "Direction of \n Drought Impact")+
-  geom_text(aes(x = Category, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_y_continuous( name = NULL) + facet_grid(.~Season, space = "free")
+ggplot(Int4, aes(x = log(Outflow), y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth(method = lm)+
+  geom_text(data = Resmetric, aes(x = 9, y = Y, 
+                                  label = paste("y = x", round(grad, 3),
+                                                "+", round(intercept, 3), "\n R2 =", round(r2, 4),
+                                                " P = ", round(P, 4), sep = "")),
+            size = 3, nudge_y = -1)+
+  facet_wrap(~MetricL, scales = "free_y")+
+  theme_bw()
 
-
-#create an annual index
-AnnIm = group_by(DrIm2b, GoodBad, Metric, Category) %>%
-  summarize(Index = mean(Index), IndexB = mean(IndexB), Index2 = mean(Index2)) %>%
-  mutate(colr = case_when(
-    GoodBad == "Bad Things" & Index >0 ~ "red",
-    GoodBad == "Bad Things" & Index <0 ~ "blue",
-    GoodBad == "Good Things" & Index >0 ~ "blue",
-    GoodBad == "Good Things" & Index <0 ~ "red",
-  ))
-
-#Color code by good versus bad
-ggplot(AnnIm, aes(x=Metric, group = Metric)) +
-  geom_col(aes(fill = colr, y = Index, alpha = Index2), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  scale_fill_manual(values = c("blue", "red"), guide = NULL)+
-  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_y_continuous( name = "Drought Impact Level") + facet_grid(.~GoodBad, scales = "free_x") +
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
-  scale_alpha(guide = NULL)
-
-#try a different way
-
-#Color code by good versus bad
-ggplot(AnnIm, aes(x=Metric, group = Metric)) +
-  geom_col(aes(fill = GoodBad, y = Index, alpha = Index2), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  scale_fill_manual(values = c("red", "blue"))+
-  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_y_continuous( name = "Drought Impact Level") + 
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
-  scale_alpha(guide = NULL)
-
-
-#Now without the good/bad colors, 'cause no one likes that
-ggplot(AnnIm, aes(x=Metric, group = Metric)) +
-  geom_col(aes(y = Index, alpha = Index2, fill = Category), color = "darkgrey",
-           position =position_dodge2(width = 1, preserve = "single"))+
-  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_fill_brewer(palette = "Set1", labels = c("Fish", "Hydrology", "Lower Trophic", "Water Quality"))+
-  scale_y_continuous( name = "Drought Impact Level") + 
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank()) +
-  scale_alpha(guide = NULL)
-
-#see if the ratio of the raw data works better than the difference inthe scaled data
-AnnIm2 = group_by(DroughtImpact,Metric) %>%
-  summarize(Index = mean(Index, na.rm = T), IndexB = mean(IndexB, na.rm = T)) %>%
-  mutate(colr = case_when(
-    IndexB < 1 ~ "red",
-    IndexB >1 ~ "blue"
-  ))
-
-
-
-ggplot(AnnIm2, aes(x=Metric)) +
-  geom_col(aes(y = IndexB, fill = colr))+
-  geom_text(aes(x = Metric, label = Metric, y = 0, group = Metric), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_y_continuous( name = "Drought Impact Level") + 
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank())+
-  scale_fill_manual(values = c("lightblue", "red"),labels = c("increase", "decrease"))
 
 
 #############################################################
@@ -542,3 +573,7 @@ taxa_AR = rename(taxa_annual_reg, Year = water_year) %>%
   
 ggplot(taxa_AR, aes(x = Drought, y = log(BPUE_ug + 1), fill = Taxlifestage)) +
   geom_boxplot()+ facet_grid(Taxlifestage~Region, scales = "free_y")
+
+##############################################################################
+
+

@@ -8,33 +8,35 @@ library(visreg)
 library(MuMIn)
 
 #Get the Dayflow data from the CNRA portal
-Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
-
-
-#I suck at dealing with lists, so I broke it up into component data frames and then put them together
-#there is probably a better way of doing this. 
-DF1970_83 =  Dayflow$`Dayflow Results 1970 - 1983` %>%
-  mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  dplyr::select(Date, OUT, EXPORT, SJR, GCD, SAC, CVP, SWP, MISDV) %>%
-  rename(EXPORTS = EXPORT)
-
-DF1984_96 = Dayflow$`Dayflow Results 1984 - 1996` %>%
-  mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  dplyr::select(Date, OUT, EXPORT, SJR, GCD, SAC, CVP, SWP, MISDV) %>%
-  rename(EXPORTS = EXPORT)
-
-DF1997_2020 =  Dayflow$`Dayflow Results 1997 - 2020` %>%
-  mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  dplyr::select(Date, OUT, EXPORTS, SJR, GCD, SAC, CVP, SWP, MISDV)
-
-
-DF2021 =  Dayflow$`Dayflow Results 2021` %>%
-  mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
-  dplyr::select(Date, OUT, EXPORTS, SJR, SAC, CVP, SWP, MISDV) 
-
-
-#now I can put them all together!
-DF = bind_rows(DF1970_83, DF1984_96, DF1997_2020, DF2021)
+# Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
+# 
+# 
+# #I suck at dealing with lists, so I broke it up into component data frames and then put them together
+# #there is probably a better way of doing this. 
+# DF1970_83 =  Dayflow$`Dayflow Results 1970 - 1983` %>%
+#   mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+#   dplyr::select(Date, OUT, EXPORT, SJR, GCD, SAC, CVP, SWP, MISDV) %>%
+#   rename(EXPORTS = EXPORT)
+# 
+# DF1984_96 = Dayflow$`Dayflow Results 1984 - 1996` %>%
+#   mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+#   dplyr::select(Date, OUT, EXPORT, SJR, GCD, SAC, CVP, SWP, MISDV) %>%
+#   rename(EXPORTS = EXPORT)
+# 
+# DF1997_2020 =  Dayflow$`Dayflow Results 1997 - 2020` %>%
+#   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+#   dplyr::select(Date, OUT, EXPORTS, SJR, GCD, SAC, CVP, SWP, MISDV)
+# 
+# 
+# DF2021 =  Dayflow$`Dayflow Results 2021` %>%
+#   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+#   dplyr::select(Date, OUT, EXPORTS, SJR, SAC, CVP, SWP, MISDV) 
+# 
+# 
+# #now I can put them all together!
+# DF = bind_rows(DF1970_83, DF1984_96, DF1997_2020, DF2021)
+#save(DF, file = "data/dayflow.RData")
+load("data/dayflow.RData")
 
 #Residence time calculations from Hammock et al 2015
 
@@ -128,7 +130,7 @@ ggplot(Bruce, aes(x = Year, y = ag_div, color = month_fifteen)) + geom_point()
 Shey = read_excel("data/Ag_diversions_fromShey.xlsx") %>%
   rename(Yearmonth = concantonate_2) %>%
   mutate(Month = month(Yearmonth))  %>%
-  select(Yearmonth, Month, mod, water_year_sam)
+  dplyr::select(Yearmonth, Month, mod, water_year_sam)
 
 Bruce2 = read_excel("data/rt_df_merged.xlsx", sheet = "rt_df_merged")
 str(Bruce2)
@@ -136,7 +138,7 @@ BruceDSMRT = filter(Bruce2, !is.na(mean_sac_rt), pumping == "yes") %>%
   mutate(Month = as.numeric(factor(month_fifteen, levels = c("January","February",  "March","April", "May", 
                                                   "June", "July","August","September","October", "November","December")))) %>%
   left_join(Shey) %>%
-  select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
+  dplyr::select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
   mutate(mod_m = mod/35.315, LogSac = log(SAC_m, base = 10), LogSJR = log(SJR_m),
          logRT_sac = log(mean_sac_rt, base = 10), 
          logRT_sjr = log(mean_sjr_rt, base = 10),
@@ -167,6 +169,7 @@ summary(lm_sac_best2)
 
 global_sac2 = glm(logRT_sac ~LogSac + ag_div_m + pump + pump*LogSac + ag_div_m*LogSac,
                  data = BruceDSMRT, na.action = na.fail)
+
 dredge(global_sac2)
 bruce_sac_best = glm(logRT_sac ~LogSac +  pump*LogSac + ag_div_m*LogSac,
                      data = BruceDSMRT, na.action = na.fail)
@@ -191,7 +194,7 @@ Bruce_historic = filter(Bruce2,  pumping == "yes", water_year_sam > 1979) %>%
   mutate(Month = as.numeric(factor(month_fifteen, levels = c("January","February",  "March","April", "May", 
                                                              "June", "July","August","September","October", "November","December")))) %>%
   left_join(Shey) %>%
-  select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
+  dplyr::select(Month, water_year_sam, ag_div_m, mod, SJR_m, SAC_m, CVP_m, SWP_m, mean_sac_rt, mean_sjr_rt) %>%
   mutate(mod_m = mod/35.315, LogSac = log(SAC_m, base = 10), LogSJR = log(SJR_m), logRT_sac = log(mean_sac_rt, base = 10),
          logRT_sjr = log(mean_sjr_rt, base = 10),
          pump = SWP_m + CVP_m)
@@ -270,22 +273,26 @@ ggplot(long_rt_his, aes(x=yearmonth, y = ResTime, color = Model))+ geom_point()+
 
 #now average residence time for AUg, sept, oct
 
-all_hist = filter(long_rt_his1, Model != "preds_rosie2") %>%
+all_hist = long_rt_his1 %>%
   mutate(River = "Sac") %>%
-  bind_rows(mutate(long_rt_his, River = "SJR"))
+  bind_rows(mutate(long_rt_his, River = "SJR")) %>%
+  filter(Model != "preds_rosie2", Model != "preds_Bruce") %>%
+  mutate(Model = case_when(Model %in% c("logRT_sac", "logRT_sjr") ~ "DSM2",
+                           TRUE ~ Model))
 
 ggplot(all_hist, aes(x=yearmonth, y = ResTime, color = Model))+ geom_point()+ geom_line()+
-  facet_wrap(~River, nrow = 2)
+  facet_wrap(~River, nrow = 2, scales = "free_y")
 
 
 #Just summer-fall
 sumfall = filter(all_hist, Month %in% c(8,9,10)) %>%
   group_by(water_year_sam, River, Model) %>%
-  summarize(aveRT = mean(ResTime))
+  summarize(aveRT = mean(ResTime)) 
 
 
 ggplot(sumfall, aes(x=water_year_sam, y = aveRT, color = Model))+ geom_point()+ geom_line()+
-  facet_wrap(~River, nrow = 2)
+  facet_wrap(~River, nrow = 2)+
+  geom_rect(data = yeartypes, aes(fill = Yr_type, x = Year))
 
 #2014 and 2015 on the SJR side aren't lining up.
 
@@ -296,4 +303,88 @@ ggplot(all_hist, aes(x=yearmonth, y = SJR_m))+geom_point() + geom_line()
 ggplot(all_hist, aes(x=yearmonth, y = LogSac))+geom_point() + geom_line()
 ggplot(all_hist, aes(x=yearmonth, y = mod_m))+geom_point() + geom_line()
 ggplot(all_hist, aes(x=ag_div_m, y = mod_m))+geom_point() + geom_smooth(method = "lm")
-       
+
+###################################################################
+#Let's bring in the final few years of data!
+
+Allags = read_csv("data/DCD_div_monthly_WY_1970_2021.csv")
+names(Allags)
+Allags2 = mutate(Allags, datetime = mdy(datetime),Year = year(datetime), Month2 = month(datetime), 
+                WY = case_when(Month2 %in% c(10,11,12) ~ Year +1, 
+                               TRUE ~ Year),
+                mod_m = Div_cfs/35.315) 
+
+DFAll = left_join(DFmonth, Allags2)%>%
+  rename(LogSac = SACl, LogSJR = SJR, pump = Pump)
+
+
+preds =data.frame(logSJrt = predict(lm_sj_best, newdata = DFAll), logSACrt = predict(lm_sac_best2, newdata = DFAll))
+
+DFRTall = bind_cols(DFAll, preds) %>%
+  mutate(SACRT = 10^logSACrt, 
+                 SJRT = 10^logSJrt, mYear = Year + (1-Month2)/12)
+ggplot(DFRTall, aes(x = mYear, y = SJRT)) + geom_line()+
+  xlab("Date") +ylab("San Joaquin Residnece Time (Days)")
+
+ggplot(DFRTall, aes(x = mYear, y = SACRT)) + geom_line()+
+  xlab("date")+ylab("Sacramento Residence Time (Days)"
+  )
+
+#OK, what's the deal with different results than the other data? But I like these better, so I won't worry about it
+pal_yrtype <- c( "C" = "#FDE333", "D" = "#53CC67", "BN" = "#009B95","AN" = "#00588B", "W" = "#481F70FF") 
+
+#now add wate ryear types and make some summary plots
+yeartypes = rename(Yeartypes, WY = Year)
+DFRTall = left_join(DFRTall, yeartypes) %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
+                          labels = c("C", "D", "BN", "AN", "W")),
+         Month = factor(Month2, levels = c(10,11,12,1,2,3,4,5,6,7,8,9), labels = c("Oct", "Nov", "Dec",
+                                                                                  "Jane", "Feb", "Mar",
+                                                                                  "Apr", "May", "June",
+                                                                                  "Jul", "Aug", "Sep"))) %>%
+  filter(!is.na(Yr_type))
+
+#Get a duck for mom
+library(rphylopic)
+duck = image_data("3ceaa22b-8879-4545-9e32-425010f33cd4", size = 256)[[1]]
+
+#box plot by water year type
+ggplot(DFRTall, aes(x = Yr_type, y = SACRT, fill = Yr_type)) + geom_boxplot(alpha = 0.8)+
+  facet_wrap(~Month) +
+  xlab("Water Year Type") + ylab("Duck floatation Time (Days)") + 
+  theme_bw()+
+  add_phylopic(duck)+
+  scale_fill_manual(values = pal_yrtype, labels = c("Critical", "Dry", "Below N.", "Above N.", "Wet"))
+
+ggplot(DFRTall, aes(x = Yr_type, y = SJRT, fill = Yr_type)) + geom_boxplot()+
+  facet_wrap(~Month) +
+  xlab("Water Year Type") + ylab("San Joaquin Residence Time (Days)")+ 
+  theme_bw()+
+  scale_fill_manual(values = pal_yrtype, labels = c("Critical", "Dry", "Below N.", "Above N.", "Wet"))
+
+#############################################
+
+#now look at drought-neutral wet
+
+names(DFRTall)
+
+ggplot(DFRTall, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
+  facet_wrap(~Month) +
+  xlab("Water Year Type") + ylab("San Joaquin Residence Time (Days)")+ 
+  theme_bw()
+
+#Annual averages
+
+DFRTann = group_by(DFRTall, WY, Yr_type, Drought) %>%
+  summarize(SACRT = mean(SACRT), SJRT = mean(SJRT))
+
+
+ggplot(DFRTann, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
+  xlab("Water Year Type") + ylab("San Joaquin Residence Time (Days)")+ 
+  theme_bw()
+
+
+ggplot(DFRTann, aes(x = Drought, y = SACRT, fill = Drought)) + geom_boxplot()+
+  xlab("Water Year Type") + ylab("Sacramento Residence Time (Days)")+ 
+  theme_bw()
+save(DFRTall, DFRTann, file = "ResidenceTime.RData")

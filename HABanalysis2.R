@@ -15,52 +15,28 @@ library(sfheaders)
 
 #import data with all the visual index data
 load("data/data package/HABs.RData")
+load("NewHABregions.RData")
 
 #import shapefile with regions
-regions = st_read("data/HABregions.shp")
-
-DE = st_union(filter(regions, Stratum2 == "Franks"), filter(regions, Stratum2 == "OMR")) %>%
-  dplyr::select(Stratum, Stratum2, nudge, colors) %>%
-  sf_remove_holes() %>%
-  mutate(Stratum2 = "OMR/Franks")
-
-AB = st_union(filter(regions, Stratum2 == "Cache/Liberty"), filter(regions, Stratum2 == "Upper Sac")) %>%
-  dplyr::select(Stratum, Stratum2, nudge, colors) %>%
-  sf_remove_holes() %>%
-  mutate(Stratum2 = "North Delta")
-
-Newregions = bind_rows(AB, DE, regions) %>%
-  filter(Stratum2 %in% c("OMR/Franks", "North Delta", "Lower SJ", "Lower Sac", "East Delta", "South Delta")) %>%
-  rename(Region = Stratum2) %>%
-  mutate(Stratum = NULL)
-
-ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
-  geom_sf(data = Newregions, aes(fill = Stratum2), alpha = 0.4) + 
-  scale_fill_manual(values = Newregions$colors, guide = NULL)+
- # geom_sf(data = filter(sfhab, Source != "DOP"), aes(shape = Source)) +
-  scale_shape_discrete(name = "Visual Index Sites")+
- # geom_sf(data = EMP, shape = 16, size = 4, aes(color = "Phytoplankton \n samples"))+
-  #geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
-  scale_color_manual(values = c("red", "blue"), name = NULL)+
-  
-  coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.6, 38.6))+
-  geom_sf_label(data = Newregions, aes(label = Stratum2), 
-                label.size = 0.05,
-                label.padding = unit(0.1, "lines"),
-                nudge_y = Newregions$nudge, alpha = 0.8, fontface = "bold")+
-  # geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
-  #               label.size = 0.05,
-  #               label.padding = unit(0.1, "lines"))+
-  #You can adjust the size, units, etc of your scale bar.
-  scalebar(dist = 10, dist_unit = "km",
-           transform = TRUE, st.dist = .05, x.min = -121.6, x.max = -121.8, y.min = 37.6, y.max = 37.8) +
-  
-  #there are a number of different optinos for north arrow symbols. ?north
-  north(data = Newregions, symbol = 2) +
-  theme_bw()+ylab("")+xlab("")
+#regions = st_read("data/HABregions.shp")
+# 
+# DE = st_union(filter(regions, Stratum2 == "Franks"), filter(regions, Stratum2 == "OMR")) %>%
+#   dplyr::select(Stratum, Stratum2, nudge, colors) %>%
+#   sf_remove_holes() %>%
+#   mutate(Stratum2 = "OMR/Franks")
+# 
+# AB = st_union(filter(regions, Stratum2 == "Cache/Liberty"), filter(regions, Stratum2 == "Upper Sac")) %>%
+#   dplyr::select(Stratum, Stratum2, nudge, colors) %>%
+#   sf_remove_holes() %>%
+#   mutate(Stratum2 = "North Delta")
+# 
+# Newregions = bind_rows(AB, DE, regions) %>%
+#   filter(Stratum2 %in% c("OMR/Franks", "North Delta", "Lower SJ", "Lower Sac", "East Delta", "South Delta")) %>%
+#   rename(Region = Stratum2) %>%
+#   mutate(Stratum = NULL)
 
 
-save(Newregions, file = "NewHABregions.RData")
+#save(Newregions, file = "NewHABregions.RData")
 
 ##################################################################
 #check a few plots for outliers
@@ -86,16 +62,48 @@ summary(HABs$Temperature)
 
 #convert HAB data to a spatial object and plot it
 HABssf = filter(HABs, !is.na(Longitude), !is.na(Latitude)) %>%
+  mutate(Source = case_when(Source == "DWR_EMP" ~ "EMP",
+                            Source == "DWR_NCRO" ~ "NCRO",
+                            Source == "FMWTx" ~ "FMWT",
+                            TRUE ~ Source)) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(4326))
+  
+
+
+ggplot() + geom_sf(data = WW_Delta, fill = "lightgrey")+
+  geom_sf(data = Newregions, aes(fill = Region), alpha = 0.4) + 
+  scale_fill_manual(values = Newregions$colors, guide = NULL)+
+  geom_sf(data = filter(HABssf, Source != "DOP", !Station %in% c("EZ2", "EZ6", "EZ2-SJR", "EZ6-SJR")), aes(shape = Source)) +
+  scale_shape_discrete(name = "Visual Index Sites")+
+  # geom_sf(data = EMP, shape = 16, size = 4, aes(color = "Phytoplankton \n samples"))+
+  #geom_sf(data = cdecsf,shape = 16, size = 4, aes(color = "Temperature stations")) +
+  scale_color_manual(values = c("red", "blue"), name = NULL)+
+  
+  coord_sf(xlim = c(-121.9, -121.2), ylim = c(37.7, 38.6))+
+  geom_sf_label(data = Newregions, aes(label = Region), 
+                label.size = 0.05,
+                label.padding = unit(0.1, "lines"),
+                nudge_y = Newregions$nudge, alpha = 0.8, fontface = "bold")+
+  # geom_sf_label(data = cdecsf, aes(label = STA), nudge_x = 0.05, alpha = 0.8, fill = "grey",
+  #               label.size = 0.05,
+  #               label.padding = unit(0.1, "lines"))+
+  #You can adjust the size, units, etc of your scale bar.
+  scalebar(dist = 10, dist_unit = "km",
+           transform = TRUE, st.dist = .05, x.min = -121.6, x.max = -121.8, y.min = 37.7, y.max = 37.9, height = 0.05) +
+  
+  #there are a number of different optinos for north arrow symbols. ?north
+  north(data = Newregions, symbol = 2) +
+  theme_bw()+ylab("")+xlab("")
+
 
 ############################################################################
 ###################################################################
 #Now let's do the entire year, by regions
 # (but just the regions we're interested in)
 
-Habs2 =   st_join(HABssf, regions) %>%
+Habs2 =   st_join(HABssf, Newregions) %>%
   st_drop_geometry() %>%
-  filter(!is.na(Stratum), !is.na(Microcystis)) %>% 
+  filter(!is.na(Region), !is.na(Microcystis)) %>% 
   mutate(Year = year(Date), Yearf = as.factor(Year),
          Month2 = factor(Month, levels = c(6,7,8,9,10),
                          labels = c("Jun", "Jul", "Aug", "Sep", "Oct")))    
@@ -106,9 +114,9 @@ Habs2 =   st_join(HABssf, regions) %>%
 #Models for HAB weed report
 
 #This is the data for table 2-2
-effort = group_by(Habs2, Year, Stratum2) %>%
+effort = group_by(Habs2, Year, Region) %>%
   summarize(N = n()) %>%
-  pivot_wider(id_cols = Stratum2, names_from = Year, values_from = N)
+  pivot_wider(id_cols = Year, names_from = Region, values_from = N)
 
 write.csv(effort, "outputs/visualindexeffort.csv")
 
@@ -174,14 +182,19 @@ ggplot(HABs3, aes(x = Year, fill = as.factor(Microcystis))) +
 #Plot for paper with just three categories
 #
 yeartypes = read_csv("data/yearassignments.csv")
-HABs3 = left_join(HABs3, yeartypes)
+HABs3 = left_join(HABs3, yeartypes) %>%
+  mutate(Yr_type2 = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Wet"), labels = c("C", "D", "BN", "W"), ordered = T))
+
+pal_yrtype <- c( "C" = "darkorange", "D" = "#53CC67", "BN" = "#009B95", "W" = "#481F70FF") 
 
 ggplot(HABs3, aes(x = Year, fill = HABord)) +
   geom_bar(position = "fill", color = "grey")+ 
   scale_fill_manual(values = c("beige", "orange", "red"), 
                     labels = c("absent", "low", "high"),
                     name = "Microcystis")+ ylab("Relative Frequency") +
-  geom_text(aes(x = Year, y = 0.7, label = Yr_type), angle = 90)+
+  geom_text(aes(x = Year, y = 0.97, label = Yr_type2, color = Yr_type2))+
+  scale_color_manual(values = pal_yrtype, guide = NULL)+
+  annotate("text", x = 2006, y = 0.97, label = "Water \nYear \nType")+
   theme_bw()
 ggsave("plots/YearHAB_3cat.tiff", device = "tiff", width = 6, height = 5)
 
@@ -242,10 +255,12 @@ ggplot(Habs2, aes(x = Year, fill = as.factor(Microcystis))) +
 #ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
 
 #now with just three categories
-ggplot(Habs2, aes(x = Year, fill = HABord)) +
-  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Stratum2, nrow = 4)+
-  scale_fill_manual(values = c("white", "orange",  "red"), 
+ggplot(HABs3, aes(x = Year, fill = HABord)) +
+  geom_bar(position = "fill", color = "grey")+ facet_wrap(~Region, nrow = 4)+
+  scale_fill_manual(values = c("beige", "orange",  "red"), 
                     labels = c("absent", "low", "high"),
                     name = "Microcystis")+ ylab("Relative Frequency") +
-  geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
+  geom_text(aes(x = Year, y = 0.97, label = Yr_type2, color = Yr_type2))+
+  scale_color_manual(values = pal_yrtype, guide = NULL)+
+  #geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
   theme_bw()+ theme(legend.position = "top", legend.key = element_rect(color = "black"))

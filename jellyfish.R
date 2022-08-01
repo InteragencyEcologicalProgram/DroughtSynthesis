@@ -11,6 +11,9 @@ library(lme4)
 library(emmeans)
 library(wql)
 library(LTMRdata)
+library(deltamapr)
+library(ggsn)
+library(sf)
 
 ####################################################
 #first I'll organize the FMWT data
@@ -440,8 +443,8 @@ write.csv(AlljelliesMean,"data/Jelly_meanRegionMonth_4FEB2022.csv", row.names = 
 
 
 #Jellyfish map
-library(deltamapr)
 
+library(deltamapr)
 load("DroughtRegions.RData")
 load("jellyfish.RData")
 
@@ -467,3 +470,45 @@ ggplot()+
                 label.padding = unit(0.1, "lines"),
                 fontface = "bold")+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
+
+ggsave("Jellymap.tiff", device = "tiff", width = 8, height = 8)
+
+
+#clam map
+clamstas = read_csv("data/clam_site_codes.csv")
+clamstas = filter(clamstas, Status == "Active"|
+                    `Site Code` %in% c("D24-L","D4-C","D4-L","D6-R",  "D7-C",  "D11-C", "D4-R",  "D16-L", "C9-L")) %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+library(RColorBrewer)
+mypal = c(brewer.pal(8, "Dark2"), brewer.pal(8, "Set2"))
+ggplot()+
+  geom_sf(data = WW_Delta)+
+
+  geom_sf(data = clamstas, color = "black", size = 4)+
+  scale_color_manual(values = mypal)+
+  geom_sf(data = Regions,
+          aes(fill=Region), alpha = 0.2)+
+  geom_sf_label(data = clamstas, aes(label = `Site Code`), 
+                fontface = "bold", nudge_x = 0.05, label.padding = unit(0.1, "lines"))+  
+  theme_bw()+
+  theme(legend.position="none")+
+  scalebar(transform = TRUE, dist = 10, dist_unit = "km", model = "WGS84", x.min = -122.1, x.max = -122.0, y.max = 37.9, y.min = 37.8, st.dist = .1, height = 0.1) +
+
+  theme_bw()+ylab("")+xlab("")+
+  scale_fill_discrete(guide = NULL)+
+
+  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
+
+ggsave("Clammap.tiff", device = "tiff", width = 8, height = 8)
+
+
+################################################################
+#how many jellies of each kind do we get?
+
+species = group_by(Alljellies2, OrganismCode, Source) %>%
+  summarize(N = n(), TotCatch = sum(Catch, na.rm = T))
+
+species = group_by(Alljellies2, OrganismCode) %>%
+  summarize(N = n(), TotCatch = sum(Catch, na.rm = T),
+            Percent = TotCatch/sum(Alljellies2$Catch, na.rm = T))

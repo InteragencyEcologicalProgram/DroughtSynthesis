@@ -327,3 +327,78 @@ p2021 <- ggplot(data2021) +
     # plot.margin = unit(rep(-.5,4), "cm") 
   ) 
 p2021
+
+
+################################################################################
+#Try it with some of my new metrics
+DroughtImpact2 = mutate(DroughtImpact2, direction = case_when(Cohen >0 ~ "increase",
+                                                              Cohen <0 ~ "decrease"))
+
+#Get the name and the y position of each label
+label_dataDI <- mutate(DroughtImpact2, ID = 1:nrow(DroughtImpact2))
+
+number_of_bar <- nrow(label_dataDI)
+angle <- 90 - 360 * (label_dataDI$ID-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_dataDI$hjust <- ifelse( angle < -90, 1, 0)
+label_dataDI$angle <- ifelse(angle < -90, angle+180, angle)
+
+
+p6 <- ggplot(DroughtImpact2) +      
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y=abs(Cohen),   fill = direction),  stat="identity") +
+  scale_fill_manual(values = c("skyblue","darkorange"), 
+                    labels = c("Increase \nwith Drought", "Decrease \nwith Drought"),name = NULL)+
+
+  geom_hline(yintercept = 0)+
+  coord_polar() +
+  
+  # Add labels on top of each bar
+  geom_text(data=label_dataDI, aes(x=ID, y=1, label=Metric, hjust=hjust), 
+            color="black", fontface="bold",alpha=0.6, size=5, angle= label_dataDI$angle, inherit.aes = FALSE ) +
+  annotate("text", x = 0, y =-2, label = " ")+
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "bottom"#,
+    # plot.margin = unit(rep(-.5,4), "cm") 
+  ) 
+p6
+
+
+pX <- ggplot(DroughtImpact2) +      
+  # Add the stacked bar
+  geom_bar(aes(x=Metric, y= Cohen,   fill = direction),  stat="identity") +
+  scale_fill_manual(values = c("skyblue","darkorange"), 
+                    labels = c("Increase \nwith Drought", "Decrease \nwith Drought"),name = NULL)+
+
+  # Add labels on top of each bar
+  geom_text(data=label_dataDI, aes(x=ID, y=-1, label=Metric), 
+            color="black", fontface="bold",alpha=0.6, size=5, inherit.aes = FALSE, angle = 90) +
+  annotate("text", x = 0, y =-2, label = " ")+
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "bottom"#,
+    # plot.margin = unit(rep(-.5,4), "cm") 
+  ) 
+pX
+
+library(cder)
+
+BKS = cdec_query("BKS", 27, duration = "H", ymd("1989-01-01"), ymd("2022-07-01"))
+BKS2 = cdec_query("BKS", 27, duration = "H", ymd("1989-01-01"), ymd("2000-07-01"))
+BKS3 = cdec_query("BKS", 27, duration = "H", ymd("2016-07-01"), ymd("2021-07-01"))
+BKS = row_bind(BKS, BKS3)
+BKS_daily =filter(BKS, Value >0, Value <200) %>%
+  mutate(Date = date(DateTime)) %>%
+  group_by(StationID, SensorNumber, SensorType, SensorUnits, Date) %>%
+  summarize(MeanTurbidity = mean(Value))
+
+write.csv(BKS_daily, "BKS_turbidity.csv")
+
+BKS_daily = mutate(BKS_daily, Year = year(Date)) %>%
+  left_join(Yeartypes)
+
+ggplot(BKS_daily, aes(x = as.factor(Year), y = MeanTurbidity, fill = Yr_type))+ geom_boxplot()
