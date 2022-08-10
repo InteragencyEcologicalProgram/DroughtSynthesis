@@ -323,12 +323,33 @@ preds =data.frame(logSJrt = predict(lm_sj_best, newdata = DFAll), logSACrt = pre
 DFRTall = bind_cols(DFAll, preds) %>%
   mutate(SACRT = 10^logSACrt, 
                  SJRT = 10^logSJrt, mYear = Year + (1-Month2)/12)
-ggplot(DFRTall, aes(x = mYear, y = SJRT)) + geom_line()+
+ggplot(DFRTall)  + 
+  geom_col(aes(x = mYear, y = 250, fill = Drought), alpha = 0.3)+
+  geom_line( aes(x = mYear, y = SJRT))+
+  drt_color_pal_drought()+
   xlab("Date") +ylab("San Joaquin Residnece Time (Days)")
 
-ggplot(DFRTall, aes(x = mYear, y = SACRT)) + geom_line()+
-  xlab("date")+ylab("Sacramento Residence Time (Days)"
-  )
+ggplot(DFRTann)  + 
+  geom_col(aes(x = WY, y = 130, fill = Drought), alpha = 0.3)+
+  geom_line( aes(x = WY, y = SJRT))+
+  drt_color_pal_drought()+
+  xlab("Date") +ylab("San Joaquin Residnece Time (Days)")+
+  theme_bw()
+
+ggplot(DFRTall) + 
+  geom_col(aes(x = mYear, y = 120, fill = Drought), alpha = 0.3)+
+  geom_line( aes(x = mYear, y = SACRT))+
+  drt_color_pal_drought()+
+  xlab("date")+ylab("Sacramento Residence Time (Days)")+
+  theme_bw()
+
+
+ggplot(DFRTann) + 
+  geom_col(aes(x = WY, y = 75, fill = Drought), alpha = 0.3)+
+  geom_line( aes(x = WY, y = SACRT))+
+  drt_color_pal_drought()+
+  xlab("date")+ylab("Annual Average \nSacramento Residence Time (Days)")+
+  theme_bw()
 
 #OK, what's the deal with different results than the other data? But I like these better, so I won't worry about it
 pal_yrtype <- c( "C" = "#FDE333", "D" = "#53CC67", "BN" = "#009B95","AN" = "#00588B", "W" = "#481F70FF") 
@@ -337,7 +358,7 @@ pal_yrtype <- c( "C" = "#FDE333", "D" = "#53CC67", "BN" = "#009B95","AN" = "#005
 yeartypes = rename(Yeartypes, WY = Year)
 DFRTall = left_join(DFRTall, yeartypes) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
-                          labels = c("C", "D", "BN", "AN", "W")),
+                          labels = c("C", "D", "BN", "AN", "W"), ordered = TRUE),
          Month = factor(Month2, levels = c(10,11,12,1,2,3,4,5,6,7,8,9), labels = c("Oct", "Nov", "Dec",
                                                                                   "Jane", "Feb", "Mar",
                                                                                   "Apr", "May", "June",
@@ -351,9 +372,9 @@ duck = image_data("3ceaa22b-8879-4545-9e32-425010f33cd4", size = 256)[[1]]
 #box plot by water year type
 ggplot(DFRTall, aes(x = Yr_type, y = SACRT, fill = Yr_type)) + geom_boxplot(alpha = 0.8)+
   facet_wrap(~Month) +
-  xlab("Water Year Type") + ylab("Duck floatation Time (Days)") + 
+  xlab("Water Year Type") + ylab("Sacramento Residence Time (Days)") + 
   theme_bw()+
-  add_phylopic(duck)+
+  #add_phylopic(duck)+
   scale_fill_manual(values = pal_yrtype, labels = c("Critical", "Dry", "Below N.", "Above N.", "Wet"))
 
 ggplot(DFRTall, aes(x = Yr_type, y = SJRT, fill = Yr_type)) + geom_boxplot()+
@@ -388,3 +409,5 @@ ggplot(DFRTann, aes(x = Drought, y = SACRT, fill = Drought)) + geom_boxplot()+
   xlab("Water Year Type") + ylab("Sacramento Residence Time (Days)")+ 
   theme_bw()
 save(DFRTall, DFRTann, file = "ResidenceTime.RData")
+
+

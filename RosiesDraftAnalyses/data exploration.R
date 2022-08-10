@@ -79,6 +79,9 @@ IntLong = pivot_longer(Int, cols = `Outflow`:logzoopB,
 ggplot(filter(IntLong, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot() +
   facet_grid(Metric~Season, scales = "free_y")
 
+ggplot(IntLong, aes(x = Drought, y = Value)) + geom_boxplot() +
+  facet_grid(Metric~Season, scales = "free_y")
+
 #Huh. Chlorophyll goes up
 Chla = filter(IntLong, Metric == "logChl", Drought != "N")
 ggplot(Chla, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season)
@@ -171,7 +174,7 @@ ggplot(filter(Int2, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot
 ggplot(Int2, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()
 
-ggplot(Int2, aes(x = Yr_type, y = Value, fill = Yr_type)) + geom_boxplot() +
+ggplot(Int2, aes(x = Yr_type, y = Value, fill = Yr_type), alpha = 0.3) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y") + drt_color_pal_yrtype()+
   theme_bw()
 
@@ -576,4 +579,64 @@ ggplot(taxa_AR, aes(x = Drought, y = log(BPUE_ug + 1), fill = Taxlifestage)) +
 
 ##############################################################################
 
+#####################################################
+#NMDS!!!
+
+library(vegan)
+Intmat = pivot_wider(Int4, id_cols = c(Year, Outflow, Yr_type, Drought), names_from = "Metric", values_from = "Value")
+Intmat = Intmat[which(!is.na(rowSums(Intmat[,5:23]))),]
+
+
+
+Envmat = select(Intmat, Year, Outflow, Yr_type, Drought) %>%
+  mutate(Drought = factor(Drought))
+
+
+Intmat2 = Intmat[,5:23]
+
+maxes = group_by(Int4, Metric) %>%
+  summarise(Max = max(Value, na.rm = T))
+  
+Intmat3 = select(Intmat2, !`logChla North`)
+
+Intmat4 = left_join(Int4, maxes) %>%
+  mutate(Percent = Value/Max) %>%
+  pivot_wider(id_cols = c(Year, Outflow, Yr_type, Drought), names_from = "Metric", values_from = "Percent") %>%
+  select(!"logChla North")
+Intmat4 = Intmat4[which(!is.na(rowSums(Intmat4[,5:22]))),]
+Intmat4a = Intmat4[,5:22]
+
+DroughtNMDS = metaMDS(Intmat3)
+source("plotNMDS.R")
+PlotNMDS(DroughtNMDS, group = "Drought", data = Envmat)
+PlotNMDS(DroughtNMDS, group = "Yr_type", data = Envmat)
+
+DroughtNMDS2 = metaMDS(Intmat4a)
+PlotNMDS(DroughtNMDS2, group = "Drought", data = Envmat)
+PlotNMDS(DroughtNMDS2, group = "Yr_type", data = Envmat)
+PlotNMDS2(DroughtNMDS2, group = "Yr_type", lines = "Outflow", data = Envmat)
+
+#################################################################
+#South Central chlorophyll versus San Juaquin RT
+
+SCC = filter(Int3, Metric == "logChla SouthCentral")
+
+ggplot(SCC, aes(x = SJRT, y = Value)) + geom_point()+
+  geom_smooth()
+
+Chl = mutate(Chl, mYear = ds_year + (1-month)/12)
+Chlorophyll = left_join(Chl, select(DFRTall, -Yr_type))
+ggplot(filter(Chlorophyll,  Region =="South-Central Delta"), aes(x = SJRT, y = chlaAvg_log10))+
+  geom_point(aes(color = Yr_type))+ geom_smooth()+
+  drt_color_pal_yrtype(aes_type = "color")+
+  theme_bw()+
+  ylab("South-Central Delta chlorophyll \n (ug/L, log-transformed)")+
+  xlab("San Joaquin Residence time (days)")
+
+ggplot(filter(Chlorophyll,  Region =="South-Central Delta"), aes(y = SJRT, x = chlaAvg_log10))+
+  geom_point(aes(color = Yr_type))+ geom_smooth()+
+  drt_color_pal_yrtype(aes_type = "color")+
+  theme_bw()+
+  xlab("South-Central Delta log CHL")+
+  ylab("San Joaquin Residence time (days)")
 

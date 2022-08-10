@@ -1,0 +1,28 @@
+Study,Station,Region,lat,lon,Stratum,Stratum2,nudge,colors
+Preece,DHAB001,Lower Sacramento,-121.787628,38.045378,Lower Sacramento,Lower Sac,0,#BEBADA
+Preece,DHAB002,Lower Sacramento,-121.716123,38.105764,Lower Sacramento,Lower Sac,0,#BEBADA
+Preece,DHAB003,Lower San Joaquin,-121.745763,38.019889,Lower San Joaquin,Lower SJ,0,#FB8072
+Preece,DHAB004,Upper Sacramento,-121.610139,38.163593,Upper Sacramento,Upper Sac,0.1,#D9D9D9
+Preece,DHAB005,SDWSC,-121.657713,38.194555,Cache Slough/Liberty Island,Cache/Liberty,-0.05,#8DD3C7
+Preece,DHAB006,Cache Slough/Liberty Island,-121.689412,38.243985,Cache Slough/Liberty Island,Cache/Liberty,-0.05,#8DD3C7
+Preece,DHAB007,South Delta,-121.623448,38.048602,Franks Tract,Franks,0,#80B1D3
+Preece,DHAB008,South Delta,-121.5737319,37.964146,Old and Middle river,OMR,0,#B3DE69
+Preece,DHAB009,South Delta,-121.443849,37.996172,Southern Delta,South Delta,0,#FDB462
+Preece,DHAB010,South Delta,-121.528646,37.957145,Southern Delta,South Delta,0,#FDB462
+USGS,LIB,Cache Slough/Liberty Island,-121.6842861,38.24301111,Cache Slough/Liberty Island,Cache/Liberty,-0.05,#8DD3C7
+USGS,DEC/TOL,Lower Sacramento,-121.7672861,38.07780833,Lower Sacramento,Lower Sac,0,#BEBADA
+USGS,JPT,Lower San Joaquin,-121.6991223,38.04263651,Lower San Joaquin,Lower SJ,0,#FB8072
+USGS,MDM,South Delta,-121.534,37.943,Old and Middle river,OMR,0,#B3DE69
+USGS,RRI,South Delta,-121.365,37.963,Southern Delta,South Delta,0,#FDB462
+USGS,VER,Vernalis,-121.265002,37.679376,NA,NA,NA,NA
+DWR,BPP,Clifton Court,-121.617728,37.7999274,NA,NA,NA,NA
+DWR,CCF,Clifton Court,-121.59183,37.826923,NA,NA,NA,NA
+CVRWQCB,FRK,South Delta,-121.5981,38.046417,Franks Tract,Franks,0,#80B1D3
+CVRWQCB,MI,South Delta,-121.51166,37.99204,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-001,South Delta,-121.336183,37.949145,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-002,South Delta,-121.347483,37.955427,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-003,South Delta,-121.365012,37.963004,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-004,South Delta,-121.369207,37.966107,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-005,South Delta,-121.373993,37.972023,Southern Delta,South Delta,0,#FDB462
+Nautalis,ALG-006,South Delta,-121.407047,37.991004,Southern Delta,South Delta,0,#FDB462
+EastBay,BigBreak,San Joaquin,-121.728242,38.012454,Lower San Joaquin,Lower SJ,0,#FB8072

@@ -31,7 +31,8 @@ regions = st_read("data/HABregions.shp")
 #   geom_sf_label(data = HABssf, aes(label = Station), 
 #                 position = "jitter", label.size = 0.05)
 
-
+#take out DOP because they do things differently
+HABs = filter(HABs, Source != "DOP")
 
 #check a few plots for outliers
 ggplot(HABs, aes(x = Temperature)) + geom_histogram()
@@ -116,7 +117,7 @@ ggplot(filter(SFHall, Year == 2021), aes(x = Stratum2, fill = Mic))+geom_bar(pos
   ylab(NULL) + xlab(NULL)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
-#ggsave("HABs2021.tiff", device = "tiff", width = 6, height = 5)
+ggsave("HABs2021_noDOP.tiff", device = "tiff", width = 6, height = 5)
 
 
 #Now summarize by month, year, and stratum and add zeros so we can plot it
@@ -158,7 +159,7 @@ effort = group_by(Habs2, Year, Stratum2) %>%
   summarize(N = n()) %>%
   pivot_wider(id_cols = Stratum2, names_from = Year, values_from = N)
 
-write.csv(effort, "outputs/visualindexeffort.csv")
+write.csv(effort, "outputs/visualindexeffort_noDOP.csv")
 
 
 
@@ -193,9 +194,9 @@ tukcfg2 = cld(emmeans(ord2, pairwise ~ Stratum2), Letters = letters) %>%
 
 #this is table 2-11
 Tuekyresults = bind_rows(tukcfg, tukcfg2)
-write.csv(Tuekyresults, "outputs/Pairwise_visualdata_July.csv")
+write.csv(Tuekyresults, "outputs/Pairwise_visualdata_July_noDOP.csv")
 
-write.csv(pairs, "visualdata_alldelta_July.csv")
+write.csv(pairs, "visualdata_alldelta_July_noDOP.csv")
 pr <- profile(ord2)
 confint(pr)
 plot(pr)
@@ -210,7 +211,7 @@ ggplot(HABs3, aes(x = Year, fill = as.factor(Microcystis))) +
                     name = "Microcystis")+ ylab("Relative Frequency") +
   geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
 
-#ggsave("YearHAB.tiff", device = "tiff", width = 6, height = 5)
+ggsave("YearHAB_noDOP.tiff", device = "tiff", width = 6, height = 5)
 
 
 #Plot for paper with just three categories
@@ -224,14 +225,14 @@ ggplot(Habs2, aes(x = Year, fill = HABord)) +
 ggsave("plots/YearHAB_3cat.tiff", device = "tiff", width = 6, height = 5)
 
 
-ggplot(filter(Habs2, Source != "DOP"), aes(x = Year, fill = HABord)) +
-  geom_bar(position = "fill", color = "grey")+ 
-  scale_fill_manual(values = c("white", "orange", "red"), 
-                    labels = c("absent", "low", "high"),
-                    name = "Microcystis")+ ylab("Relative Frequency") +
-  geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
-
-#Meh, those aren't that different. I'll keep them all.
+# ggplot(filter(Habs2, Source != "DOP"), aes(x = Year, fill = HABord)) +
+#   geom_bar(position = "fill", color = "grey")+ 
+#   scale_fill_manual(values = c("white", "orange", "red"), 
+#                     labels = c("absent", "low", "high"),
+#                     name = "Microcystis")+ ylab("Relative Frequency") +
+#   geom_text(data = tukcfg, aes(x = Year, y = 0.7, label = Letter), inherit.aes = F)
+# 
+# Yup. DOP was bad
 
 (ctable <- coef(summary(ord2)))
 ## calculate and store p values
@@ -240,7 +241,7 @@ p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ## combined table
 #This is table 2-10
 (ctable <- cbind(ctable, "p value" = p))
-write.csv(ctable, "outputs/Visualindexmodel_july.csv")
+write.csv(ctable, "outputs/Visualindexmodel_july_noDOP.csv")
 
 (ci <- confint(ord2))
 exp(cbind(OR = coef(ord2), ci))
@@ -278,7 +279,7 @@ ctable <- summarize(HabMod, ctab = coef(summary(mod)),
 #Table for appendix A
 regMod2 = left_join(regMod, RegTuk) %>%
   bind_cols(ctable)
-#write.csv(regMod2, "outputs/regionalresults.csv")
+write.csv(regMod2, "outputs/regionalresults_noDOP.csv")
 
 #By Region, just summer/fall
 #This is plot 2-28
@@ -290,7 +291,7 @@ ggplot(Habs2, aes(x = Year, fill = as.factor(Microcystis))) +
   geom_text(data = RegTuk, aes(x = Year, y = 0.9, label = Letter), size = 4, inherit.aes = FALSE)+
   theme_bw()+ theme(legend.position = "top", legend.key = element_rect(color = "black"))
 
-#ggsave("RegionalHAB.tiff", device = "tiff", width = 6, height = 7)
+ggsave("RegionalHAB_noDOP.tiff", device = "tiff", width = 6, height = 7)
 
 #now with just three categories
 ggplot(Habs2, aes(x = Year, fill = HABord)) +
@@ -503,9 +504,9 @@ M5.16= add_criterion(M5.16, "waic")
 testloo = loo_compare(M5.41, M5.3,  M5.5, M5.61, M5.71, M5.8, M5.91, M5.101, M5.11, criterion = "loo")
 test = loo_compare(M5.41, M5.3, M5.5, M5.61,  M5.71, M5.8, M5.91, M5.101, M5.11, 
                    M5.12, M5.13, M5.15, M5.14, M5.16, criterion = "waic")
-write.csv(test, "outputs/WAICscores-june.csv")
+write.csv(test, "outputs/WAICscores-aug.csv")
 
-# So, the best model was M5.61, but M5.5 was close behind
+# So, the best model is now M5.5, but M5.61 was close behind
 #this checks our assumptions and plots the conditional effects
 pp_check(M5.5)
 cex5.5 = conditional_effects(M5.5, categorical = TRUE)
@@ -514,6 +515,7 @@ cex5.5
 pp_check(M5.61)
 cex5.61 = conditional_effects(M5.61, categorical = TRUE)
 cex5.61
+
 
 #save all our work
 save(M5.41, M5.3, M5.5, M5.61,M5.71, M5.8, M5.91, M5.101, M5.11, M5.12, M5.13, M5.14, M5.15, M5.16, file = "MCmodels8jul2022")
@@ -581,10 +583,10 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     ylab("Probability")+
     geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Temperature),
              linetype = 2)+
-    annotate("text", x = 22.8, y = 0.5, angle = 90, label = "Mean Jul 2021")+
+    annotate("text", x = 23.4, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     theme_bw()
   
-  ggsave("plots/MicTemp_jul.tiff", device = "tiff", width = 6, height = 4, units = "in") 
+  ggsave("plots/MicTemp_aug.tiff", device = "tiff", width = 6, height = 4, units = "in") 
   
    #ggsave("plots/MicTemp.tiff", device = "tiff", width = 6, height = 4, units = "in") 
    
@@ -611,7 +613,7 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     geom_vline(xintercept = 1500, linetype = 2)+
     annotate("text", x = 1300, y = 0.4, label = "TUCP Export Limit", angle = 90)+
     theme_bw()
-  ggsave("plots/MicExports_jul.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicExports_aug.tiff", device = "tiff", width = 6, height = 4, units = "in")
 
 
   turb = cex5.61$`Secchs:cats__`
@@ -635,10 +637,10 @@ save(SoDelta, SoDeltasum, file = "SoDelta.RData")
     ylab("Probability")+
     geom_vline(xintercept = mean(filter(SoDeltasum, Yearf == '2021', Month2 == "Jul")$Secchi),
                linetype = 2)+
-    annotate("text", x = 80, y = 0.5, angle = 90, label = "Mean Jul 2021")+
+    annotate("text", x = 100, y = 0.5, angle = 90, label = "Mean Jul 2021")+
     
     theme_bw()
-  ggsave("plots/MicSecchi_jul.tiff", device = "tiff", width = 6, height = 4, units = "in")
+  ggsave("plots/MicSecchi_aug.tiff", device = "tiff", width = 6, height = 4, units = "in")
   
 
   #######################################################################
