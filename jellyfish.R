@@ -481,6 +481,7 @@ clamstas = filter(clamstas, Status == "Active"|
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
 library(RColorBrewer)
+
 mypal = c(brewer.pal(8, "Dark2"), brewer.pal(8, "Set2"))
 ggplot()+
   geom_sf(data = WW_Delta)+
@@ -501,6 +502,15 @@ ggplot()+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
 
 ggsave("Clammap.tiff", device = "tiff", width = 8, height = 8)
+
+
+library(scales)
+
+#extract hex color codes for a plot with three elements in ggplot2 
+hex <- hue_pal()(5)
+
+#display hex color codes
+hex
 
 
 ################################################################

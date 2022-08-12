@@ -246,8 +246,26 @@ plot(sal$gam)
 #Bleh. I liked the idea from Arthur of just calculating the quantiles and seing what slainities had 50% of th ecatch
 
 #I think I first need to weight the salinity by number caught, same as the distribution
-
+library(ggbeeswarm)
 ggplot(filter(Alltotsub, TotJellies != 0), aes(x = Sal_surf)) + geom_histogram()
+ggplot(filter(Alltotsub, TotJellies != 0), aes(x = Sal_surf)) + geom_boxplot(fill = "lightblue")+
+  theme_bw()+ xlab("Salinity where jellyfish were caught")
+
+ggplot() + 
+  geom_violin(data = filter(Alltotsub, TotJellies != 0), 
+              aes(y = Sal_surf, x = Yr_type,  fill = Yr_type), alpha = 0.5)+  
+  geom_violin(data = Alltotsub,  aes(y = Sal_surf, x = Yr_type,  fill = Yr_type), alpha = 0.5)+
+
+  theme_bw()+ xlab("Salinity where jellyfish were caught")
+
+
+
+
+ggplot(filter(Alltotsub, TotJellies != 0), aes(y = Sal_surf, x = 1, color = Yr_type)) + 
+  geom_quasirandom()+
+  scale_color_manual(values = pal_yrtype)+
+  ylab("Salinity where jellyfish were caught") + xlab(NULL)+
+  theme_bw()+theme(axis.text.x = element_blank())
 
 summary(filter(Alltotsub, TotJellies != 0)$Sal_surf)
 
@@ -257,6 +275,14 @@ msal = wtd.mean(Alltotsub$Sal_surf, Alltotsub$TotJellies)
 sdsal = sqrt(wtd.var(Alltotsub$Sal_surf, Alltotsub$TotJellies))
 minsal = msal-sdsal
 maxsal = msal+sdsal
+
+ggplot() + 
+  geom_violin(data = Alltotsub, 
+              aes(y = Sal_surf, x = Yr_type,  fill = Yr_type), alpha = 0.9)+  
+  annotate("rect", ymin = minsal, ymax = maxsal, xmin = 0.5, xmax = 4.5, alpha = 0.5)+
+
+theme_bw()+ xlab("Year type") + ylab("Salinity of samples")
+
 
 #OK, bin by salinity and see which bins have th ehighest percentage of catch
 weighted = mutate(Alltotsub, weightedSal = Sal_surf*TotJellies) %>%

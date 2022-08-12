@@ -6,11 +6,30 @@ library(lme4)
 library(lmerTest)
 library(DHARMa)
 library(effects)
+library(DroughtData)
+
+stas = c("P8", "D8", "MD10", "MD10A", "D7", "D6", "D4", "D28A", "D26", "D22", "D19", "D16", "D12", "D10", "C3", "C3A")
 
 #Chlorophyll data from KEith
 Chl = read_csv("data/chla_data_stats_LT2.csv")
+yrs = read_csv("data/yearassignments.csv")
+
+#Add NCRO
+NCRO = read.csv("data/hab_nutr_chla_mvi.csv") %>%
+  filter(Source %in% c("DWR_NCRO", "NCRO")) %>%
+  rename(chlaAvg = Chlorophyll) %>%
+  mutate(chlaAvg_log10 = log(chlaAvg, 10),
+         month = month(Date),
+         ds_year = case_when(month %in% c(11,12) ~ year(Date) + 1,
+                             TRUE ~ year(Date)))
+
+
+
+
 #ok, beautiful! do some averaging
-Chl2 = group_by(Chl, Region, Season, month, ds_year) %>%
+Chl2 = Chl %>%
+  filter(Station %in% stas) %>% 
+  group_by(Region, Season, month, ds_year) %>%
   summarize(Chla = mean(chlaAvg)) %>%
   group_by( Region, Season, ds_year) %>%
   summarize(Chla = mean(Chla)) %>%
@@ -18,17 +37,19 @@ Chl2 = group_by(Chl, Region, Season, month, ds_year) %>%
   summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
   rename(YearAdj = ds_year)
 
-Chl2reg = group_by(Chl, Region, Season, month, ds_year) %>%
+Chl2reg = Chl %>%
+  filter(Station %in% stas) %>% 
+  group_by(Region, Season, month, ds_year) %>%
   summarize(Chla = mean(chlaAvg)) %>%
   group_by( Region, Season, ds_year) %>%
   summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
   rename(Year = ds_year) %>%
   left_join(yrs) %>%
-  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"))) %>%
-  filter(Year > 1995)
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))# %>%
+  #filter(Year > 1995)
 
 #plot of chlorophyll by water year type
-ggplot(Chl2reg, aes(x = Yr_type, y = Chla, fill = Yr_type))+
+ggplot(Chl2reg, aes(x = Yr_type, y = logChl, fill = Yr_type))+
   geom_boxplot(alpha = 0.7)+
   facet_grid(Season~Region)+
   drt_color_pal_yrtype()+
@@ -36,6 +57,16 @@ ggplot(Chl2reg, aes(x = Yr_type, y = Chla, fill = Yr_type))+
   xlab("Year Type")+
   theme_bw()+
   scale_x_discrete(labels = c("C", "D", "B", "A", "W")) 
+
+#plot of chlorophyll by water year type
+ggplot(Chl2reg, aes(x = Index, y = logChl))+
+  geom_point(alpha = 0.7, aes(color =Drought))+
+  geom_smooth(method = "lm")+
+  facet_grid(Season~Region)+
+  drt_color_pal_drought(aes_type = "color")+
+  ylab("Chlorophyl ug/L (log-transformed)")+
+  xlab("Sac Valley Index")+
+  theme_bw()
 
 #plot of chlorophyll by drought
 ggplot(Chl2reg, aes(x = Drought, y = logChl, fill = Drought))+
@@ -77,7 +108,7 @@ ggplot(Chl2reg, aes(x = Year, y = logChl, fill = Drought))+
 Chl = mutate(Chl, Yday = yday(Date), Yr_type = factor(ds_year_type, 
                                                       levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
                                                       ordered = TRUE)) %>%
-  filter(ds_year > 1989)
+  filter(Station %in% stas)
 
 ggplot(Chl, aes(x = Yday, y = chlaAvg_log10, color = Yr_type))+
   geom_point(alpha = 0.3)+
@@ -139,7 +170,7 @@ Chlsum = mutate(Chlsum, percent = Presence/(Absence + Presence),
                                  levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
                                  ordered = TRUE))
 
-ggplot(Chlsum, aes(x = ds_year, y = percent, fill = Yr_type)) + geom_col()+
+ggplot(Chlsum, aes(x = Year, y = percent, fill = Yr_type)) + geom_col()+
   facet_grid(Season~Region) + drt_color_pal_yrtype()+
   ylab("Percent of CHLa samples over 10ug/L")
 
@@ -156,3 +187,34 @@ ggplot(Chlsum, aes(x = Yr_type, y = percent, fill = Yr_type)) +
   facet_grid(Season~Region) + drt_color_pal_yrtype()+
   ylab("Percent of CHLa samples over 10ug/L")+
   theme_bw()
+
+############################################################
+#Pre-2000 versus post-2000
+
+Chl2b = mutate(Chl2, Regime = case_when(YearAdj < 2000 ~ "long-term",
+                                     YearAdj >= 2000 ~ "Short-Term")) %>%
+  rename(Year = YearAdj) %>%
+  left_join((yrs))
+
+Chlb = mutate(Chl, Regime = case_when(ds_year < 2000 ~ "long-term",
+                                      ds_year >= 2000 ~ "Short-Term"), Date = date(Date)) %>%
+  rename(Year = ds_year) %>%
+  left_join((yrs)) %>%
+  left_join(DF)
+
+Chlbreg = mutate(Chl2reg, Regime = case_when(Year < 2000 ~ "long-term",
+                                      Year >= 2000 ~ "Short-Term")) 
+
+ggplot(Chlb, aes(x = log(OUT), y = chlaAvg_log10, color = Regime)) + geom_point()+
+  geom_smooth(method = "lm")
+
+ggplot(Chl2b, aes(x = Index, y = logChl, color = Regime)) + geom_point()+
+  geom_smooth(method = "lm")+
+  facet_grid(~Season)+ ylab("Seasonal average chlorophyll")+
+  xlab("Sac Valley Index (annual)")
+
+
+ggplot(Chlbreg, aes(x = Index, y = logChl, color = Regime)) + geom_point()+
+  geom_smooth(method = "lm")+
+  facet_grid(Region~Season)+ ylab("Seasonal average chlorophyll")+
+  xlab("Sac Valley Index (annual)")
