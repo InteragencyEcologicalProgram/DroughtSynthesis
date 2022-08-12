@@ -43,9 +43,13 @@ So far, these are the surveys included in this summary:
 # Load packages
 library(tidyverse)
 library(lubridate)
+library(hms)
 library(scales)
 library(DroughtData)
 library(discretewq)
+library(deltamapr)
+library(sf)
+library(dtplyr)
 ```
 
 ```{r session info}
@@ -66,7 +70,7 @@ region_lev <- c(
   "Suisun Marsh"
 )
 
-# Create a nested data frame and prepare to run the summary plot function on
+# Create a nested data frame and prepare to run the summary plot function on - data in DroughtData
 ndf_lt_wq <- 
   tibble(
     Parameter = c(
@@ -95,9 +99,55 @@ ndf_lt_wq <-
         )
     )
   )
+
+# Pull in and prepare the WQ data from discretewq
+df_dwq <-
+  wq(
+    Sources = c(
+      "EMP",
+      "STN",
+      "FMWT",
+      "EDSM",
+      "DJFMP",
+      "SDO",
+      "SKT",
+      "SLS",
+      "20mm",
+      "Suisun",
+      "Baystudy",
+      "USBR",
+      "USGS_SFBS",
+      "YBFMP",
+      "USGS_CAWSC"
+    )
+  ) %>% 
+  transmute(
+    Source,
+    Station,
+    Latitude,
+    Longitude,
+    Date = date(Date),
+    # Convert Datetime to PST
+    Datetime = with_tz(Datetime, tzone = "Etc/GMT+8"),
+    Temperature,
+    Salinity,
+    Secchi,
+    Chlorophyll,
+    DissAmmonia,
+    DissNitrateNitrite,
+    DissOrthophos
+  ) %>% 
+  filter(
+    !if_all(
+      c(Temperature, Salinity, Secchi, Chlorophyll, DissAmmonia, DissNitrateNitrite, DissOrthophos),
+      is.na
+    )
+  )
 ```
 
-# Create Plots
+# Data in `DroughtData`
+
+## Create Plots
 
 ```{r plot func}
 # Create function for sampling effort plots
@@ -124,19 +174,19 @@ ndf_lt_wq_plt <- ndf_lt_wq %>%
   mutate(plt = map(df_data_c, .f = plot_samp_effort, grp_var = "Region", yr_var = "YearAdj"))
 ```
 
-# Sampling Effort {.tabset .tabset-pills}
+## Sampling Effort {.tabset .tabset-pills}
 
 ```{r print plots, echo = FALSE, results = "asis", fig.width = 8.5, fig.height = 9}
 for (i in 1:nrow(ndf_lt_wq_plt)) {
   # Create subheadings for each Parameter
-  cat("## ", ndf_lt_wq_plt$Parameter[i], "\n\n")
+  cat("### ", ndf_lt_wq_plt$Parameter[i], "\n\n")
   # Print plot
   print(ndf_lt_wq_plt$plt[[i]])
   cat("\n\n")
 }
 ```
 
-# Secchi Sampling Effort for North region
+## Secchi Sampling Effort for North region
 
 The secchi depth data has a large hole from Jan-Aug in 2017-2021 in the North region, which seems suspicious. Let's look at the sampling effort for secchi for each station in the North region.
 
@@ -148,7 +198,7 @@ ndf_lt_wq$df_data_c[[3]] %>%
 
 Hmmm, the problem seems to be coming from the one current EMP station (C3A) in the North region. Let's look at the data directly from the `discretewq` package (version 2.3.2) to see if other current EMP stations have WQ data during the same time period.
 
-# WQ Sampling Effort for current EMP stations {.tabset .tabset-pills}
+## WQ Sampling Effort for current EMP stations {.tabset .tabset-pills}
 
 ```{r wq sampling effort all EMP, message = FALSE}
 # Import EMP station metadata from most recent EDI publication to use for status designation
@@ -194,10 +244,199 @@ It looks like only the shore-based stations (C3A, C10A, C9) have the issue of mi
 ```{r print emp plots, echo = FALSE, results = "asis", fig.width = 8.5, fig.height = 17}
 for (i in 1:nrow(ndf_emp_wq)) {
   # Create subheadings for each Parameter
-  cat("## ", ndf_emp_wq$Parameter[i], "\n\n")
+  cat("### ", ndf_emp_wq$Parameter[i], "\n\n")
   # Print plot
   print(ndf_emp_wq$plt[[i]])
   cat("\n\n")
+}
+```
+
+
+# Data in `discretewq`
+
+Now that we've been making updates to the WQ data in the [`discretewq` package](https://github.com/sbashevkin/discretewq), let's take a look at which surveys we can use for the long-term WQ publication. First, we'll look at the temporal scale of all of the surveys available.
+
+```{r discretewq temporal all}
+df_dwq %>% 
+  group_by(Source) %>% 
+  summarize(min_date = min(Date), max_date = max(Date)) %>% 
+  arrange(min_date)
+```
+
+Overall, for all parameters, it looks like FMWT, USGS_SFBS, STN, USGS_CAWSC, EMP, DJFMP, Suisun, and Baystudy have adequate temporal coverage for the long-term analysis. Now let's take a look at the spatial coverage.
+
+```{r discretewq spatial long term}
+# Only include surveys with adequate temporal coverage
+df_dwq_lt <- df_dwq %>% 
+  filter(Source %in% c("FMWT", "USGS_SFBS", "STN", "USGS_CAWSC", "EMP", "DJFMP", "Suisun", "Baystudy"))
+
+# Pull out station coordinates and convert to sf object
+sf_dwq_lt <- df_dwq_lt %>% 
+  distinct(Source, Station, Latitude, Longitude) %>% 
+  drop_na(Latitude, Longitude) %>% 
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
+  st_transform(st_crs(R_EDSM_Subregions_Mahardja_FLOAT))
+
+# Load Delta Shapefile from Brian and only keep SubRegions east of Carquinez Straight
+sf_delta <- R_EDSM_Subregions_Mahardja_FLOAT %>% 
+  filter(
+    !SubRegion %in% c(
+      "Carquinez Strait", 
+      "Lower Napa River", 
+      "San Francisco Bay",
+      "San Pablo Bay",
+      "South Bay",
+      "Upper Napa River" 
+    )
+  ) %>% 
+  select(SubRegion)
+
+# Plot all stations over the SubRegions
+ggplot() +
+  geom_sf(data = sf_delta, fill = "green", alpha = 0.5) +
+  geom_sf(data = sf_dwq_lt)
+
+# Assign SubRegions to the stations
+sf_dwq_lt_reg <- sf_dwq_lt %>% 
+  st_join(sf_delta, join = st_intersects) %>%
+  filter(!is.na(SubRegion))
+
+# Remove SubRegions without stations from sf_delta
+sf_delta_c <- sf_delta %>% filter(SubRegion %in% unique(sf_dwq_lt_reg$SubRegion))
+
+# Plot all stations over the SubRegions again - with limited ranges
+ggplot() +
+  geom_sf(data = sf_delta_c, fill = "blue", alpha = 0.5) +
+  geom_sf(data = sf_dwq_lt_reg)
+```
+
+All but one of the SubRegions east of Carquinez Straight has at least one station from a long term survey within it. Now let's take a closer look at the temporal data coverage for each Station and parameter.
+
+```{r prepare discretewq long term}
+# Prepare long-term data from discretewq
+df_dwq_lt_c <- df_dwq_lt %>% 
+  # Remove records without latitude-longitude coordinates
+  drop_na(Latitude, Longitude) %>%
+  # Convert to sf object
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326, remove = FALSE) %>%
+  # Change to crs of sf_delta_c
+  st_transform(crs = st_crs(sf_delta_c)) %>%
+  # Add subregions
+  st_join(sf_delta_c, join = st_intersects) %>%
+  # Remove any data outside our subregions of interest
+  filter(!is.na(SubRegion)) %>%
+  # Drop sf geometry column since it's no longer needed
+  st_drop_geometry() %>% 
+  # Add variables for adjusted calendar year, month, and season
+    # Adjusted calendar year: December-November, with December of the previous calendar year
+    # included with the following year
+  mutate(
+    Month = month(Date),
+    YearAdj = if_else(Month == 12, year(Date) + 1, year(Date)),
+    Season = case_when(
+      Month %in% 3:5 ~ "Spring",
+      Month %in% 6:8 ~ "Summer",
+      Month %in% 9:11 ~ "Fall",
+      Month %in% c(12, 1, 2) ~ "Winter"
+    )
+  ) %>% 
+  # Restrict data to 1975-2021
+  filter(YearAdj %in% 1975:2021)
+```
+
+## Sampling Effort by Station {.tabset .tabset-pills}
+
+```{r plot func long term by sta}
+plot_samp_effort_sta <- function(df, param) {
+  df_param <- df %>% drop_na(.data[[param]])
+  
+  # Look for any instances when more than 1 data point was collected at a station-day
+  df_dups <- df_param %>%
+    count(Station, Date) %>% 
+    filter(n > 1) %>% 
+    select(-n)
+  
+  # Fix duplicates if there are any
+  if (length(df_dups > 0)) {
+    df_dups_fixed <- df_param %>%
+      inner_join(df_dups, by = c("Station", "Date")) %>%
+      drop_na(Datetime) %>%
+      mutate(
+        # Create variable for time
+        Time = as_hms(Datetime),
+        # Calculate difference from noon for each data point for later filtering
+        Noon_diff = abs(hms(hours = 12) - Time)
+      ) %>%
+      # Use dtplyr to speed up operations
+      lazy_dt() %>%
+      group_by(Station, Date) %>%
+      # Select only 1 data point per station and date, choose data closest to noon
+      filter(Noon_diff == min(Noon_diff)) %>%
+      # When points are equidistant from noon, select earlier point
+      filter(Time == min(Time)) %>%
+      ungroup() %>%
+      # End dtplyr operation
+      as_tibble() %>%
+      select(-c(Time, Noon_diff))
+    
+    df_param <- df_param %>% 
+      anti_join(df_dups, by = c("Station", "Date")) %>%
+      bind_rows(df_dups_fixed)
+  }
+  
+  # Create summary heat map of sampling effort for each station
+  df_param %>%
+    count(Station, YearAdj, name = "num_samples") %>%
+    ggplot(aes(x = YearAdj, y = Station, fill = num_samples)) +
+    geom_tile() +
+    scale_x_continuous(breaks = breaks_pretty(20), expand = expansion()) +
+    scale_fill_viridis_c(name = "Number of Samples") +
+    theme_bw() +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+      legend.position = "top"
+    )
+}
+```
+
+```{r create plots long term by sta}
+# Nest long-term data from discretewq by Source
+ndf_dwq_lt_c <- df_dwq_lt_c %>% nest(df_data = -Source)
+
+# Create a nested data frame to run the summary plot function on
+ndf_dwq_lt_c <- 
+  tibble(
+    Parameter = c(
+      "Temperature",
+      "Salinity",
+      "Secchi",
+      "DissAmmonia",
+      "DissNitrateNitrite",
+      "DissOrthophos",
+      "Chlorophyll"
+    ),
+    df_data = rep(list(ndf_dwq_lt_c), 7)
+  ) %>% 
+  unnest(df_data)
+
+# Create plots for each Parameter and Source
+ndf_dwq_lt_plt <- ndf_dwq_lt_c %>% 
+  mutate(plt = map2(df_data, Parameter, .f = plot_samp_effort_sta)) %>% 
+  select(-df_data) %>% 
+  nest(plts = -Parameter)
+```
+
+```{r print plots long term by sta, echo = FALSE, results = "asis", fig.width = 8, fig.height = 10}
+for (i in 1:nrow(ndf_dwq_lt_plt)) {
+  # Create subheadings for each Parameter
+  cat("### ", ndf_dwq_lt_plt$Parameter[i], " {.tabset .tabset-pills}\n\n")
+  for (j in 1:nrow(ndf_dwq_lt_plt$plts[[i]])) {
+    # Create subheadings for each Survey
+    cat("#### ", ndf_dwq_lt_plt$plts[[i]]$Source[j], "\n\n")
+    # Print plot
+    print(ndf_dwq_lt_plt$plts[[i]]$plt[[j]])
+    cat("\n\n")
+  }
 }
 ```
 
