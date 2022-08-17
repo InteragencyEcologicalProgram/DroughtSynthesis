@@ -8,6 +8,8 @@ library(DHARMa)
 library(effects)
 library(DroughtData)
 
+#test
+
 stas = c("P8", "D8", "MD10", "MD10A", "D7", "D6", "D4", "D28A", "D26", "D22", "D19", "D16", "D12", "D10", "C3", "C3A")
 
 #Chlorophyll data from KEith
