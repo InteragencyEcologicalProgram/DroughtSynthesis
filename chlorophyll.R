@@ -7,45 +7,75 @@ library(lmerTest)
 library(DHARMa)
 library(effects)
 library(DroughtData)
+library(sf)
 
 #test
 
-stas = c("P8", "D8", "MD10", "MD10A", "D7", "D6", "D4", "D28A", "D26", "D22", "D19", "D16", "D12", "D10", "C3", "C3A")
+#stas = c("P8", "D8", "MD10", "MD10A", "D7", "D6", "D4", "D28A", "D26", "D22", "D19", "D16", "D12", "D10", "C3", "C3A")
 
 #Chlorophyll data from KEith
 Chl = read_csv("data/chla_data_stats_LT2.csv")
 yrs = read_csv("data/yearassignments.csv")
 
 #Add NCRO
-NCRO = read.csv("data/hab_nutr_chla_mvi.csv") %>%
-  filter(Source %in% c("DWR_NCRO", "NCRO")) %>%
-  rename(chlaAvg = Chlorophyll) %>%
-  mutate(chlaAvg_log10 = log(chlaAvg, 10),
-         month = month(Date),
-         ds_year = case_when(month %in% c(11,12) ~ year(Date) + 1,
-                             TRUE ~ year(Date)))
+#try more NCRO stuff
+NCRO2 = read_csv("data/WQDataReport.SDelta_2000-2021_ChlaPheo.csv")
+SDelta_Station_lat_long <- read_csv("PrimaryProducerTeam/Data/SDelta_Station_lat_long.csv")
+NCRO2 = mutate(NCRO2, Result = as.numeric(Result),
+               Date = mdy_hm(CollectionDate)) %>%
+  filter(Analyte == "Chlorophyll a", SampleType == "Normal Sample") %>%
+  rename(chlaAvg = Result) %>%
+  left_join(SDelta_Station_lat_long) %>%
+  filter(!is.na(`Latitude (WGS84)`))
 
+load("Regions.RData")
+load("DroughtRegions.RData")
+Regions = st_transform(Regions, crs = 4326) %>%
+  st_make_valid() 
+NCROsf = st_as_sf(NCRO2, coords = c("Longitude (WGS84)", "Latitude (WGS84)"), crs = 4326) %>%
+  st_join(Regions) %>%
+  st_drop_geometry() %>%
+  dplyr::select(ShortStationName, Date, chlaAvg, Region) %>%
+  mutate(month = month(Date), Yday = yday(Date), Year = case_when(month == 12 ~ year(Date)+ 1,
+                                                                  TRUE ~ year(Date)),
+         Season = case_when(month %in% c(3,4,5) ~ "Spring",
+                            month %in% c(6,7,8) ~ "Summer",
+                            month %in% c(9,10,11) ~ "Fall",
+                            month %in% c(12,1,2) ~ "Winter"),
+         chlaAvg_log10 = log(chlaAvg, 10)) %>%
+  left_join(yrs) %>%
+  group_by(ShortStationName, Region, month, Year, Season, Yr_type, Date, Yday) %>%
+  summarize(chlaAvg = mean(chlaAvg), chlaAvg_log10 =log(chlaAvg, 10) )
 
+NCRO3 = mutate(NCROsf, Region = "South-Central Delta", Source = "NCRO") %>%
+  rename(Station = ShortStationName)
+
+Chl1 = Chl  %>%
+  rename(Year = ds_year, Yr_type = ds_year_type) 
+
+Chl1 = Chl1%>%
+  left_join(yrs) %>%
+  bind_rows(NCRO3) 
 
 
 #ok, beautiful! do some averaging
-Chl2 = Chl %>%
-  filter(Station %in% stas) %>% 
-  group_by(Region, Season, month, ds_year) %>%
-  summarize(Chla = mean(chlaAvg)) %>%
-  group_by( Region, Season, ds_year) %>%
+Chl2 = Chl1 %>%
+  #filter(Station %in% stas) %>% 
+  group_by(Region, Season, month, Year) %>%
+  summarize(Chla = mean(chlaAvg, na.rm = T)) %>%
+  group_by( Region, Season, Year) %>%
   summarize(Chla = mean(Chla)) %>%
-  group_by(Season, ds_year) %>%
+  group_by(Season, Year) %>%
   summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
-  rename(YearAdj = ds_year)
+  rename(YearAdj = Year)
 
-Chl2reg = Chl %>%
-  filter(Station %in% stas) %>% 
-  group_by(Region, Season, month, ds_year) %>%
-  summarize(Chla = mean(chlaAvg)) %>%
-  group_by( Region, Season, ds_year) %>%
+Chl2reg = Chl1 %>%
+  #filter(Station %in% stas) %>% 
+  group_by(Region, Season, month, Year) %>%
+  summarize(Chla = mean(chlaAvg, na.rm = T)) %>%
+  group_by( Region, Season, Year) %>%
   summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
-  rename(Year = ds_year) %>%
+  rename(Year = Year) %>%
   left_join(yrs) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))# %>%
   #filter(Year > 1995)
@@ -107,10 +137,10 @@ ggplot(Chl2reg, aes(x = Year, y = logChl, fill = Drought))+
 
 
 #plot of raw chlrophyll data by day of year
-Chl = mutate(Chl, Yday = yday(Date), Yr_type = factor(ds_year_type, 
+Chl = mutate(Chl1, Yday = yday(Date), Yr_type = factor(Yr_type, 
                                                       levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet"),
-                                                      ordered = TRUE)) %>%
-  filter(Station %in% stas)
+                                                      ordered = TRUE))# %>%
+  #filter(Station %in% stas)
 
 ggplot(Chl, aes(x = Yday, y = chlaAvg_log10, color = Yr_type))+
   geom_point(alpha = 0.3)+
@@ -119,6 +149,8 @@ ggplot(Chl, aes(x = Yday, y = chlaAvg_log10, color = Yr_type))+
   facet_wrap(~Region)+
   theme_bw()
 
+
+save(Chl2reg, file = "RegionalCHLaverages.RData")
 ###############################################################################
 #Let's bin the data by >10 versus < 10
 Chl = mutate(Chl, bloom = case_when(chlaAvg > 10 ~ TRUE,
@@ -129,12 +161,12 @@ Chl = mutate(Chl, bloom = case_when(chlaAvg > 10 ~ TRUE,
 #Binomial model of blooms
 #we don't have enough long-term data from the North Delta to include it.
 
-cmod = glmer(bloom ~ Region + Season+Yr_type + (1|Station) + (1|ds_year), family = "binomial", data = Chl)
+cmod = glmer(bloom ~ Region + Season+Yr_type + (1|Station) + (1|Year), family = "binomial", data = Chl)
 summary(cmod)
 library(visreg)
 visreg(cmod)
 
-cmod2 = glmer(bloom ~ Region + Season+Yr_type + (1|Station) + (1|ds_year), family = "binomial", data = Chl)
+cmod2 = glmer(bloom ~ Region + Season+Yr_type + (1|Station) + (1|Year), family = "binomial", data = Chl)
 summary(cmod2)
 plot(cmod2)
 visreg(cmod2)
@@ -145,8 +177,6 @@ visreg(cmod2)
 #get rid of Winter, because it's not interesting, and filter it to post-clam crash.
 
 Chlsum = Chl %>%
-  rename(Year = ds_year) %>%
-  left_join(yrs) %>%
   group_by(Region, Season, Drought, Yr_type, month, Year) %>%
   summarize(Presence = length(bloom[which(bloom)]), Absence = length(bloom[which(!bloom)]), N = n()) #%>%
   #filter(Season != "Winter",ds_year >1989)

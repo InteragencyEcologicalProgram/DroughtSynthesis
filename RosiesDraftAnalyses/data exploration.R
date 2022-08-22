@@ -3,6 +3,7 @@ library(tidyverse)
 library(readxl)
 library(viridis)
 library(DroughtData)
+library(lubridate)
 
 #Boz's integrated data set
 Integrated_data_set = lt_seasonal
@@ -25,46 +26,8 @@ Integrated_data = left_join(Integrated_data_set, zoopsBPUE_seasonal) %>%
   left_join(Fish)
 
 #Chlorophyll data from KEith
-Chl = read_csv("data/chla_data_stats_LT2.csv")
-#ok, beautiful! do some averaging
-Chl2 = group_by(Chl, Region, Season, month, ds_year) %>%
-  summarize(Chla = mean(chlaAvg)) %>%
-  group_by( Region, Season, ds_year) %>%
-  summarize(Chla = mean(Chla)) %>%
-  group_by(Season, ds_year) %>%
-  summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
-  rename(YearAdj = ds_year)
-
-Chl2reg = group_by(Chl, Region, Season, month, ds_year) %>%
-  summarize(Chla = mean(chlaAvg)) %>%
-  group_by( Region, Season, ds_year) %>%
-  summarize(Chla = mean(Chla), logChl = log(Chla)) %>%
-  rename(Year = ds_year) %>%
-  left_join(yrs) %>%
-  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
-
-#plot of chlorophyll by water year type
-ggplot(Chl2reg, aes(x = Yr_type, y = logChl, fill = Yr_type))+
-  geom_boxplot(alpha = 0.7)+
-  facet_grid(Season~Region)+
-  drt_color_pal_yrtype()+
-  ylab("Chlorophyl ug/L (log-transformed)")+
-  xlab("Year Type")+
-  theme_bw()+
-  scale_x_discrete(labels = c("C", "D", "B", "A", "W"))
-
-#plot of raw chlrophyll data by day of year
-Chl = mutate(Chl, Yday = yday(Date), Yr_type = factor(ds_year_type, 
-                                                      levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
-
-ggplot(Chl, aes(x = Yday, y = chlaAvg_log10, color = Yr_type))+
-  geom_point(alpha = 0.3, shape = "circle open" )+
-  geom_smooth()+
-  drt_color_pal_yrtype(aes_type = "color")+
-  facet_wrap(~Region)+
-  theme_bw()
-
-Integrated = left_join(Integrated_data, Chl2)
+load("RegionalCHLaverages.RData")
+Integrated = left_join(Integrated_data, Chl2reg)
 
   
 #log-transform zooplankton and fish
@@ -135,7 +98,7 @@ Fish2 = filter(Fish, Season == "Fall") %>%
                values_to = "Value") %>%
   mutate(Value = log(Value+1))
 
-load("ResidenceTime.RData")
+load("data/ResidenceTime.RData")
 RTlong = ungroup(DFRTann) %>%
   pivot_longer(cols = c(SACRT, SJRT), names_to = "Metric", values_to = "Value") %>%
   rename(YearAdj = WY) %>%
@@ -178,6 +141,13 @@ ggplot(Int2, aes(x = Yr_type, y = Value, fill = Yr_type), alpha = 0.3) + geom_bo
   facet_wrap(MetricL~., scales = "free_y") + drt_color_pal_yrtype()+
   theme_bw()
 
+
+Int2 = left_join(Int2, yrs)
+
+ggplot(Int2, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + geom_boxplot() +
+  facet_wrap(MetricL~., scales = "free_y")
+
+
 # rework it so residence time is a column
 
 Int3 = left_join(ungroup(Int2), dplyr::select(rename(ungroup(DFRTann), Year = WY), Year, SACRT, SJRT))
@@ -211,7 +181,7 @@ ggplot(Int4, aes(x = log(Outflow), y = Value)) +
 #Let's make a rough "Drought impact" index. I"m just making this up tho.
 library(effsize)
 
-DroughtImpact = group_by(IntLong, Season, Metric, Drought) %>%
+DroughtImpact = group_by(Int2, Metric, Drought) %>%
   summarize(Mean = mean(Value, na.rm = T)) %>% 
   pivot_wider(names_from = Drought, values_from = Mean) %>%
   mutate(Index = (D-W)/mean(c(D,N, W), na.rm = T), IndexB = D/W)
@@ -223,6 +193,44 @@ DroughtImpact2 = filter(Int2, Drought != "N") %>%
   summarize(Cohen = cohen.d(Value ~ Drought, na.rm = T)$estimate, 
             magnitude = cohen.d(Value ~ Drought, na.rm = T)$magnitude)
 
+
+
+DroughtImpact2a = mutate(DroughtImpact2, Metric = factor(Metric, levels = c(
+  "Export", "Outflow", "SACRT","SJRT", 
+  "Salinity",  "Secchi",          
+  "Temperature",     "logChla SouthCentral",              
+  "ZoopBPUE SouthCentral", "ZoopBPUE Suisun Bay", "LongfinIndex",
+  "Sbindex","SmeltIndex", "AmShadIndex"), 
+  labels=c("Project Exports", "Delta Outflow", "Sac Res Time","SJ Res Time", 
+           "Salinity",  "Secchi",          
+           "Temperature",     "South Delta Chla",              
+           "South Delta Zooplankton", "Suisun Bay Zooplankton", "Longfin FMWT Index",
+           "Striped Bass FMWT Index", "Delta Smelt FMWT Index", "American Shad FMWT Index"))) %>%
+  filter(!is.na(Metric))
+
+ggplot(DroughtImpact2a, aes(x = Metric, y = -Cohen, fill = Cohen)) + geom_col() +
+  ylab("Drought Effect Size")+
+  # scale_fill_viridis(option = "A")+
+  theme_bw()+
+  geom_text(aes(label = Metric, y = -Cohen + 0.1), angle = 90, hjust = 0)+
+  coord_cartesian(ylim = c(-2.8, 5))
+
+DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen >0 ~ 0.1,
+                                                           TRUE ~ -Cohen + 0.1))
+
+ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) + 
+  geom_segment(aes(xend = Metric, yend = -Cohen, color = Cohen), 
+               arrow = arrow(length = unit(0.3, "inches")),
+               size = 2) +
+  ylab("Drought Effect Size (Cohen's D)")+ xlab(NULL)+
+  scale_color_viridis(option = "E", guide = NULL)+
+  theme_bw()+
+  geom_text(aes(label = Metric, y = yval), angle = 90, hjust = 0)+
+  coord_cartesian(ylim = c(-2.8, 5))+
+  theme(axis.text.x = element_blank())
+
+
+
 #now try combining not-drought and wet years
 DroughtImpact2b = mutate(Int2, Drought2 = case_when(Drought == "D" ~ "D",
                                                    TRUE ~ "W"),
@@ -230,6 +238,17 @@ DroughtImpact2b = mutate(Int2, Drought2 = case_when(Drought == "D" ~ "D",
   group_by(Metric) %>%
   summarize(Cohen = cohen.d(Value ~ Drought2, na.rm = T)$estimate, 
             magnitude = cohen.d(Value ~ Drought2, na.rm = T)$magnitude)
+
+ggplot(DroughtImpact2b, aes(x = Metric, y = 0)) + 
+  geom_segment(aes(xend = Metric, yend = -Cohen, color = Cohen), 
+               arrow = arrow(length = unit(0.3, "inches")),
+               size = 2) +
+  ylab("Drought Effect Size (Cohen's D)")+ xlab(NULL)+
+  scale_color_viridis(option = "E", guide = NULL)+
+  theme_bw()+
+  geom_text(aes(label = Metric, y = -Cohen), angle = 90, hjust = 0)+
+  coord_cartesian(ylim = c(-2.8, 5))+
+  theme(axis.text.x = element_blank())
 
 
 #what about the slope of the residence time line?
@@ -395,187 +414,6 @@ ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metri
   theme(axis.text.x = element_blank(), 
         legend.position = c(0.85,0.8))
 
-
-########################################################
-#compare zooplankton data from Status and Trends to what Arthur put together
-
-SNTzoop = read.csv("data/StatusandTrendsZoopBPUE.csv")
-
-#totals by season and year
-SNTzoop2 = group_by(SNTzoop, quarter, qyear) %>%
-  summarize(Zoop_BPUE_mg2 = sum(bpue_mg), logzoopB2 = log(Zoop_BPUE_mg2)) %>%
-  mutate(Season = factor(quarter, levels = c("Q1", "Q2", "Q3", "Q4"),
-         labels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-  rename(Year = qyear)
-
-#make some quick plots of fall abundance
-ggplot(filter(Integrated_data_set, Season == "Fall"), aes(x = Index, y = szn_CPUE))+
-  geom_point()
-ggplot(filter(Int, Season == "Fall"), aes(x = Index, y = logzoopB))+
-  geom_point()
-
-#subset fall zooplankton and plot by region
-SNTfall = SNTzoop%>%
-  mutate(Season = factor(quarter, levels = c("Q1", "Q2", "Q3", "Q4"),
-                         labels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-  mutate(Region = factor(region, levels = c("spl", "ss", "dt"), 
-                         labels =c("San Pablo", "Suisun", "Delta"))) %>%
-  rename(Year = qyear) %>%
-  filter(Season == "Fall") %>%
-  merge(yrs)
-
-#plot zoops by region
-ggplot(filter(SNTfall, Drought != "N", !is.na(region)), 
-       aes(x= Drought, y = log(bpue), fill = Drought)) + geom_boxplot()+
-  facet_grid(~Region)
-
-ggplot(filter(SNTfall, Drought != "N", !is.na(region)), 
-       aes(x= Drought, y = log(cpue+1))) + geom_boxplot()+
-  facet_grid(~region)
-
-#make a bar plot instead
-STNmeans = group_by(SNTfall, Drought, Region) %>%
-  summarize(bpuem = mean(bpue, na.rm = T), sdbpue = sd(bpue, na.rm = T), 
-            se = sdbpue/4)
-
-
-ggplot(filter(STNmeans, Drought != "N", !is.na(Region), Region != "San Pablo"), 
-       aes(x= Drought, y = bpuem, fill = Drought)) + geom_col()+ 
-  #geom_errorbar(aes(ymin = bpuem - se, ymax = bpuem + se, group = Drought))+
-  facet_grid(~Region) + theme_bw() + 
-  scale_x_discrete(labels = c("Multi-Year \nDrought",  "Multi-Year \nWet"))+
-  ylab("Biomass of Zooplankton per Meter Squared")
-
-
-#now upload the SNTs chlorophyll data and make a quick graph
-
-SNTchl = read.csv("data/WQtimeseries.csv")
-
-
-#subset fall zooplankton and plot by region
-SNTfallchl = SNTchl%>%
-  mutate(Season = factor(quarter, levels = c("Q1", "Q2", "Q3", "Q4"),
-                         labels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-  mutate(Region = factor(region, levels = c("spl", "ss", "dt"), 
-                         labels =c("San Pablo", "Suisun", "Delta"))) %>%
-  rename(Year = qyear) %>%
-  filter(Season == "Fall", AnalyteName == "chla") %>%
-  merge(yrs)
-
-#plot chl by region
-ggplot(filter(SNTfallchl, Drought != "N", !is.na(region)), 
-       aes(x= Drought, y = Result, fill = Drought)) + geom_boxplot()+
-  facet_grid(~Region)
-
-
-#make a bar plot instead
-STNmeanschl = group_by(SNTfallchl, Drought, Region) %>%
-  summarize(chlm = mean(Result, na.rm = T), sdbpue = sd(Result, na.rm = T), 
-            se = sdbpue/4)
-
-ggplot(filter(STNmeanschl, Drought != "N", Region %in% c("Suisun", "Delta")), 
-       aes(x= Drought, y = chlm, fill = Drought)) + geom_col()+
-  facet_grid(~Region)+theme_bw() + 
-  scale_x_discrete(labels = c("Multi-Year \nDrought",  "Multi-Year \nWet"))+
-  ylab("Chlorophyll ug/L")
-
-
-
-zoopsfall = filter(IntLong, Metric == "logzoopB", Season == "Fall")
-zoops = filter(IntLong, Metric == "logzoopB")
-ggplot(zoopsfall, aes(x = Drought, y = Value)) + geom_boxplot()
-ggplot(zoops, aes(x = Drought, y = Value)) + geom_boxplot()+ facet_wrap(~Season)
-
-zootest = select(Integrated_data_set, Year, Season, Drought, Zoop_CPUE, Zoop_BPUE_mg) %>%
-  filter(Season == "Fall")
-zootest2 = merge(zootest, zoops2)
-
-#Wow. Zooplankton is waaaay less abundant in the LSZ, but not other place in the Delta. 
-#But maybe that's because I had mysids in the Status and Trends dataset. 
-
-zootest3 = merge(zoops, SNTzoop2)
-ggplot(zootest3, aes(x = Value, y = logzoopB2, color = Season)) + geom_point()
-
-ggplot(zootest3, aes(x= Drought, y = logzoopB2)) + facet_wrap(~Season) + geom_boxplot()
-#so that's everywhere
-
-#now look at just suisun
-Suisun = filter(SNTzoop, region == "ss", qyear >1974) %>%
-  group_by(quarter, qyear) %>%
-  summarize(Zoop_BPUE_mg2 = sum(bpue_mg), logzoopB2 = log(Zoop_BPUE_mg2)) %>%
-  mutate(Season = factor(quarter, levels = c("Q1", "Q2", "Q3", "Q4"),
-                         labels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-  rename(Year = qyear)%>%
-  left_join(zoops) 
-
-
-ggplot(filter(Suisun, Drought != "N"), aes(x= Drought, y = logzoopB2)) + facet_wrap(~Season) + geom_boxplot()
-#So zooplankton are lower in summer and fall in suisun, but just summer and fall.
-
-dist = read_excel("data/distribution_matrix.xlsx", na = "NA")
-dist_long = pivot_longer(dist, cols = 3:ncol(dist), names_to = "taxa", 
-                         values_to= "distance") %>%
-rename(Year = water_year)%>%
-  left_join(yrs)
-
-
-DistDI = group_by(dist_long, Season, taxa, Drought) %>%
-  summarize(distance = mean(distance, na.rm = T)) %>% 
-  pivot_wider(names_from = Drought, values_from = distance) %>%
-  mutate(Index = (D-W)/mean(c(D,N, W), na.rm = T)) %>%
-  mutate(colr = case_when(
-    Index >0 ~ "red",
-   Index <0 ~ "blue",
-    Index >0 ~ "blue",
-    Index <0 ~ "red",
-  ))
-
-
-
-ggplot(DistDI, aes(x=taxa)) +
-  geom_col(aes(fill = colr, y = Index, alpha = Index), 
-           position =position_dodge2(width = 1, preserve = "single"))+
-  #geom_text(aes(label = Metric, y = Index2), position = position_dodge(.9))+
-  scale_fill_manual(values = c("blue", "red"), labels = c("Westward", "Eastward"),
-                    name = "Change in center \nof distribution")+
-  geom_text(aes(x = taxa, y = 0, label = taxa), hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+ facet_grid(.~Season, space = "free") + scale_alpha(guide = NULL) +
-  ylab("Drought shift (Km)")+ theme(axis.text.x = element_blank())
-
-#####################################################################
-#Look at zoops annually by region
-yrs2 = select(yrs, Year, Drought, Index, Yr_type) %>%
-  distinct()
-zoopReg = zoopsBPUE_regional %>%
-  rename(Year = water_year) %>%
-  left_join( yrs2) %>%
-  filter(Drought %in% c("D", "W"), Region != "North")
-ggplot(zoopReg, aes(x = Drought, y = log(BPUE_ug), fill = Drought)) + geom_boxplot() + facet_grid(.~Region) + 
-  theme_bw() + scale_x_discrete(labels = c("Multi-Year \nDrought", "Multi-Year \nWet"))+
-  ylab("Log Zooplankton Biomass Per Unit Volume")
-
-z1 = lm(log(BPUE_ug)~ Drought*Region, data = zoopReg)
-summary(z1)
-library(emmeans)
-emmeans(z1, pairwise ~ Drought:Region)
-
-zoops = zoopsBPUE_seasonal %>%
-  left_join( yrs2) %>%
-  filter(Drought %in% c("D", "W"), Season != "Winter")
-ggplot(zoops, aes(x = Drought, y = log(szn_BPUE), fill = Drought)) + geom_boxplot() + 
-  facet_grid(.~Season) + 
-  theme_bw() + scale_x_discrete(labels = c("Multi-Year \nDrought", "Multi-Year \nWet"))+
-  ylab("Log Zooplankton Biomass Per Unit Volume")
-
-#Now look at it by taxa, season, region, etc.
-load("data/Taxon_drought.RData")
-taxa_AR = rename(taxa_annual_reg, Year = water_year) %>%
-  left_join(yrs2) %>%
-  filter(Drought %in% c("W", "D"), Region != "North") 
-  
-ggplot(taxa_AR, aes(x = Drought, y = log(BPUE_ug + 1), fill = Taxlifestage)) +
-  geom_boxplot()+ facet_grid(Taxlifestage~Region, scales = "free_y")
 
 ##############################################################################
 
