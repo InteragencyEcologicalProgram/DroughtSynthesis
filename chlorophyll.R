@@ -110,7 +110,7 @@ ggplot(Chl2reg, aes(x = Drought, y = logChl, fill = Drought))+
   theme_bw()
 
 #plot of chlorophyll by water year type - just hte more recent years
-ggplot(filter(Chl2reg, Year > 1989), aes(x = Yr_type, y = logChl, fill = Yr_type))+
+ggplot(filter(Chl2reg, Year > 2000 | Year <1995), aes(x = Yr_type, y = logChl, fill = Yr_type))+
   geom_boxplot(alpha = 0.7)+
   facet_grid(Season~Region)+
   drt_color_pal_yrtype()+

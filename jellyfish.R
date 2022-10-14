@@ -456,22 +456,52 @@ jellystasf = st_as_sf(jellysta, coords = c("Longitude", "Latitude"), crs = 4326)
 
 ggplot()+
   geom_sf(data = WW_Delta)+
-  geom_sf(data = jellystasf, aes(shape = Source))+
+  geom_sf(data = jellystasf, aes(shape = Source), size = 2)+
   geom_sf(data = Regions,
           aes(fill=Region), alpha = 0.2)+
   theme_bw()+
   theme(legend.position="none")+
-  scalebar(data = Regions, transform = TRUE, dist = 10, dist_unit = "km", model = "WGS84") +
-  #  north(data = FLOATlong, symbol = 2) +
+  scale_shape_manual(values = c(15, 16, 17, 8))+
+  scalebar( y.min = 37.8, y.max = 38.6, x.min = -122.2, x.max = -121.2, 
+            transform = TRUE, dist = 10, st.size = 4,
+           dist_unit = "km", model = "WGS84", location = "bottomleft") +
+    north(y.min = 37.8, y.max = 38.6, x.min = -122.2, x.max = -121.2,  symbol = 2) +
   theme_bw()+ylab("")+xlab("")+
   scale_fill_discrete(guide = NULL)+
-  geom_sf_label(data = Regions, aes(label = Region), 
-                label.size = 0.05,
-                label.padding = unit(0.1, "lines"),
-                fontface = "bold")+
+  # geom_sf_label(data = Regions, aes(label = Region), 
+  #               label.size = 0.05,
+  #               label.padding = unit(0.1, "lines"),
+  #               fontface = "bold")+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
 
-ggsave("Jellymap.tiff", device = "tiff", width = 8, height = 8)
+ggsave("Jellymap.pdf", device = "pdf", width = 6, height = 6)
+########################################################################################
+#quick map of the reallyhigh 2017 catches
+
+Jel2017 = jellystasf %>%
+  left_join(filter(Alljel, Year %in% c(2017, 2019))) %>%
+  group_by(StationID, Year) %>%
+  summarise(Jellies = max(TotJellies, na.rm = T)) %>%
+  filter(!is.na(Year))
+
+
+
+
+ggplot()+
+  geom_sf(data = WW_Delta)+
+  geom_sf(data = Jel2017, aes(color = log(Jellies+1)), size = 2)+
+  scale_color_viridis_c(option = "B")+
+  theme_bw()+
+  theme(legend.position="none")+
+  theme_bw()+ylab("")+xlab("")+
+  scale_fill_discrete(guide = NULL)+
+  coord_sf(xlim = c(-122.2, -121.8), ylim = c(38, 38.3))+
+  facet_wrap(~Year)
+
+
+
+########################################################################
+
 
 
 #clam map
@@ -494,15 +524,16 @@ ggplot()+
                 fontface = "bold", nudge_x = 0.05, label.padding = unit(0.1, "lines"))+  
   theme_bw()+
   theme(legend.position="none")+
-  scalebar(transform = TRUE, dist = 10, dist_unit = "km", model = "WGS84", x.min = -122.1, x.max = -122.0, y.max = 37.9, y.min = 37.8, st.dist = .1, height = 0.1) +
-
-  theme_bw()+ylab("")+xlab("")+
+  scalebar( y.min = 37.8, y.max = 38.6, x.min = -122.2, x.max = -121.2, 
+            transform = TRUE, dist = 10, st.size = 4,
+            dist_unit = "km", model = "WGS84", location = "bottomleft") +
+  north(y.min = 37.8, y.max = 38.6, x.min = -122.2, x.max = -121.2,  symbol = 2) +  theme_bw()+ylab("")+xlab("")+
   scale_fill_discrete(guide = NULL)+
 
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
 
-ggsave("Clammap.tiff", device = "tiff", width = 8, height = 8)
-
+ggsave("Clammap.tiff", device = "tiff", width = 6, height = 6)
+ggsave("Clammap.pdf", device = "pdf", width = 6, height = 6)
 
 library(scales)
 

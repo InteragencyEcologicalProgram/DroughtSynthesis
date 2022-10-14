@@ -186,6 +186,7 @@ write.csv(summary(jelz3c)$coefficients, "JellyfishCPUEmodel.csv")
 library(effects)
 library(emmeans)
 library(visreg)
+library(broom)
 pcs = emmeans(jelz3c, pairwise ~ "Yr_type*Region")
 plot(pcs)
 pcs
@@ -193,16 +194,45 @@ pcs
 plot(allEffects(jelz3c))
 visreg(jelz3c, xvar = "Yr_type", by = "Region")
 
+test = visreg(jelz3c, xvar = "Yr_type", by = "Region")
+plot(test, gg = TRUE) + ggtitle("Mytitle")
+
 effs = allEffects(jelz3c)
 foo = predictorEffect("Yr_type", jelz3c)
 foo2 = predictorEffect("Yr_type", jelz3c, residuals = TRUE)
 
+#automatic plots
 plot(foo, lines = list(multiline = TRUE), confint=list(style="auto"))
 plot(foo2, lattice = list(key.args = list(columns = 3)))
 
 plot(emmeans(jelz3c,pairwise ~ Yr_type|Region), comparison = T)
 plot(emmeans(jelz3c,pairwise ~ Region|Yr_type))
 #Huh. This seems to say there is no difference between water year types within a region
+
+#pull out the useful bits to plot myself
+effDF = bind_cols(foo2$fit, foo2$x, foo2$lower, foo2$upper) %>%
+  rename(Prediction = ...1, Lower = ...4, Upper = ...5) %>%
+  ungroup() %>%
+  mutate(Yr_type = factor(Yr_type), Yr_type2 = as.numeric(Yr_type))
+
+
+Resid = bind_cols(AlljelliesMean2, foo2$residuals) %>%
+  rename(Residuals = ...15)  %>%
+  ungroup() %>%
+  mutate(Yr_type = factor(Yr_type))
+
+effDF2 = left_join(effDF, Resid) %>%
+  mutate(Residual2 = Residuals + Prediction, Yr_type2 = as.numeric(Yr_type))
+
+ggplot(effDF, aes(x = Yr_type2, y = Prediction))+ geom_point()+ geom_line()+
+  geom_errorbar(aes(ymin = Lower, ymax = Upper, group = Region))+
+  facet_wrap(~Region)+
+  geom_jitter(data = effDF2, aes(y = Residual2),  
+             color = "blue", alpha = 0.3, width = 0.2)+
+  theme_bw()+ xlab(NULL)+
+  scale_x_continuous(breaks = c(1,2,3,4), labels =  c("Critical", "Dry", "Below\nNormal", "Wet"))
+
+ggsave("JellyResiduals.tiff", width = 7, height =4, device = "tiff")
 
 #test models one region at a time, just to make sure
 susuin = filter(AlljelliesMean2, Region == "Suisun Bay")
@@ -331,28 +361,29 @@ summary(jelz3ss2)
 emmeans(jelz3ss2, pairwise ~ Yr_type)
 ####################################################################################
 #center of distribution from the Golden Gate
-
-jellysta = dplyr::select(Alljellies2, Station, StationID, Source, Latitude, Longitude) %>%
-  filter(!is.na(Latitude), Source != "20mm") %>%
-  distinct()
-
-distance<-GGdist(Water_map = spacetools::Delta, Points = jellysta, Latitude_column = Latitude,
-                 Longitude_column = Longitude, PointID_column = StationID) 
-distance =  distinct(distance)
-
-#Do I want to calculate the average distance for all sites where Meaotias was caught? 
-#OR do I weight the stations by the number caught?
-#I want to weight it.
-distancex = left_join(distance, jellysta) %>%
-  dplyr::select(-Station) 
-
-Alljel = left_join(AlljelliesTot, distancex) 
-Alljelsum = mutate(Alljel, weightedD = Distance*TotJellies) %>%
-  filter(!is.na(Distance)) %>%
-  group_by(Month, Year, Yr_type, Index) %>%
-  summarize(Meandist = sum(weightedD)/(sum(TotJellies, na.rm = T)), jellies = sum(TotJellies, na.rm = t)) %>%
-  droplevels()
-
+# 
+# jellysta = dplyr::select(Alljellies2, Station, StationID, Source, Latitude, Longitude) %>%
+#   filter(!is.na(Latitude), Source != "20mm") %>%
+#   distinct()
+# 
+# distance<-GGdist(Water_map = spacetools::Delta, Points = jellysta, Latitude_column = Latitude,
+#                  Longitude_column = Longitude, PointID_column = StationID) 
+# distance =  distinct(distance)
+# 
+# #Do I want to calculate the average distance for all sites where Meaotias was caught? 
+# #OR do I weight the stations by the number caught?
+# #I want to weight it.
+# distancex = left_join(distance, jellysta) %>%
+#   dplyr::select(-Station) 
+# 
+# Alljel = left_join(AlljelliesTot, distancex) 
+# Alljelsum = mutate(Alljel, weightedD = Distance*TotJellies) %>%
+#   filter(!is.na(Distance)) %>%
+#   group_by(Month, Year, Yr_type, Index) %>%
+#   summarize(Meandist = sum(weightedD)/(sum(TotJellies, na.rm = T)), jellies = sum(TotJellies, na.rm = t)) %>%
+#   droplevels()
+# 
+# save(Alljel, Alljelsum, file = "data/JellydatawDistance.Rdata")
 #get dayflow outflow
 #(Grab Dayflow from the flowplots.R file)
 load("data/Dayflow.RData")
@@ -390,6 +421,8 @@ DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
 # 
 write.csv(jl1s$coefficients, "outputs/jellyfishdistance.csv")
 # 
+
+
 # #format an equation to print on the graph
 EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
             b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
@@ -399,14 +432,78 @@ EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
  pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
 # 
 # #Plot of outflow versus center of distribution for paper
- ggplot(droplevels(Alljelsum), aes(x = DistK, y = OutflowM)) + 
+ ggplot(droplevels(Alljelsum), aes(y = DistK, x = OutflowM)) + 
    geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
    scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
-   xlab("Center of Maeotias distribution \n(Km from Golden Gate)")+
-   ylab("Monthly Mean Delta Outflow (m3/sec)") +
-   annotate("text", x = 70, y = 320, label = EQ)+
+   ylab("Center of Maeotias distribution \n(Km from Golden Gate)")+
+   xlab("Monthly Mean Delta Outflow (m3/sec)") +
+   annotate("text", y = 70, x = 320, label = EQ)+
    theme_bw()
  ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
+########################################
+#try log-transforming
+jl2 = lmer(log(DistK)~ OutflowM + (1|Yearr), data = Alljelsum)
+summary(jl2)
+plot(jl2)
+res = simulateResiduals(jl2)
+plot(res)
+jl2s = summary(jl2)
+R22 = r.squaredGLMM(jl2)
+
+
+
+# #format an equation to print on the graph
+EQ2 = paste("y = ", format(unname(coef(jl2s)[1]), digits = 3), " + ",
+           b = format(unname(coef(jl2s)[2]), digits = 2), "x,", " R2 = ",
+           r2 = format(R22[1], digits = 3), sep = "")
+EQ2
+# 
+# #Plot of outflow versus center of distribution for paper
+ggplot(droplevels(Alljelsum), aes(y = log(DistK), x = OutflowM)) + 
+  geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
+  scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
+  ylab("log Center of Maeotias distribution \n(Km from Golden Gate)")+
+  xlab("Monthly Mean Delta Outflow (m3/sec)") +
+ annotate("text", y = 4.1, x = 5, label = EQ2)+
+  theme_bw()
+ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
+
+######################################################################3
+#Back of the envelope feeding rate analyssis
+
+Means = AlljelliesMean2 %>%
+  filter(Season == "Summer") %>%
+  group_by(Yr_type, Region) %>%
+  summarise(Mean = mean(meanJellies)/10000, FR = Mean*100)
+
+#How many copepods are around?
+library(zooper)
+zoops = Zoopsynther(Data_type = "Community",
+                    Sources = c("EMP", "FMWT", "STN"), Size_class = c("Meso", "Micro"))
+
+#Get rid of undersampled groups, just summer, 2007-2021
+zoops2 = filter(zoops, !Undersampled, Year > 2006) %>%
+  mutate(Month = month(Date))  %>%
+  filter(Month %in% c(7,8,9), Class == "Copepoda")
+
+#add regional assignments
+zoopstas = read.csv("data/IEPstationsw_Regions.csv") %>%
+  mutate(Station = as.character(Station))
+
+#just the three regions with lots of jellyfish. Just the copepods
+zoops3 = left_join(zoops2, zoopstas) %>%
+  filter(Region %in% c( "Confluence",   "Suisun Bay", "Suisun Marsh")) %>%
+  group_by(SampleID, Region, Month, Year) %>%
+  summarise(Copepods = sum(CPUE)) %>%
+  left_join(yrs) %>%
+  group_by(Region, Yr_type) %>%
+  summarise(Copepods = mean(Copepods))
+  
+#Calculate percentage of copepods eaten over the course of the summer (assuming no copepod reproduction)
+Means2 = left_join(Means, zoops3) %>%
+  mutate(CopepodsPerSummer = FR*90, PercentEaten = CopepodsPerSummer/Copepods)
+
+write.csv(Means2, "JellyGrazing.csv")
 
 ######################################################################
 #I think I need to weight distance differently
