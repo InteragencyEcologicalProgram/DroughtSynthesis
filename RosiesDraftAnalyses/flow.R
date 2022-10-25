@@ -340,3 +340,15 @@ summary(blehSouth)
 dredge(blehSouth)
 
 #I am somewhat confused. And it's friday.
+
+#############################################
+
+load("data/Dayflow.RData")
+
+DF = mutate(DF, Year = year(Date), Month = month(Date), Projects = CVP + SWP, EO = Projects/OUT, ominuse = Projects - OUT)
+DFsummer = filter(DF, Month %in% c(6,7,8,9), OUT >0)
+
+ggplot(DFsummer, aes(y = OUT, x = Projects)) + geom_point()+ geom_smooth()+
+  geom_abline(slope = 1, intercept = 0, size = 2, color = "red")
+
+ggplot(DFsummer, aes(x = ominuse)) + geom_histogram()       

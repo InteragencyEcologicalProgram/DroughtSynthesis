@@ -4,6 +4,7 @@ library(readxl)
 library(viridis)
 library(DroughtData)
 library(lubridate)
+library(emmeans)
 
 #Boz's integrated data set
 
@@ -82,14 +83,17 @@ ggplot(filter(salmon2, !is.na(Migration)), aes(x = Migration, y = Value, fill = 
   theme_bw()
 
 #Can I make an "all salmon" metric?
-
+yrs = read_csv("data/yearassignments.csv")
 salsum = group_by(salmon2, Year, Migration) %>%
   summarise(CRR = mean(Value, na.rm = T)) %>%
-  filter(!is.na(CRR))
+  filter(!is.na(CRR)) %>%
+  mutate(Metric = "Salmon CRR", Value = CRR, YearAdj = Year)
 
 ggplot(salsum, aes(x = Migration, y = CRR, fill = Migration))+ geom_boxplot()+
   scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
   theme_bw()
+
+salsum = select(salsum, YearAdj,Metric, Value)
 
 
 #Bind them together
@@ -107,7 +111,7 @@ Int2 = left_join(IntLong, yrs) %>%
                                             "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
                                            "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
                                            "Suisun Marsh_logZoopBPUE",              
-                                 "Sbindex", "SmeltIndex", "LongfinIndex", "AmShadIndex"), 
+                                 "logSB", "logDS", "logLFS", "logShad", "Salmon CRR"), 
                                 labels = c("Outflow (CFS)", "SWP + CVP \nExports (CFS)", "X2", "Sacramento\nResidence Time (days)", "San Joaquin\nResidence Time, (days)",
                                            "Salinity (PSU)",  "Secchi Depth \n(cm)",
                                            "Temperature (C)" , "logNitrate", "logAmmonia", "logPhosohorus",
@@ -119,7 +123,7 @@ Int2 = left_join(IntLong, yrs) %>%
                                            "Zooplankton\nSuisun Marsh  (ugC/L)",              
                                            "Striped Bass \nlog FMWT Index", "Delta Smelt\nlog FMWT Index", 
                                            "Longfin  \nlog FMWT Index", 
-                                           "Am Shad  \nlog FMWT Index")))
+                                           "Am Shad  \nlog FMWT Index", "Salmon CRR")))
 
 Int3a = filter(Int2, !is.na(MetricL))
 
@@ -138,7 +142,57 @@ ggplot(Int3a, aes(x = Yr_type, y = Value, fill = Yr_type), alpha = 0.3) + geom_b
 ggplot(Int3a, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")
 
+###################################################################################
+#Fish were the only interesting ones in the "drought year" plot
 
+FishDrought = filter(Int3a, Metric %in% c("logSB", "logDS", "logShad", "logLFS", "Salmon CRR")) %>%
+  mutate(DroughtYear = factor(DroughtYear, levels = c("0", "1", "2", "3+"), ordered = F),
+         DY = as.numeric(DroughtYear))
+
+ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + geom_boxplot() +
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+  scale_fill_brewer(palette = "Dark2", name = "Year of Drought")
+
+#quick stats on this 
+SB = filter(FishDrought, Metric == "logSB")
+FD1 = lm(Value ~ DY + Year, data = SB)
+summary(FD1)
+emmeans(FD1, pairwise ~ DroughtYear)
+plot(FD1)
+#Need the year term to account for change over time. BUt it works!
+LFS = filter(FishDrought, Metric == "logLFS")
+LFS1 = lm(Value ~ DroughtYear + Year, data = LFS)
+summary(LFS1)
+plot(LFS1)
+emmeans(LFS1, pairwise ~ DroughtYear)
+#longfin smelt highly significant. But it's all wet versus dry, not between multiple dry years
+
+DS = filter(FishDrought, Metric == "logDS")
+DS1 = lm(Value ~ DroughtYear + Year, data = DS)
+summary(DS1)
+plot(DS1)
+#no effect of multiple drought years on Delta Smelt
+
+
+shad = filter(FishDrought, Metric == "logShad")
+shad1 = lm(Value ~ DroughtYear + Year, data = shad)
+summary(shad1)
+emmeans(shad1, pairwise ~ DroughtYear)
+plot(shad1)
+#All the effect is dry versus wet years, not multiple years of drought
+
+CRRs = filter(FishDrought, Metric == "Salmon CRR")
+ggplot(CRRs, aes(x=Year, y = Value))+ geom_point()+ geom_smooth()
+
+#there isn't really a chance over time, so I won'd include yera
+CRRs1 = lm(Value ~ DroughtYear, data = CRRs)
+summary(CRRs1)
+plot(CRRs1)
+emmeans(CRRs1, pairwise ~ DroughtYear)
+#The difference really shows up in 3 or more years of drought.
+#not too bad!
+save(FishDrought, file ="FishDrough.RData")
+#####################################################################################
 # rework it so residence time is a column
 
 Int3 = left_join(ungroup(Int3a), dplyr::select(rename(ungroup(DFRTann), Year = WY), Year, SACRT, SJRT))
