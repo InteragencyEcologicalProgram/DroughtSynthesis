@@ -25,6 +25,8 @@ library(broom)
 
 load("jellyfish.RData")
 
+#I'm going to convert my CPUE from # per 10000 cubic meters to 
+
 #some exploritory plots
 ggplot(filter(AlljelliesMean, Year == 2017), aes(x = Month, y = meanJellies)) +
   geom_col()+ facet_grid(Region~Year)
@@ -396,7 +398,7 @@ DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
    filter(!is.nan(Meandist), jellies >20)
 # 
 # save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
-# load("data/JellieswDistance.Rdata")
+ load("data/JellieswDistance.Rdata")
  Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
 # 
 # #Facet by month
@@ -474,7 +476,7 @@ ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
 Means = AlljelliesMean2 %>%
   filter(Season == "Summer") %>%
   group_by(Yr_type, Region) %>%
-  summarise(Mean = mean(meanJellies)/10000, FR = Mean*100)
+  summarise(Mean = mean(meanJellies)/10000, FR = Mean*100, FRlow = Mean*20, FRhigh = Mean*1000)
 
 #How many copepods are around?
 library(zooper)
@@ -497,13 +499,84 @@ zoops3 = left_join(zoops2, zoopstas) %>%
   summarise(Copepods = sum(CPUE)) %>%
   left_join(yrs) %>%
   group_by(Region, Yr_type) %>%
-  summarise(Copepods = mean(Copepods))
+  summarise(CopepodsM = mean(Copepods), sdCops = sd(Copepods)/sqrt(n()))
   
 #Calculate percentage of copepods eaten over the course of the summer (assuming no copepod reproduction)
 Means2 = left_join(Means, zoops3) %>%
-  mutate(CopepodsPerSummer = FR*90, PercentEaten = CopepodsPerSummer/Copepods)
+  mutate(CopepodsPerSummer = FR*90, PercentEaten = CopepodsPerSummer/CopepodsM,
+         CopepodsPerSummerlow = FRlow*90, PercentEatenlow = CopepodsPerSummerlow/CopepodsM,
+         CopepodsPerSummerhigh = FRhigh*90, PercentEatenhigh = CopepodsPerSummerhigh/CopepodsM,
+         Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Wet")))
 
 write.csv(Means2, "JellyGrazing.csv")
+
+ggplot(Means2)+ geom_col(aes(x = Region, y = CopepodsM), fill = "grey")+ 
+  geom_col(aes(x = Region, y = CopepodsPerSummer), fill = "darkblue")+
+  geom_errorbar(aes(x = Region, ymin = CopepodsM-sdCops, ymax = CopepodsM+sdCops))+
+  geom_errorbar(aes(x = Region, ymin = CopepodsPerSummerlow, ymax = CopepodsPerSummerhigh, group = Yr_type), width = 0.5, color = "blue")+
+  facet_wrap(~Yr_type)+ theme_bw() + ylab("Mean Calanoid copepod CPUE")
+
+#bleh
+Means3 = pivot_longer(Means2, cols=c(CopepodsPerSummer, CopepodsM), names_to = "Metric", values_to = "Copepods")
+
+
+ggplot(Means3)+ geom_col(aes(x = Region, y = Copepods, fill = Metric), position = "dodge")+ 
+#  geom_errorbar(data = filter(Means3, Metric == "CopepodsM"), 
+ #               aes(x = Region, ymin = Copepods-sdCops, ymax = Copepods+sdCops, group = Yr_type), 
+  #              position = position_nudge(x = -0.25), width = 0.3)+
+  geom_errorbar(data = filter(Means3, Metric == "CopepodsPerSummer"), 
+                aes(x = Region, ymin = CopepodsPerSummerlow, ymax = CopepodsPerSummerhigh, group = Yr_type), 
+                width = 0.2, color = "blue", position = position_nudge(x = 0.25))+
+  scale_fill_manual(values = c("darkred", "lightblue"), 
+                    labels = c("Mean Copepopd CPUE", "Potential jellyfish \n consumption"))+
+  facet_wrap(~Yr_type)+ theme_bw() + ylab("Mean Calanoid copepod CPUE")
+
+
+#Wim says to use clearence rates instead of prey number per day
+#Moller et al 2007 said that for Aurelia feeding on Acarita tonsa, clearence rate was F = 0.0073D^2.1 in liters/day at 15C
+#it also found temperature effected things at a rate of F=1.17*exp(.18T)
+#Wintzer et al 2011 found Meaotias between 2-45 mm in bell diameter. But most of the trawl
+#surveys are probably getting 30-40 mm guys.
+Clear = 0.0073*40^2.1/1000
+clear2 = 1.17*exp(.18*20)/1000
+
+#Hansen has the clearence rate at 0.093*D^2 (artemia larvae), 0.002025*D^1.88 (copepedites)
+clear3 = 0.002025*40^1.88/1000
+
+#Oelsen et al 1995 said 580 mL/hr per individual (30mm) at 21C
+clear4 = 580/1000*24/1000
+#Morand found Eurhamphaea (40mm diametr) clearance from 12-36 L per day on copepods
+clear5 = 20/1000
+
+#Chrysaora 40mm size had a clearence rate of 240 L/day
+clear6 = 240/1000
+
+#riisgard found a 43 mm aurelia cleared adult copepods at a rate of 0.6 l/hr, so 14.4 L/day, higher for nauplii
+clear7 = 14.4/1000
+
+
+
+MeansCL = AlljelliesMean2 %>%
+  filter(Season == "Summer") %>%
+  group_by(Yr_type, Region) %>%
+  summarise(Mean = mean(meanJellies)/10000, clearance = Mean*clear2, percent = clearance*100)
+
+#jellies clearence
+
+write.csv(MeansCL, "MeansCL.csv", row.names = F)
+
+#copepod mortality between 0.05 and 0.46, kimmerer et al 2018
+
+#That wasn't very impressive. Well, what about the densities durign a bloom?
+
+Maxes = arrange(Alljellies2b, -CPUE)[1:10,]
+
+Maxes = mutate(Maxes, clearance = CPUE/10000*clear2)
+
+Maxes2 = group_by(Alljellies2b, Region, Yr_type) %>%
+  summarize(Max = max(CPUE, na.rm = T), Maxclearance = Max/10000*clear2, Mean = mean(CPUE, na.rm = T), Meanclearance = Mean/10000*clear2)
+
+write.csv(Maxes2, "Clearence.csv")
 
 ######################################################################
 #I think I need to weight distance differently

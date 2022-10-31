@@ -294,6 +294,13 @@ JellyFMWT4 = left_join(JellyFMWT3, mutate(salinities, StationID = paste("FMWT", 
 #Now we are ready to combine everything!
 Alljellies = bind_rows(X20b3, BSjellies4, JellyFMWT4)
 
+#try out something with bay study data
+BSjellies4 = left_join(BSjelliesX, mutate(salinities, StationID = paste("Baystudy", Station))) %>%
+  distinct()
+
+ggplot(filter(BSjellies4, CPUE !=0), aes(x=Sal_surf, y = log(CPUE)))+ geom_point()+
+  facet_grid(Month~OrganismCode)
+
 ##########################################################
 #Suisun Marsh Data
 
