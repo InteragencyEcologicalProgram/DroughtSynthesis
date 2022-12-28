@@ -1,0 +1,644 @@
+Station,Date,Analyte,result,Study,Region
+ALG-001,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,4/14/2021,Microcystins,0.1500,Nautalis,South Delta
+ALG-001,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,6/9/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,6/22/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,7/6/2021,Microcystins,0.2800,Nautalis,South Delta
+ALG-001,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,7/20/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,8/3/2021,Microcystins,0.1700,Nautalis,South Delta
+ALG-001,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,8/17/2021,Microcystins,0.2700,Nautalis,South Delta
+ALG-001,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,9/7/2021,Microcystins,ND,Nautalis,South Delta
+ALG-001,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-001,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-001,9/21/2021,Microcystins,0.2000,Nautalis,South Delta
+ALG-001,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,4/14/2021,Microcystins,0.2000,Nautalis,South Delta
+ALG-002,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,6/9/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,6/22/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,7/6/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,7/20/2021,Microcystins,ND,Nautalis,South Delta
+ALG-002,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,8/3/2021,Microcystins,0.2300,Nautalis,South Delta
+ALG-002,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,8/17/2021,Microcystins,0.1900,Nautalis,South Delta
+ALG-002,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,9/7/2021,Microcystins,1.0600,Nautalis,South Delta
+ALG-002,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-002,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-002,9/21/2021,Microcystins,0.2600,Nautalis,South Delta
+ALG-002,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,4/14/2021,Microcystins,0.1500,Nautalis,South Delta
+ALG-003,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,6/9/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,6/22/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,7/6/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,7/20/2021,Microcystins,ND,Nautalis,South Delta
+ALG-003,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,8/3/2021,Microcystins,0.1600,Nautalis,South Delta
+ALG-003,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,8/17/2021,Microcystins,0.1700,Nautalis,South Delta
+ALG-003,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,9/7/2021,Microcystins,0.2400,Nautalis,South Delta
+ALG-003,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-003,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-003,9/21/2021,Microcystins,0.2700,Nautalis,South Delta
+ALG-003,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,4/14/2021,Microcystins,0.1200,Nautalis,South Delta
+ALG-004,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,6/9/2021,Microcystins,0.9200,Nautalis,South Delta
+ALG-004,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,6/22/2021,Microcystins,0.1500,Nautalis,South Delta
+ALG-004,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,7/6/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,7/20/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,8/3/2021,Microcystins,0.1900,Nautalis,South Delta
+ALG-004,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,8/17/2021,Microcystins,0.1400,Nautalis,South Delta
+ALG-004,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,9/7/2021,Microcystins,ND,Nautalis,South Delta
+ALG-004,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-004,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-004,9/21/2021,Microcystins,0.1700,Nautalis,South Delta
+ALG-004,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,4/14/2021,Microcystins,0.1500,Nautalis,South Delta
+ALG-005,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,6/9/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,6/22/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,7/6/2021,Microcystins,0.1400,Nautalis,South Delta
+ALG-005,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,7/20/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,8/3/2021,Microcystins,2.3800,Nautalis,South Delta
+ALG-005,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,8/17/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,9/7/2021,Microcystins,ND,Nautalis,South Delta
+ALG-005,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-005,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-005,9/21/2021,Microcystins,0.2000,Nautalis,South Delta
+ALG-005,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,3/25/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,3/25/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,3/25/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,4/14/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,4/14/2021,Microcystins,0.1500,Nautalis,South Delta
+ALG-006,4/14/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,4/29/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,4/29/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,4/29/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,5/13/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,5/13/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,5/13/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,5/27/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,5/27/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,5/27/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,6/9/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,6/9/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,6/9/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,6/22/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,6/22/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,6/22/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,7/6/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,7/6/2021,Microcystins,0.2300,Nautalis,South Delta
+ALG-006,7/6/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,7/20/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,7/20/2021,Microcystins,0.1400,Nautalis,South Delta
+ALG-006,7/20/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,8/3/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,8/3/2021,Microcystins,0.3000,Nautalis,South Delta
+ALG-006,8/3/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,8/17/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,8/17/2021,Microcystins,0.1600,Nautalis,South Delta
+ALG-006,8/17/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,9/7/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,9/7/2021,Microcystins,ND,Nautalis,South Delta
+ALG-006,9/7/2021,Saxitoxins,ND,Nautalis,South Delta
+ALG-006,9/21/2021,Anatoxins,ND,Nautalis,South Delta
+ALG-006,9/21/2021,Microcystins,0.2300,Nautalis,South Delta
+ALG-006,9/21/2021,Saxitoxins,ND,Nautalis,South Delta
+BigBreak,1/6/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,1/13/2021,Microcystins,0.3200,EastBay,San Joaquin
+BigBreak,1/21/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,2/3/2021,Microcystins,0.0700,EastBay,San Joaquin
+BigBreak,2/8/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,2/16/2021,Microcystins,0.0900,EastBay,San Joaquin
+BigBreak,2/24/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,4/7/2021,Microcystins,0.2900,EastBay,San Joaquin
+BigBreak,4/27/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,5/5/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,5/12/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,5/19/2021,Microcystins,0.0400,EastBay,San Joaquin
+BigBreak,5/25/2021,Microcystins,0.0400,EastBay,San Joaquin
+BigBreak,6/7/2021,Microcystins,50.0000,EastBay,San Joaquin
+BigBreak,6/14/2021,Microcystins,7.2500,EastBay,San Joaquin
+BigBreak,6/21/2021,Microcystins,1.3800,EastBay,San Joaquin
+BigBreak,6/29/2021,Microcystins,50.0000,EastBay,San Joaquin
+BigBreak,7/20/2021,Microcystins,0.0900,EastBay,San Joaquin
+BigBreak,8/3/2021,Microcystins,0.2700,EastBay,San Joaquin
+BigBreak,8/10/2021,Microcystins,2.8400,EastBay,San Joaquin
+BigBreak,8/18/2021,Microcystins,0.0700,EastBay,San Joaquin
+BigBreak,8/24/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,8/31/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,9/8/2021,Microcystins,4.8400,EastBay,San Joaquin
+BigBreak,9/14/2021,Microcystins,0.0200,EastBay,San Joaquin
+BigBreak,9/21/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,9/28/2021,Microcystins,2.7900,EastBay,San Joaquin
+BigBreak,10/5/2021,Microcystins,1.1200,EastBay,San Joaquin
+BigBreak,10/11/2021,Microcystins,0.0200,EastBay,San Joaquin
+BigBreak,10/19/2021,Microcystins,0.3700,EastBay,San Joaquin
+BigBreak,10/26/2021,Microcystins,ND,EastBay,San Joaquin
+BigBreak,11/4/2021,Microcystins,ND,EastBay,San Joaquin
+BPP,4/26/2021,Microcystins,ND,DWR,Clifton Court
+BPP,5/10/2021,Microcystins,ND,DWR,Clifton Court
+BPP,5/24/2021,Microcystins,ND,DWR,Clifton Court
+BPP,6/7/2021,Microcystins,ND,DWR,Clifton Court
+BPP,6/21/2021,Microcystins,ND,DWR,Clifton Court
+BPP,7/12/2021,Microcystins,ND,DWR,Clifton Court
+BPP,7/26/2021,Microcystins,ND,DWR,Clifton Court
+BPP,8/9/2021,Anatoxins,ND,DWR,Clifton Court
+BPP,8/9/2021,Microcystins,ND,DWR,Clifton Court
+BPP,8/23/2021,Microcystins,ND,DWR,Clifton Court
+BPP,9/13/2021,Microcystins,ND,DWR,Clifton Court
+BPP,9/27/2021,Microcystins,ND,DWR,Clifton Court
+CCF,4/26/2021,Microcystins,ND,DWR,Clifton Court
+CCF,6/21/2021,Microcystins,ND,DWR,Clifton Court
+CCF,7/12/2021,Microcystins,ND,DWR,Clifton Court
+CCF,7/26/2021,Microcystins,ND,DWR,Clifton Court
+CCF,8/9/2021,Microcystins,ND,DWR,Clifton Court
+CCF,8/23/2021,Microcystins,ND,DWR,Clifton Court
+DEC/TOL,1/12/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,1/12/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,1/12/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,2/16/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,2/16/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,2/16/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,3/3/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,3/3/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,3/3/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,3/16/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,3/16/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,3/16/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,4/1/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,4/1/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,4/1/2021,Anatoxins,11.5511,USGS,Lower Sacramento
+DEC/TOL,4/1/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,4/1/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,4/13/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,4/13/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,4/13/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,4/27/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,4/27/2021,Anatoxins,0.3665,USGS,Lower Sacramento
+DEC/TOL,4/27/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,5/14/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,5/14/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,5/14/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,7/7/2021,Anabaenopeptins,9.3300,USGS,Lower Sacramento
+DEC/TOL,7/7/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,7/7/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,7/21/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,7/21/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,7/21/2021,Microcystins,0.0540,USGS,Lower Sacramento
+DEC/TOL,8/4/2021,Anabaenopeptins,4.1800,USGS,Lower Sacramento
+DEC/TOL,8/4/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,8/4/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,8/18/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,8/18/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,8/18/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,9/21/2021,Anabaenopeptins,31.2100,USGS,Lower Sacramento
+DEC/TOL,9/21/2021,Anatoxins,ND,USGS,Lower Sacramento
+DEC/TOL,9/21/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,10/4/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,10/4/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,10/5/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,10/5/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,10/21/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,10/21/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,11/16/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,11/16/2021,Microcystins,ND,USGS,Lower Sacramento
+DEC/TOL,12/16/2021,Anabaenopeptins,ND,USGS,Lower Sacramento
+DEC/TOL,12/16/2021,Microcystins,ND,USGS,Lower Sacramento
+DHAB001,1/7/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,1/7/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,3/30/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,4/21/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,5/14/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,6/3/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,6/17/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,7/19/2021,Microcystins,0.1752,Preece,Lower Sacramento
+DHAB001,7/21/2021,Microcystins,0.1643,Preece,Lower Sacramento
+DHAB001,8/11/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,8/31/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,9/4/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,9/22/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,10/20/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,10/28/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,11/12/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB001,12/27/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,1/7/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,2/8/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,2/10/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,2/10/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,3/31/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,4/19/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,5/17/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,6/3/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,6/18/2021,Microcystins,0.2620,Preece,Lower Sacramento
+DHAB002,7/19/2021,Microcystins,0.2473,Preece,Lower Sacramento
+DHAB002,7/21/2021,Microcystins,0.1989,Preece,Lower Sacramento
+DHAB002,8/11/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,8/31/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,9/4/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,9/22/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,10/20/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,10/28/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,11/12/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB002,12/27/2021,Microcystins,ND,Preece,Lower Sacramento
+DHAB003,1/7/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,2/8/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,3/30/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,3/30/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,4/21/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,5/14/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,6/4/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,6/17/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,7/19/2021,Microcystins,3.0285,Preece,Lower San Joaquin
+DHAB003,7/21/2021,Microcystins,0.2222,Preece,Lower San Joaquin
+DHAB003,8/11/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,8/31/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,9/4/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,9/22/2021,Microcystins,1.7845,Preece,Lower San Joaquin
+DHAB003,10/20/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,10/28/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,11/12/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB003,12/27/2021,Microcystins,ND,Preece,Lower San Joaquin
+DHAB004,1/8/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,2/10/2021,Microcystins,0.1129,Preece,Upper Sacramento
+DHAB004,3/31/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,4/19/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,4/19/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,5/17/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,6/3/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,6/18/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,7/7/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,7/22/2021,Microcystins,0.1820,Preece,Upper Sacramento
+DHAB004,8/11/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,8/31/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,9/5/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,9/22/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,9/22/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,10/20/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,10/28/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,11/12/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB004,12/27/2021,Microcystins,ND,Preece,Upper Sacramento
+DHAB005,1/8/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,2/10/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,3/31/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,4/19/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,5/17/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,5/17/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,6/3/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,6/18/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,7/7/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,7/22/2021,Microcystins,0.2154,Preece,SDWSC
+DHAB005,8/11/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,8/31/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,9/5/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,9/22/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,10/20/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,10/28/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,11/12/2021,Microcystins,ND,Preece,SDWSC
+DHAB005,12/27/2021,Microcystins,ND,Preece,SDWSC
+DHAB006,1/8/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,2/10/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,3/31/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,4/19/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,5/17/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,6/3/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,6/3/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,6/18/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,6/18/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,7/7/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,7/22/2021,Microcystins,0.1525,Preece,Cache Slough/Liberty Island
+DHAB006,8/11/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,8/31/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,9/5/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,9/22/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,10/20/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,10/28/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,11/12/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB006,12/27/2021,Microcystins,ND,Preece,Cache Slough/Liberty Island
+DHAB007,1/7/2021,Microcystins,ND,Preece,South Delta
+DHAB007,2/8/2021,Microcystins,ND,Preece,South Delta
+DHAB007,3/30/2021,Microcystins,ND,Preece,South Delta
+DHAB007,4/21/2021,Microcystins,ND,Preece,South Delta
+DHAB007,5/14/2021,Microcystins,ND,Preece,South Delta
+DHAB007,6/4/2021,Microcystins,ND,Preece,South Delta
+DHAB007,6/17/2021,Microcystins,ND,Preece,South Delta
+DHAB007,7/19/2021,Microcystins,0.3012,Preece,South Delta
+DHAB007,7/19/2021,Microcystins,0.8220,Preece,South Delta
+DHAB007,7/21/2021,Microcystins,0.3285,Preece,South Delta
+DHAB007,7/21/2021,Microcystins,0.3859,Preece,South Delta
+DHAB007,8/11/2021,Microcystins,0.6584,Preece,South Delta
+DHAB007,8/31/2021,Microcystins,0.1606,Preece,South Delta
+DHAB007,9/4/2021,Microcystins,0.1226,Preece,South Delta
+DHAB007,10/20/2021,Microcystins,ND,Preece,South Delta
+DHAB007,10/28/2021,Microcystins,ND,Preece,South Delta
+DHAB007,11/12/2021,Microcystins,ND,Preece,South Delta
+DHAB007,12/27/2021,Microcystins,ND,Preece,South Delta
+DHAB008,1/5/2021,Microcystins,ND,Preece,South Delta
+DHAB008,2/10/2021,Microcystins,ND,Preece,South Delta
+DHAB008,3/30/2021,Microcystins,ND,Preece,South Delta
+DHAB008,4/22/2021,Microcystins,ND,Preece,South Delta
+DHAB008,5/18/2021,Microcystins,ND,Preece,South Delta
+DHAB008,6/1/2021,Microcystins,ND,Preece,South Delta
+DHAB008,6/16/2021,Microcystins,ND,Preece,South Delta
+DHAB008,7/7/2021,Microcystins,0.6674,Preece,South Delta
+DHAB008,7/22/2021,Microcystins,0.1959,Preece,South Delta
+DHAB008,8/11/2021,Microcystins,0.1434,Preece,South Delta
+DHAB008,8/11/2021,Microcystins,2.9965,Preece,South Delta
+DHAB008,8/26/2021,Microcystins,0.4166,Preece,South Delta
+DHAB008,9/5/2021,Microcystins,ND,Preece,South Delta
+DHAB008,9/20/2021,Microcystins,0.1596,Preece,South Delta
+DHAB008,10/20/2021,Microcystins,ND,Preece,South Delta
+DHAB008,11/2/2021,Microcystins,ND,Preece,South Delta
+DHAB008,11/12/2021,Microcystins,ND,Preece,South Delta
+DHAB008,12/27/2021,Microcystins,ND,Preece,South Delta
+DHAB009,1/5/2021,Microcystins,ND,Preece,South Delta
+DHAB009,2/10/2021,Microcystins,ND,Preece,South Delta
+DHAB009,3/30/2021,Microcystins,ND,Preece,South Delta
+DHAB009,4/22/2021,Microcystins,ND,Preece,South Delta
+DHAB009,5/18/2021,Microcystins,ND,Preece,South Delta
+DHAB009,6/1/2021,Microcystins,ND,Preece,South Delta
+DHAB009,6/16/2021,Microcystins,ND,Preece,South Delta
+DHAB009,7/7/2021,Microcystins,0.2766,Preece,South Delta
+DHAB009,7/22/2021,Microcystins,0.4150,Preece,South Delta
+DHAB009,8/11/2021,Microcystins,ND,Preece,South Delta
+DHAB009,8/26/2021,Microcystins,0.1588,Preece,South Delta
+DHAB009,9/5/2021,Microcystins,0.1118,Preece,South Delta
+DHAB009,9/5/2021,Microcystins,0.1320,Preece,South Delta
+DHAB009,9/20/2021,Microcystins,0.2183,Preece,South Delta
+DHAB009,10/20/2021,Microcystins,ND,Preece,South Delta
+DHAB009,10/28/2021,Microcystins,ND,Preece,South Delta
+DHAB009,11/12/2021,Microcystins,ND,Preece,South Delta
+DHAB009,12/27/2021,Microcystins,ND,Preece,South Delta
+DHAB010,1/5/2021,Microcystins,ND,Preece,South Delta
+DHAB010,2/10/2021,Microcystins,ND,Preece,South Delta
+DHAB010,3/30/2021,Microcystins,ND,Preece,South Delta
+DHAB010,4/22/2021,Microcystins,ND,Preece,South Delta
+DHAB010,5/18/2021,Microcystins,ND,Preece,South Delta
+DHAB010,6/1/2021,Microcystins,ND,Preece,South Delta
+DHAB010,6/16/2021,Microcystins,ND,Preece,South Delta
+DHAB010,7/7/2021,Microcystins,0.4417,Preece,South Delta
+DHAB010,7/22/2021,Microcystins,0.4603,Preece,South Delta
+DHAB010,8/11/2021,Microcystins,ND,Preece,South Delta
+DHAB010,8/26/2021,Microcystins,0.1859,Preece,South Delta
+DHAB010,8/26/2021,Microcystins,0.3342,Preece,South Delta
+DHAB010,9/5/2021,Microcystins,0.1122,Preece,South Delta
+DHAB010,9/20/2021,Microcystins,0.1756,Preece,South Delta
+DHAB010,10/20/2021,Microcystins,ND,Preece,South Delta
+DHAB010,10/20/2021,Microcystins,ND,Preece,South Delta
+DHAB010,11/2/2021,Microcystins,ND,Preece,South Delta
+DHAB010,11/12/2021,Microcystins,ND,Preece,South Delta
+DHAB010,12/27/2021,Microcystins,ND,Preece,South Delta
+FRK,7/2/2021,Microcystins,ND,CVRWQCB,South Delta
+FRK,8/6/2021,Anatoxins,ND,CVRWQCB,South Delta
+FRK,8/6/2021,Microcystins,0.6300,CVRWQCB,South Delta
+JPT,1/12/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,1/12/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,1/12/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,2/16/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,2/16/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,2/16/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,3/3/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,3/3/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,3/3/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,3/16/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,3/16/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,3/16/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,4/1/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,4/1/2021,Anatoxins,2.1684,USGS,Lower San Joaquin
+JPT,4/1/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,4/13/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,4/13/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,4/13/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,4/27/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,4/27/2021,Anatoxins,0.7305,USGS,Lower San Joaquin
+JPT,4/27/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,5/14/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,5/14/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,5/14/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,7/7/2021,Anabaenopeptins,178.0800,USGS,Lower San Joaquin
+JPT,7/7/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,7/7/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,7/21/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,7/21/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,7/21/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,8/18/2021,Anabaenopeptins,18.6800,USGS,Lower San Joaquin
+JPT,8/18/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,8/18/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,9/21/2021,Anabaenopeptins,0.7400,USGS,Lower San Joaquin
+JPT,9/21/2021,Anatoxins,ND,USGS,Lower San Joaquin
+JPT,9/21/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,10/4/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,10/4/2021,Microcystins,0.0460,USGS,Lower San Joaquin
+JPT,10/5/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,10/5/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,10/21/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,10/21/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,11/17/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,11/17/2021,Microcystins,ND,USGS,Lower San Joaquin
+JPT,12/16/2021,Anabaenopeptins,ND,USGS,Lower San Joaquin
+JPT,12/16/2021,Microcystins,ND,USGS,Lower San Joaquin
+LIB,5/11/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,5/11/2021,Anatoxins,ND,USGS,Cache Slough/Liberty Island
+LIB,5/11/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,8/18/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,8/18/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,9/23/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,9/23/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/4/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/4/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/5/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/5/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/21/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,10/21/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,11/16/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,11/16/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+LIB,12/9/2021,Anabaenopeptins,ND,USGS,Cache Slough/Liberty Island
+LIB,12/9/2021,Microcystins,ND,USGS,Cache Slough/Liberty Island
+MDM,7/7/2021,Anabaenopeptins,0.0100,USGS,South Delta
+MDM,7/7/2021,Microcystins,0.2200,USGS,South Delta
+MDM,7/21/2021,Anabaenopeptins,0.0300,USGS,South Delta
+MDM,7/21/2021,Microcystins,0.0600,USGS,South Delta
+MDM,8/2/2021,Anabaenopeptins,0.0900,USGS,South Delta
+MDM,8/2/2021,Microcystins,0.0600,USGS,South Delta
+MDM,8/18/2021,Anabaenopeptins,0.4700,USGS,South Delta
+MDM,8/18/2021,Microcystins,0.0300,USGS,South Delta
+MDM,9/2/2021,Anabaenopeptins,0.1000,USGS,South Delta
+MDM,9/2/2021,Microcystins,0.0100,USGS,South Delta
+MDM,9/16/2021,Anabaenopeptins,ND,USGS,South Delta
+MDM,9/16/2021,Microcystins,ND,USGS,South Delta
+MDM,10/6/2021,Anabaenopeptins,ND,USGS,South Delta
+MDM,10/6/2021,Microcystins,ND,USGS,South Delta
+MDM,10/19/2021,Anabaenopeptins,ND,USGS,South Delta
+MDM,10/19/2021,Microcystins,ND,USGS,South Delta
+MDM,12/8/2021,Anabaenopeptins,ND,USGS,South Delta
+MDM,12/8/2021,Microcystins,ND,USGS,South Delta
+MI,7/2/2021,Microcystins,0.6000,CVRWQCB,South Delta
+RRI,7/16/2021,Anabaenopeptins,0.0100,USGS,South Delta
+RRI,7/16/2021,Microcystins,0.1300,USGS,South Delta
+RRI,7/29/2021,Anabaenopeptins,0.5300,USGS,South Delta
+RRI,7/29/2021,Microcystins,0.0300,USGS,South Delta
+RRI,8/16/2021,Anabaenopeptins,0.2200,USGS,South Delta
+RRI,8/16/2021,Microcystins,0.0500,USGS,South Delta
+RRI,8/30/2021,Anabaenopeptins,0.3000,USGS,South Delta
+RRI,8/30/2021,Microcystins,0.0100,USGS,South Delta
+RRI,9/10/2021,Anabaenopeptins,0.1000,USGS,South Delta
+RRI,9/10/2021,Microcystins,0.0100,USGS,South Delta
+RRI,9/24/2021,Anabaenopeptins,0.0400,USGS,South Delta
+RRI,9/24/2021,Microcystins,0.0500,USGS,South Delta
+RRI,10/13/2021,Anabaenopeptins,ND,USGS,South Delta
+RRI,10/13/2021,Microcystins,0.0100,USGS,South Delta
+RRI,10/26/2021,Anabaenopeptins,ND,USGS,South Delta
+RRI,10/26/2021,Microcystins,ND,USGS,South Delta
+RRI,11/10/2021,Anabaenopeptins,ND,USGS,South Delta
+RRI,11/10/2021,Microcystins,ND,USGS,South Delta
+RRI,12/10/2021,Anabaenopeptins,ND,USGS,South Delta
+RRI,12/10/2021,Microcystins,ND,USGS,South Delta
+VER,7/14/2021,Anabaenopeptins,0.5800,USGS,Vernalis
+VER,7/14/2021,Microcystins,ND,USGS,Vernalis
+VER,7/29/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,7/29/2021,Microcystins,ND,USGS,Vernalis
+VER,8/12/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,8/12/2021,Microcystins,ND,USGS,Vernalis
+VER,8/27/2021,Anabaenopeptins,0.0900,USGS,Vernalis
+VER,8/27/2021,Microcystins,0.0600,USGS,Vernalis
+VER,9/9/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,9/9/2021,Microcystins,ND,USGS,Vernalis
+VER,9/24/2021,Anabaenopeptins,0.0300,USGS,Vernalis
+VER,9/24/2021,Microcystins,ND,USGS,Vernalis
+VER,10/11/2021,Anabaenopeptins,0.0400,USGS,Vernalis
+VER,10/11/2021,Microcystins,ND,USGS,Vernalis
+VER,10/26/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,10/26/2021,Microcystins,ND,USGS,Vernalis
+VER,11/8/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,11/8/2021,Microcystins,ND,USGS,Vernalis
+VER,12/8/2021,Anabaenopeptins,ND,USGS,Vernalis
+VER,12/8/2021,Microcystins,ND,USGS,Vernalis

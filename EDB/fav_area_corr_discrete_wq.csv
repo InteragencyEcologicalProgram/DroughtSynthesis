@@ -1,9 +1,0 @@
-parameter,f_corr,f_pval,b_corr,b_pval
-sav,0.487,0.092,0.25,0.411
-Temperature,0.408,0.167,0.639,0.019
-Conductivity,0.303,0.314,0.207,0.497
-Secchi,0.539,0.057,0.335,0.287
-DissolvedOxygen,0.098,0.749,NA,NA
-pH,-0.105,0.804,NA,NA
-out_mean,-0.162,0.598,-0.08,0.795
-fl_area_ha,-0.534,0.09,NA,NA

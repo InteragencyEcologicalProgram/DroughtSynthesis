@@ -30,6 +30,7 @@ Regions = FLOATlong %>%
   summarize()
 
 #Map for drought report
+save(Regions, file = "DroughtRegions.RData")
 ggplot()+
   geom_sf(data = WW_Delta)+
   #geom_sf(data = cdecsf)+

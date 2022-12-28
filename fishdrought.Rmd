@@ -1,0 +1,166 @@
+---
+title: "Fish multi-yeardrought"
+author: "Rosemary Hartman"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(viridis)
+library(lubridate)
+library(emmeans)
+library(visreg)
+
+```
+
+## Fish - multiple drought years
+
+I categorized drought years into year '0' (wet years), '1' (single dry year or first year of drought), '2' (Second year of drought) and '3+' (third or more year of drought. )
+
+```{r echo = F}
+load("FishDrough.RData")
+library("ggbeeswarm")
+
+ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("Wet years", "First/only dry year",
+                                                                            "Second dry year", "Thrid or more dry year"))+
+  theme(legend.position = "bottom")
+
+```
+
+Then I ran statistics. For POD species i included both "year of drought" and "year" to account for changes over time.
+
+### First, striped bass
+
+```{r}
+SB = filter(FishDrought, Metric == "logSB")
+FD1 = lm(Value ~ DroughtYear + Year, data = SB)
+summary(FD1)
+plot(FD1)
+emmeans(FD1, pairwise ~ DroughtYear)
+visreg(FD1)
+
+```
+So, droughts are bad, but long droughts aren't much worse than short ones after accounting for long-term population trajectory
+
+### Now longfin smelt
+
+```{r}
+LFS = filter(FishDrought, Metric == "logLFS")
+LFS1 = lm(Value ~ DroughtYear + Year, data = LFS)
+summary(LFS1)
+plot(LFS1)
+emmeans(LFS1, pairwise ~ DroughtYear)
+visreg(LFS1)
+```
+
+Again, droughts are bad, but long droughts aren't much worse than short ones after accounting for long-term population trajectory
+
+### Delta Smelt
+
+```{r}
+
+
+DS = filter(FishDrought, Metric == "logDS")
+DS1 = lm(Value ~ DroughtYear + Year, data = DS)
+summary(DS1)
+plot(DS1)
+visreg(DS1)
+```
+Delta Smelt just don't want to behave. 
+
+### American Shad
+
+```{r}
+
+
+shad = filter(FishDrought, Metric == "logShad")
+shad1 = lm(Value ~ DroughtYear + Year, data = shad)
+summary(shad1)
+emmeans(shad1, pairwise ~ DroughtYear)
+plot(shad1)
+visreg(shad1)
+```
+It's all about dry versus wet, not multi-year droughts
+
+### Now Salmon CRR
+
+I calculated a mean CRR for all the runs combined. I"m not sure that's appropriate, but I went for it. I could break them out if you don't like it. 
+
+I wasn't quite sure if I needed Year as a predictor here, so I did a quick plot
+
+```{r}
+CRRs = filter(FishDrought, Metric == "Salmon CRR")
+ggplot(CRRs, aes(x=Year, y = Value))+ geom_point()+ geom_smooth()
+```
+
+No real trend over time, so I'll skip that. 
+
+```{r}
+
+CRRs1 = lm(Value ~ DroughtYear, data = CRRs)
+summary(CRRs1)
+plot(CRRs1)
+emmeans(CRRs1, pairwise ~ DroughtYear)
+visreg(CRRs1)
+```
+
+THree or more years of drought is REALLY bad for salmon. 
+
+```{r}
+
+#final plot for paper
+
+#data frame of pairwise comparison results
+FishDrought = droplevels(FishDrought)
+pairs = data.frame(MetricL = rep(levels(FishDrought$MetricL), each = 4), 
+                   DroughtYear = rep(c("0", "1", "2", "3+"), 5),
+                   Group = c("A", "B", "B", "B", "A", "A", "A", "A", "A", 
+                             "B", "B", "B", "A", "B", "B", "B",
+                             "A", "A", "A", "B"),
+                   Y = c(rep(10, 4), rep(8, 4), rep(12, 4), rep(10, 4), rep(4, 4)))
+
+ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+  geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("0, Wet years", "1, First/only dry year",
+                                                                            "2, Second dry year", "3, Thrid or more dry year"))+
+  theme(legend.position = "bottom")
+
+ggsave("FishDrought.tiff", device = "tiff", width = 7, height = 6, units = "in")
+
+```
+Now i need a table with all the statistical results
+
+```{r}
+
+library(broom)
+
+FD1t = tidy(FD1) %>%
+  mutate(Species = "Striped Bass")
+
+LFS1t = tidy(LFS1) %>%
+  mutate(Species = "Longfin Smelt")
+
+shad1t = tidy(shad1) %>%
+  mutate(Species = "American Shad")
+
+Deltas = tidy(DS1) %>%
+  mutate(Species = "Delta Smelt")
+
+Salmon = tidy(CRRs1) %>%
+  mutate(Species = "Salmon CRR")
+
+models = bind_rows(FD1t, LFS1t, shad1t, Deltas, Salmon)
+write.csv(models, "FishMultiYear.csv", row.names = F)
+```
+

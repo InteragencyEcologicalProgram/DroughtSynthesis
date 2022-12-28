@@ -50,7 +50,7 @@ wy_types <- read_csv("Data/WaterYearAssignments.csv", col_types = "dccccc") %>%
 ## Get 1975-2020 WQ data from integrated database (https://github.com/sbashevkin/discretewq)
 # devtools::install_github("sbashevkin/discretewq")
 # library(discretewq)
-idb_raw <- discretewq::wq(Sources = c("EMP", "USGS")) # Only EMP and USGS go back to the 1970s
+idb_raw <- discretewq::wq(Sources = c("EMP", "USGS_SFBS")) # Only EMP and USGS go back to the 1970s
 
 emp_stations <- idb_raw %>% 
   filter(Source == "EMP") %>% 

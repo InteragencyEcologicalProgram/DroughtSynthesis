@@ -1,0 +1,26 @@
+Species,term,estimate,std.error,statistic,p.value
+Striped Bass,Intercept - wet,192.87,17.92,10.76,0.0000
+Striped Bass,First/only dry year,-0.60,0.29,-2.05,0.0466
+Striped Bass,Second dry year,-1.23,0.39,-3.18,0.0028
+Striped Bass,Third + dry year,-0.71,0.32,-2.23,0.0312
+Striped Bass,Long term trend,-0.09,0.01,-10.38,0.0000
+Longfin Smelt,Intercept - wet,202.26,25.39,7.97,0.0000
+Longfin Smelt,First/only dry year,-1.94,0.41,-4.71,0.0000
+Longfin Smelt,Second dry year,-1.73,0.55,-3.17,0.0030
+Longfin Smelt,Third + dry year,-2.85,0.45,-6.35,0.0000
+Longfin Smelt,Long term trend,-0.10,0.01,-7.66,0.0000
+American Shad,Intercept - wet,52.39,18.64,2.81,0.0076
+American Shad,First/only dry year,-1.00,0.30,-3.30,0.0020
+American Shad,Second dry year,-1.24,0.40,-3.08,0.0038
+American Shad,Third + dry year,-0.97,0.33,-2.93,0.0056
+American Shad,Long term trend,-0.02,0.01,-2.39,0.0216
+Delta Smelt,Intercept - wet,238.27,27.79,8.57,0.0000
+Delta Smelt,First/only dry year,-0.79,0.47,-1.70,0.0964
+Delta Smelt,Second dry year,-0.78,0.58,-1.35,0.1854
+Delta Smelt,Third + dry year,-0.32,0.51,-0.64,0.5252
+Delta Smelt,Long term trend,-0.12,0.01,-8.38,0.0000
+Salmon CRR,Intercept - wet,1.41,0.16,8.76,0.0000
+Salmon CRR,First/only dry year,0.03,0.27,0.13,0.8996
+Salmon CRR,Second dry year,0.28,0.34,0.83,0.4098
+Salmon CRR,Third + dry year,-0.80,0.29,-2.73,0.0091
+Salmon CRR,Long term trend,Not included,,,
