@@ -3,6 +3,7 @@
 library(waterYearType)
 library(tidyverse)
 library(smonitr)
+library(DroughtData)
 pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#4B0055")
 indecies = filter(water_year_indices, location != "San Joaquin Valley")
 i1820 = data.frame(WY = c(2018,2019,2020,2021), Index = c(7.14, 10.34, 6.0, 4.0), 
@@ -21,11 +22,35 @@ ggplot(WYs)+
   
   geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
  scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
-  coord_cartesian(xlim = c(1906, 2020))+theme_bw()+
+  coord_cartesian(xlim = c(1906, 2022))+theme_bw()+
   theme(legend.position = "top") +
   ylab("Sacramento Valley Index")+
   xlab(NULL)+
   annotate("text", x = 1960, y = -2, label = "Drought (yellow)/Neutral(green)/Wet Period (blue)")
+
+#year types by decade
+ggplot(WYs, aes(x = Year, fill = Yr_type))+ geom_histogram(binwidth = 10)+
+  drt_color_pal_yrtype()
+
+ggplot(filter(WYs, Year > 1969), aes(x = Year, fill = Yr_type))+ geom_histogram(binwidth = 10)+
+  drt_color_pal_yrtype()
+
+WYs = mutate(WYs, decYear = as.numeric(substr(as.character(Year), 4,4)), decade = floor(Year/10)*10)
+
+ggplot(WYs, aes(x = decade, y = decYear, fill = Yr_type))+ geom_tile()+
+  geom_text(aes(label = Year))+
+  drt_color_pal_yrtype()
+
+
+#without the drought periods
+ggplot(WYs)+
+  
+  geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
+  scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
+  coord_cartesian(xlim = c(1906, 2022))+theme_bw()+
+  theme(legend.position = "top") +
+  ylab("Sacramento Valley Index")+
+  xlab("Water Year")
 
 
 

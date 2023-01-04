@@ -280,10 +280,25 @@ BSjellies3 = rename(BSjellies2, `BayStudy` = OrganismCode) %>%
 
 
 #I shouls also add in salinity, but I do't want to go back to the origional queries
-
+library(LTMRdata)
 salinities = fish(sources = c("Baystudy", "FMWT"), species = "Morone saxatilis", remove_unknown_lengths = FALSE) %>%
   mutate(Year = year(Date)) %>%
   dplyr::select(Source, Station, Year, Survey, Temp_surf, Secchi, Sal_surf) 
+
+
+depths = fish(sources = c("Baystudy", "FMWT"), species = "Morone saxatilis", remove_unknown_lengths = FALSE) %>%
+  mutate(Year = year(Date)) %>%
+  dplyr::select(Source, Station, Survey,Depth, Latitude, Longitude) 
+
+load("DroughtRegions.RData")
+Regions = st_make_valid(st_transform(Regions, crs = 4326))
+
+depths = st_as_sf(filter(depths, !is.na(Latitude)),
+                coords = c("Longitude", "Latitude"), crs = 4326) %>%
+  st_join(Regions)
+depthsum = group_by(depths, Region) %>%
+  summarize(Depth = mean(Depth, na.rm = T))
+
 
 BSjellies4 = left_join(BSjellies3, mutate(salinities, StationID = paste("Baystudy", Station))) %>%
   distinct()
@@ -294,12 +309,32 @@ JellyFMWT4 = left_join(JellyFMWT3, mutate(salinities, StationID = paste("FMWT", 
 #Now we are ready to combine everything!
 Alljellies = bind_rows(X20b3, BSjellies4, JellyFMWT4)
 
-#try out something with bay study data
+
+###################################################################################################
+
+#try out something with bay study data - plot of all the species by salinity and month
 BSjellies4 = left_join(BSjelliesX, mutate(salinities, StationID = paste("Baystudy", Station))) %>%
   distinct()
 
 ggplot(filter(BSjellies4, CPUE !=0), aes(x=Sal_surf, y = log(CPUE)))+ geom_point()+
-  facet_grid(Month~OrganismCode)
+  facet_grid(Month~OrganismCode)+theme_bw()+ xlab("Surface Salinity (PSU)")
+
+
+speices = group_by(BSjellies4, OrganismCode) %>%
+  summarize(tot = sum(CPUE, na.rm = T), percent =tot/sum(BSjellies4$CPUE, na.rm = T))
+
+rare = speices$OrganismCode[which(speices$percent < 0.005)]
+
+#group rarer species into 'other'
+BSjellies5 = mutate(BSjellies4, Jelly = case_when(OrganismCode %in% rare ~ "other",
+                                                  TRUE ~ OrganismCode)) %>%
+                    group_by(Station, Year, Survey, Month, SampleDate, Jelly, Sal_surf) %>%
+  summarize(CPUE = sum(CPUE))
+
+
+ggplot(filter(BSjellies5, CPUE !=0), aes(x=Sal_surf, y = log(CPUE)))+ geom_point()+
+  facet_grid(Month~Jelly)+theme_bw()+ xlab("Surface Salinity (PSU)")
+
 
 ##########################################################
 #Suisun Marsh Data

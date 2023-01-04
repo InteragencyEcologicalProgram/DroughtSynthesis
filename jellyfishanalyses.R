@@ -97,12 +97,13 @@ ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
 
 ##############
 #Box plot of year type by region (this is the one we like)
+ylabMaeotias <- expression(paste("Mean summer ", italic("Maeotias"), " CPUE (log-transformed)"))
 ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
   scale_fill_manual(guide = NULL, values = pal_yrtype)+
   geom_boxplot( alpha = 0.8)+ facet_wrap(~Region) + theme_bw()+
   scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Wet"))+
-  ylab("Mean summer jellyfish CPUE (log-transformed)")
-#ggsave("plots/Jelliesboxplot.tiff", device = "tiff", width = 6, height = 5)
+  ylab(ylabMaeotias)
+ggsave("plots/Jelliesboxplot.tiff", device = "tiff", width = 6, height = 5)
 
 library(rphylopic)
 jelly = image_data("ef63437d-d6f4-4583-9d75-a8c9b19a203d", size = 256)[[1]]
@@ -183,15 +184,21 @@ res2 = simulateResiduals(jelz3c)
 plot(res2)
 #That looks perfect why be overly complicated?
 write.csv(summary(jelz3c)$coefficients, "JellyfishCPUEmodel.csv")
+library(car)
+Anova(jelz3c)
+
+
 
 #now let's do some post hoc comparisons
 library(effects)
 library(emmeans)
 library(visreg)
 library(broom)
-pcs = emmeans(jelz3c, pairwise ~ "Yr_type*Region")
-plot(pcs)
+pcs = emmeans(jelz3c, pairwise ~ "Yr_type|Region")
+plot(pcs, comparisons = T)
 pcs
+
+pc = pcs$contrasts
 
 plot(allEffects(jelz3c))
 visreg(jelz3c, xvar = "Yr_type", by = "Region")
@@ -232,7 +239,8 @@ ggplot(effDF, aes(x = Yr_type2, y = Prediction))+ geom_point()+ geom_line()+
   geom_jitter(data = effDF2, aes(y = Residual2),  
              color = "blue", alpha = 0.3, width = 0.2)+
   theme_bw()+ xlab(NULL)+
-  scale_x_continuous(breaks = c(1,2,3,4), labels =  c("Critical", "Dry", "Below\nNormal", "Wet"))
+  scale_x_continuous(breaks = c(1,2,3,4), labels =  c("Critical", "Dry", "Below\nNormal", "Wet"))+
+  ylab("Model predicted summer Meaotias CPUE \n(individuals per 10000m3)")
 
 ggsave("JellyResiduals.tiff", width = 7, height =4, device = "tiff")
 
@@ -340,8 +348,8 @@ ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1))) + geom_boxplot()
 ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1), fill = Yr_type)) + geom_boxplot(alpha = 0.8)  +
   # facet_wrap(~Region)+
   scale_fill_manual(values = pal_yrtype2) +
-  ylab("log-trasnformed Maeotias CPUE") + xlab("Water Year Type")+
-  theme_bw()
+  ylab(ylabMaeotias) + xlab("Water Year Type")+
+  theme_bw()+ theme(legend.position = "none")
 ggsave("Maeotias4_7ppt.tiff", device = "tiff", height = 6, width = 6)
 
 
@@ -391,14 +399,14 @@ emmeans(jelz3ss2, pairwise ~ Yr_type)
 load("data/Dayflow.RData")
 DFmonth = mutate(DF, Month = month(Date), Year = year(Date)) %>%
   group_by(Month, Year) %>%
-  summarize(Outlfow = mean(OUT))
-# 
+  dplyr::summarize(Outlfow = mean(OUT))
+ load("data/JellydatawDistance.Rdata")# 
  #Take out all samples with no jellies, or less than 20 total jellies
  Alljelsum = left_join(Alljelsum, DFmonth) %>%
    filter(!is.nan(Meandist), jellies >20)
 # 
 # save(Alljel, Alljelsum, distancex, file = "data/JellieswDistance.Rdata")
- load("data/JellieswDistance.Rdata")
+
  Mypal = c(brewer.pal(12, "Set3"), brewer.pal(8, "Dark2"))
 # 
 # #Facet by month
@@ -434,12 +442,13 @@ EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
  pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
 # 
 # #Plot of outflow versus center of distribution for paper
+ ylabMaeotias2 =  expression(paste("Center of ", italic("Maeotias"), " distribution (Km from Golden Gate)"))
  ggplot(droplevels(Alljelsum), aes(y = DistK, x = OutflowM)) + 
    geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
    scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
-   ylab("Center of Maeotias distribution \n(Km from Golden Gate)")+
+   ylab(ylabMaeotias2)+
    xlab("Monthly Mean Delta Outflow (m3/sec)") +
-   annotate("text", y = 70, x = 320, label = EQ)+
+   annotate("text", y = 75, x = 200, label = EQ)+
    theme_bw()
  ggsave("plots/Jelliesdistance.tiff", device = "tiff", height = 5, width = 6)
 ########################################
@@ -579,6 +588,23 @@ Maxes2 = group_by(Alljellies2b, Region, Yr_type) %>%
 write.csv(Maxes2, "Clearence.csv")
 
 ######################################################################
+
+#combine with clam clearence and graph
+
+clear = read_csv("Clearence_wclams.csv") %>%
+  mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry","Below Normal", "Wet"),
+                          labels = c("Critical", "Dry", "Below\nNormal", "Wet")))
+
+ggplot(clear, aes(x = Yr_type,fill = Taxa)) + facet_wrap(~Region) +
+  geom_col(position = "dodge", aes( y = MeanClearence))+ 
+  geom_col(position = "dodge", aes( y = MaxClearence), alpha = 0.5)+ 
+  theme_bw()+
+  scale_fill_brewer(palette = "Dark2", name = "Taxon")+ylab("Clearance Rate (/day)")+
+  xlab("Water Year Type")
+ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 8, units = "in")
+
+#####################################################
+
 #I think I need to weight distance differently
 # library(mgcv)
 # ggplot(Alljel, aes(x = Distance, y = log(TotJellies+1))) + geom_point() + geom_smooth()
@@ -688,6 +714,7 @@ write.csv(Maxes2, "Clearence.csv")
 #BLEHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 ####################################################
 #how unbalanced are my samples?
+
 
 ggplot(AlljelliesTot, aes(x = Distance)) +geom_histogram()+
   facet_grid(Month~Year)

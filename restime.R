@@ -317,12 +317,15 @@ Allags2 = mutate(Allags, datetime = mdy(datetime),Year = year(datetime), Month2 
 DFAll = left_join(DFmonth, Allags2)%>%
   rename(LogSac = SACl, LogSJR = SJR, pump = Pump)
 
-
 preds =data.frame(logSJrt = predict(lm_sj_best, newdata = DFAll), logSACrt = predict(lm_sac_best2, newdata = DFAll))
 
 DFRTall = bind_cols(DFAll, preds) %>%
   mutate(SACRT = 10^logSACrt, 
-                 SJRT = 10^logSJrt, mYear = Year + (1-Month2)/12)
+                 SJRT = 10^logSJrt, mYear = Year + (1-Month2)/12) %>%
+  left_join(Yeartypes)
+
+library(DroughtData)
+
 ggplot(DFRTall)  + 
   geom_col(aes(x = mYear, y = 250, fill = Drought), alpha = 0.3)+
   geom_line( aes(x = mYear, y = SJRT))+
@@ -350,6 +353,22 @@ ggplot(DFRTann) +
   drt_color_pal_drought()+
   xlab("date")+ylab("Annual Average \nSacramento Residence Time (Days)")+
   theme_bw()
+
+#pivot longer and create a combined plot
+
+DFRT_long = pivot_longer(DFRTann, cols = c(SACRT, SJRT), names_to = "River", values_to = "RT") %>%
+  mutate(River = case_when(River == "SACRT" ~ "Sacramento",
+                           River == "SJRT" ~ "San Joaquin"))
+
+ggplot(DFRT_long) + 
+  geom_col(aes(x = WY, y = 130, fill = Drought), alpha = 0.3)+
+  geom_line( aes(x = WY, y = RT))+
+  drt_color_pal_drought()+
+  facet_wrap(~River, scale= "free_y", nrow = 2)+
+  xlab("Year")+ylab("Water Residence Time (Days)")+
+  theme_bw()
+
+ggsave("plots/Restime.tiff", device = "tiff", width = 8, height = 8, units = "in")
 
 #OK, what's the deal with different results than the other data? But I like these better, so I won't worry about it
 pal_yrtype <- c( "C" = "#FDE333", "D" = "#53CC67", "BN" = "#009B95","AN" = "#00588B", "W" = "#481F70FF") 
@@ -386,7 +405,7 @@ ggplot(DFRTall, aes(x = Yr_type, y = SJRT, fill = Yr_type)) + geom_boxplot()+
 #############################################
 
 #now look at drought-neutral wet
-
+load("data/ResidenceTime.RData")
 names(DFRTall)
 
 ggplot(DFRTall, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
@@ -397,7 +416,7 @@ ggplot(DFRTall, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
 #Annual averages
 
 DFRTann = group_by(DFRTall, WY, Yr_type, Drought) %>%
-  summarize(SACRT = mean(SACRT), SJRT = mean(SJRT))
+  dplyr::summarize(SACRT = mean(SACRT), SJRT = mean(SJRT))
 
 
 ggplot(DFRTann, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
@@ -408,6 +427,10 @@ ggplot(DFRTann, aes(x = Drought, y = SJRT, fill = Drought)) + geom_boxplot()+
 ggplot(DFRTann, aes(x = Drought, y = SACRT, fill = Drought)) + geom_boxplot()+
   xlab("Water Year Type") + ylab("Sacramento Residence Time (Days)")+ 
   theme_bw()
-save(DFRTall, DFRTann, file = "ResidenceTime.RData")
+#save(DFRTall, DFRTann, file = "ResidenceTime.RData")
 
-
+library(broom)
+sj = mutate(tidy(lm_sj_best) , river = "San Joaquin")
+sac = mutate(tidy(lm_sac_best2), river = "Sacramento")
+mods = bind_rows(sj, sac)
+write.csv(mods, "ResTimeModels.csv")

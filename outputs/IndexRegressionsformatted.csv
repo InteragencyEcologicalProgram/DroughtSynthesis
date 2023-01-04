@@ -1,0 +1,27 @@
+,,,Regression versus Sacramento Valley Index,,,,,Drought versus Wet t-test,,,
+Metric,Units,Trans,Intercept,Slope,R2,P-value,Sig,Estimate,P-value,Sig,Cohen's D
+Delta Outflow,CFS,None,-26666.71,6475.32,0.925,<0.0001,***,37012.779,<0.0001,***,-2.928
+Sacramento Residence Time,Days,None,60.87,-3.53,0.713,<0.0001,***,-22.694,<0.0001,***,2.503
+"San Joaquin
+Residence Time",Days,None,77.09,-3.23,0.163,0.0033,**,-16.080,0.0765,(NS),0.625
+SWP + CVP Exports,CFS,None,4286.52,293.50,0.249,0.0004,***,1638.514,0.0145,*,-0.937
+Temperature,C,None,17.20,-0.11,0.360,<0.0001,***,-0.732,0.0004,***,1.442
+X2,Km,None,96.33,-2.67,0.908,<0.0001,***,-16.414,<0.0001,***,3.435
+Salinity,PSU,None,4.87,-0.33,0.830,<0.0001,***,-2.090,<0.0001,***,3.195
+Secchi Depth,cm,NOne,79.55,-2.58,0.273,0.0002,***,-21.401,<0.0001,***,1.927
+Ammonium,mg/L,natural log,-1.98,-0.04,0.093,0.0374,*,-0.210,0.1335,NS,0.558
+Nitrate + Nitrite,mg/L,natural log,-0.67,-0.04,0.370,<0.0001,***,-0.255,0.0005,***,1.420
+Orthophosphate,mg/L,natural log,-2.17,-0.06,0.494,<0.0001,***,-0.338,0.0002,***,1.574
+Chlorophyll Suisun Bay,ug/L,natural log,0.80,0.04,0.040,0.1771,NS,0.291,0.1282,NS,-0.566
+Chlorophyll Confluence,ug/L,natural log,1.17,0.0018,0.000,0.9362,NS,-0.102,0.5589,NS,0.214
+Chlorophyll North,ug/L,natural log,0.69,0.0047,0.001,0.8348,NS,0.032,0.8618,NS,-0.064
+Chlorophyll SouthCentral,ug/L,natural log,2.79,-0.08,0.184,0.0026,**,-0.550,0.0095,**,1.001
+Zooplankton Confluence,ug/m3,natural log,8.78,0.01,0.003,0.7162,NS,0.016,0.9275,(NS),-0.033
+Zooplankton SouthCentral,ug/m3,natural log,10.68,-0.18,0.390,<0.0001,***,-0.916,0.0033,**,1.164
+Zooplankton Suisun Bay,ug/m3,natural log,7.88,0.13,0.298,0.0001,**,0.650,0.0097,**,-1.009
+Zooplankton Suisun Marsh,ug/m3,natural log,9.11,0.01,0.004,0.6793,NS,-0.017,0.9369,(NS),0.029
+American Shad FMWT index,unitless,natural log,5.80,0.18,0.290,0.0001,***,1.162,0.0014,**,-1.288
+Delta Smelt FMWT Index,unitless,natural log,3.73,0.10,0.023,0.3102,NS,1.538,0.0208,*,-0.881
+Longfin Smelt FMWT Index,unitless,natural log,2.88,0.42,0.342,<0.0001,***,3.419,<0.0001,***,-2.164
+Striped Bass FMWT Index,unitless,natural log,4.87,0.16,0.103,0.0318,*,1.473,0.0069,**,-1.060
+Salmon CRR,unitless,none,1.09,0.03,0.012,0.4661,NS,0.187,0.5496,(NS),-0.213

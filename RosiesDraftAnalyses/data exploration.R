@@ -8,23 +8,25 @@ library(emmeans)
 
 #Boz's integrated data set
 
-load("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/NutrientsChlorophyll.RData")
+load("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/outputs/NutrientsChlorophyll.RData")
 
 #Fish indecies
 Fish <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
   mutate(Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall")),
          SmeltIndex = as.numeric(SmeltIndex)) %>%
-  dplyr::select(Year, Season, Sbindex, SmeltIndex, LongfinIndex, AmShadIndex) %>%
+  dplyr::select(Year, Season, Sbindex, SmeltIndex, LongfinIndex, AmShadIndex, TFSindex) %>%
   rename(YearAdj = Year) %>%
   mutate(logDS = log(SmeltIndex +1), logShad = log(AmShadIndex +1), 
-logSB = log(Sbindex+1), logLFS = log(LongfinIndex+1))
+logSB = log(Sbindex+1), logLFS = log(LongfinIndex+1), logTFS = log(TFSindex))
+
 
 #stick with FMWT indicies
 Fishfall = filter(Fish, Season == "Fall") %>%
-  pivot_longer(cols = c(Sbindex, SmeltIndex, LongfinIndex, AmShadIndex, logDS, logShad, logSB, logLFS), 
+  pivot_longer(cols = c(Sbindex, SmeltIndex, LongfinIndex, AmShadIndex, logDS, logShad, logSB, logLFS, TFSindex, logTFS), 
                names_to = "Metric", values_to = "Value")
 
 yrs = read_csv("data/yearassignments.csv") 
+
 
 #grab zooplankton data from Arthur
 zoopsBPUE_seasonal = read_csv("data/zoop_drought_lt_bpue_szn.csv") %>%
@@ -85,6 +87,7 @@ ggplot(filter(salmon2, !is.na(Migration)), aes(x = Migration, y = Value, fill = 
 #Can I make an "all salmon" metric?
 yrs = read_csv("data/yearassignments.csv")
 salsum = group_by(salmon2, Year, Migration) %>%
+  filter(!Metric %in% c("Hatchery FR CRR", "SR FR CRR")) %>%
   summarise(CRR = mean(Value, na.rm = T)) %>%
   filter(!is.na(CRR)) %>%
   mutate(Metric = "Salmon CRR", Value = CRR, YearAdj = Year)
@@ -98,10 +101,12 @@ salsum = select(salsum, YearAdj,Metric, Value)
 
 #Bind them together
 #Combine
-IntLong = bind_rows(Fishfall, Chl2, zoopsBPUE_regional, hyro, Nuts, WQreg, salsum) %>%
+IntLong = bind_rows(Fishfall, Chl2, zoopsBPUE_regional, 
+                    RTlong, hyro, Nuts, WQreg, salsum) %>%
   dplyr::select(YearAdj, Metric, Value) %>%
   rename(Year = YearAdj) %>%
   filter(!is.na(Metric))
+
 
 Int2 = left_join(IntLong, yrs) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")),
@@ -111,29 +116,37 @@ Int2 = left_join(IntLong, yrs) %>%
                                             "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
                                            "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
                                            "Suisun Marsh_logZoopBPUE",              
-                                 "logSB", "logDS", "logLFS", "logShad", "Salmon CRR"), 
-                                labels = c("Outflow (CFS)", "SWP + CVP \nExports (CFS)", "X2", "Sacramento\nResidence Time (days)", "San Joaquin\nResidence Time, (days)",
-                                           "Salinity (PSU)",  "Secchi Depth \n(cm)",
-                                           "Temperature (C)" , "logNitrate", "logAmmonia", "logPhosohorus",
-                                           "Chlorophyll\nConfluence (log(ug/L))", 
-                                           "Chlorophyll\nNorth (log(ug/L))", "Chlorophyll\nSouthCentral (log(ug/L))", 
-                                           "Chlorophyll\n Suisun Bay (log(ug/L))",
-                                           "Zooplankton\nConfluence (ugC/L)","Zooplankton\nSouthCentral (ugC/L)",
-                                           "Zooplankton\nSuisun Bay  (ugC/L)", 
-                                           "Zooplankton\nSuisun Marsh  (ugC/L)",              
-                                           "Striped Bass \nlog FMWT Index", "Delta Smelt\nlog FMWT Index", 
-                                           "Longfin  \nlog FMWT Index", 
-                                           "Am Shad  \nlog FMWT Index", "Salmon CRR")))
+                                 "logSB", "logDS", "logLFS", "logShad",  "logTFS","Salmon CRR"), 
+                                labels = c("Outflow", "Exports", "X2", "Sacramento Res. Time", 
+                                           "San Joaquin Res. Time",
+                                           "Salinity",  "Secchi Depth",
+                                           "Temperature" , "Nitrate + Nitrite", "Ammonium", "Orthophosphate",
+                                           "Chl. Confluence", 
+                                           "Chl. North", "Chl. SouthCentral", 
+                                           "Chl. Suisun Bay",
+                                           "Zoops Confluence","Zoops SouthCentral",
+                                           "Zoops Suisun Bay", 
+                                           "Zoops Suisun Marsh",              
+                                           "Striped Bass", "Delta Smelt", 
+                                           "Longfin Smelt", 
+                                           "American Shad", "Threadfin Shad", "Salmon CRR")))
 
 Int3a = filter(Int2, !is.na(MetricL))
+##############################################################################################################
 
+#save teh data so I can just make the graphs quickly
+#save(Int3a, Int2, file = "data/Integrateddata.Rdata")
+load("data/Integrateddata.Rdata")
 
 #look at it without the "not drought or wet" years
 ggplot(filter(Int3a, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")
 
 ggplot(Int3a, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
-  facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()
+  facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()+
+  theme_bw()+ theme(legend.position = "none")
+
+ggsave("plots/AllParams.tiff", device = "tiff", width = 9, height = 8, units = "in")
 
 ggplot(Int3a, aes(x = Yr_type, y = Value, fill = Yr_type), alpha = 0.3) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y") + drt_color_pal_yrtype()+
@@ -142,12 +155,21 @@ ggplot(Int3a, aes(x = Yr_type, y = Value, fill = Yr_type), alpha = 0.3) + geom_b
 ggplot(Int3a, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")
 
+################################################################################
+#average zooplankton biomass in Suisun for wet versus dry years
+zoops = filter(Int3a, Metric == "Suisun Bay_logZoopBPUE") %>%
+  group_by(Yr_type) %>%
+  summarize(mean = mean(Value), mean2 = exp(mean))
+
+
 ###################################################################################
 #Fish were the only interesting ones in the "drought year" plot
 
-FishDrought = filter(Int3a, Metric %in% c("logSB", "logDS", "logShad", "logLFS", "Salmon CRR")) %>%
+FishDrought = filter(Int3a, Metric %in% c("logSB", "logDS", "logShad", "logLFS", "Salmon CRR", "logTFS")) %>%
   mutate(DroughtYear = factor(DroughtYear, levels = c("0", "1", "2", "3+"), ordered = F),
          DY = as.numeric(DroughtYear))
+
+save(FishDrought, file = "FishDrough.RData")
 
 ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
@@ -245,25 +267,27 @@ DroughtImpact2 = filter(Int3a, Drought != "N") %>%
                             Pval > 0.05 ~ "(NS)"))
 
 #BAR PLOTS/Arrow plows
-DroughtImpact2a = mutate(DroughtImpact2, Metric = factor(Metric, levels =  c("Outflow", "Export", "X2","SACRT", "SJRT", "Salinity",  "Secchi","Temperature" ,
-                                                                                                       "logNat", "logAm", "logPhos",
-                                                                                                       "Confluence_logChl", 
-                                                                                                       "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
-                                                                                                       "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
+DroughtImpact2a = mutate(DroughtImpact2, 
+                         Metric = factor(Metric, levels =  c("Outflow", "Export", "X2","SACRT", "SJRT", "Salinity",  "Secchi","Temperature" ,
+                                                                "logNat", "logAm", "logPhos",
+                                                                  "Confluence_logChl", 
+                                                                    "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
+                                                                  "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
                                                                                                        "Suisun Marsh_logZoopBPUE",              
-                                                                                                       "Sbindex", "SmeltIndex", "LongfinIndex", "AmShadIndex"), 
-                                                                                   labels = c("Outflow (CFS)", "SWP + CVP \nExports (CFS)", "X2", "Sacramento\nResidence Time (days)", "San Joaquin\nResidence Time, (days)",
-                                                                                              "Salinity (PSU)",  "Secchi Depth \n(cm)",
-                                                                                              "Temperature (C)" , "logNitrate", "logAmmonia", "logPhosohorus",
-                                                                                              "Chlorophyll\nConfluence (log(ug/L))", 
-                                                                                              "Chlorophyll\nNorth (log(ug/L))", "Chlorophyll\nSouthCentral (log(ug/L))", 
-                                                                                              "Chlorophyll\n Suisun Bay (log(ug/L))",
-                                                                                              "Zooplankton\nConfluence (ugC/L)","Zooplankton\nSouthCentral (ugC/L)",
-                                                                                              "Zooplankton\nSuisun Bay  (ugC/L)", 
-                                                                                              "Zooplankton\nSuisun Marsh  (ugC/L)",              
-                                                                                              "Striped Bass \nlog FMWT Index", "Delta Smelt\nlog FMWT Index", 
-                                                                                              "Longfin  \nlog FMWT Index", 
-                                                                                              "Am Shad  \nlog FMWT Index"))) %>%
+                                                                                                       "logSB", "logDS", "logLFS", "logShad", "logTFS", "Salmon CRR"), 
+                                                                                   labels = c("Outflow", "Exports", "X2", "Sacramento Res. Time", 
+                                                                                              "San Joaquin Res. Time",
+                                                                                              "Salinity",  "Secchi Depth",
+                                                                                              "Temperature" , "Nitrate + Nitrite", "Ammonium", "Orthophosphate",
+                                                                                              "Chl. Confluence", 
+                                                                                              "Chl. North", "Chl. SouthCentral", 
+                                                                                              "Chl. Suisun Bay",
+                                                                                              "Zoops Confluence","Zoops SouthCentral",
+                                                                                              "Zoops Suisun Bay", 
+                                                                                              "Zoops Suisun Marsh",              
+                                                                                              "Striped Bass", "Delta Smelt", 
+                                                                                              "Longfin Smelt", 
+                                                                                              "American Shad", "Threadfin Shad", "Salmon CRR"))) %>%
   filter(!is.na(Metric))
 
 ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = magnitude)) + geom_col() +
@@ -276,36 +300,56 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = magnitude)) + geom_col
 
 DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen< 0 ~ 0.1,
                                                            TRUE ~ -Cohen + 0.1))
-#Arrow plot with all things, even the non-significant ones
+write.csv(DroughtImpact2a, "DroughtImpact.csv", row.names = F)
+#save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
+#load("outputs/DroughtImpac.RData")
+
+##Arrow plot with all things, even the non-significant ones
 ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) + 
   geom_segment(aes(xend = Metric, yend = Cohen, color = magnitude, alpha = Sig), 
                arrow = arrow(length = unit(0.2, "inches")),
                size = 2) +
   ylab("Drought Effect Size (Cohen's D)")+ xlab(NULL)+
-  scale_color_viridis_d(option = "C", direction = -1)+
+  scale_color_viridis_d(option = "C", direction = -1, name = "Magnatude of\nEffect")+
   theme_bw()+
   scale_alpha_manual(values = c(0.5, 0.6, 0.8, 1), 
                      labels = c("(NS) Non-Significant", "* P<0.05", "** P<0.01", "*** P<0.001"), 
                      name = "Significance")+
   geom_text(aes(label = paste(Metric, Sig), y = -yval+0.2), angle = 90, hjust = 0)+
   coord_cartesian(ylim = c(-2.8, 5))+
-  theme(axis.text.x = element_blank())
+  theme(axis.text.x = element_blank(), legend.position = "bottom", legend.direction = "vertical")
+
+ggsave("plots/EffectArrows.tiff", device = "tiff", width = 8, height = 8, units = "in")
+
+######################################################################################
+#now try and do the origional graph but highlight which are significant
+impacts =rename(DroughtImpact2a, MetricL = Metric) %>%
+  arrange(MetricL) %>%
+  mutate(Y = c(75000, 8000, 90, 60, 120, 5, 90, 17.5, -0.7, -1.9, -2.1, 2, 2.2, 3.1, 2.4, 9.5, 10.5, 10, 10.5, 9, 7, 10, 8.5, 9, 4)) %>%
+  filter(Sig != "(NS)")
+
+ggplot(Int3a, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
+  geom_text(data = impacts, x = 1, aes(label = Sig, y = Y), inherit.aes = F, size = 10, color = "red")+
+  facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()+
+  theme_bw()+ theme(legend.position = "none")
 
 
+ggsave("plots/AllParamssig.tiff", device = "tiff", width = 9, height = 8, units = "in")
 
 #mapps for zooplankton and chlorophyll
 
 library(sf)
 library(deltamapr)
 load("DroughtRegions.RData")
-
-zoops = filter(DroughtImpact2a, Metric %in% c("Zooplankton\nSouthCentral (ugC/L)", 
-                                              "Zooplankton\nConfluence (ugC/L)", "Zooplankton\nSuisun Bay  (ugC/L)",
-                                              "Zooplankton\nSuisun Marsh  (ugC/L)")) %>%
-  mutate(Region = case_when(Metric == "Zooplankton\nSouthCentral (ugC/L)" ~ "SouthCentral",
-                            Metric == "Zooplankton\nConfluence (ugC/L)" ~ "Confluence",
-                            Metric == "Zooplankton\nSuisun Marsh  (ugC/L)" ~ "Suisun Marsh",
-                            Metric == "Zooplankton\nSuisun Bay  (ugC/L)" ~ "Suisun Bay"))
+#I need to check whether the units are C/L or C/m3
+zoops = filter(DroughtImpact2a, Metric %in% c("Zoops Confluence (ugC/L)", 
+                                              "Zoops Suisun Bay  (ugC/L)", 
+                                              "Zoops Suisun Marsh  (ugC/L)",
+                                              "Zoops SouthCentral (ugC/L)" ))%>%
+  mutate(Region = case_when(Metric == "Zoops SouthCentral (ugC/L)" ~ "SouthCentral",
+                            Metric == "Zoops Confluence (ugC/L)" ~ "Confluence",
+                            Metric == "Zoops Suisun Marsh  (ugC/L)" ~ "Suisun Marsh",
+                            Metric == "Zoops Suisun Bay  (ugC/L)" ~ "Suisun Bay"))
 
 zoopRegions = left_join(Regions, zoops) %>%
   st_transform(crs = 4269) %>%
@@ -326,13 +370,13 @@ ggplot()+
 ############################################
 #chlorophyll map
 
-Chl = filter(DroughtImpact2a, Metric %in% c("Chlorophyll\n Suisun Bay (log(ug/L))", 
-                                              "Chlorophyll\nSouthCentral (log(ug/L))", "Chlorophyll\nConfluence (log(ug/L))",
-                                              "Chlorophyll\nNorth (log(ug/L))")) %>%
-  mutate(Region = case_when(Metric == "Chlorophyll\nSouthCentral (log(ug/L))" ~ "SouthCentral",
-                            Metric == "Chlorophyll\nConfluence (log(ug/L))" ~ "Confluence",
-                            Metric == "Chlorophyll\nNorth (log(ug/L))" ~ "North",
-                            Metric == "Chlorophyll\n Suisun Bay (log(ug/L))" ~ "Suisun Bay"))
+Chl = filter(DroughtImpact2a, Metric %in% c("Chl. Suisun Bay (log(ug/L))", 
+                                              "Chl. SouthCentral (log(ug/L))", "Chl. North (log(ug/L))",
+                                              "Chl. Confluence (log(ug/L))")) %>%
+  mutate(Region = case_when(Metric == "Chl. SouthCentral (log(ug/L))" ~ "SouthCentral",
+                            Metric == "Chl. Confluence (log(ug/L))" ~ "Confluence",
+                            Metric == "Chl. North (log(ug/L))" ~ "North",
+                            Metric == "Chl. Suisun Bay (log(ug/L))" ~ "Suisun Bay"))
 
 chRegions = left_join(Regions, Chl) %>%
   st_transform(crs = 4269) %>%
@@ -352,13 +396,19 @@ ggplot()+
 
 test = bind_rows(chRegions, zoopRegions)
 
-
+library(sfheaders)
+library(ggsn)
 ggplot()+ 
   geom_sf(data = test, aes(fill = Cohen)) +
   geom_sf(data = WW_Delta, alpha = 0.2) + theme_bw()+
-  scale_fill_viridis(name = "Drought \nImpact")+
-  facet_wrap(~Metric)+
-  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.8, 38.45))
+  scale_fill_viridis(name = "Drought \nImpact", na.value = "grey90")+
+  facet_wrap(~Metric, nrow = 2)+
+  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.8, 38.45))+
+  north(x.min = -122.1, x.max = -121.2, y.min = 37.9, y.max = 38)+
+  scalebar(data = test, 
+           transform = T, dist = 10, dist_unit = "km", location = "bottomleft",
+           facet.var = "Metric", facet.lev = "Chlorophyll")+ylab(NULL)+ ylab(NULL)
+ggsave("CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units = "in")
 #################################################################
 
 # #now try combining not-drought and wet years
@@ -441,22 +491,101 @@ Indexes = Int3a %>%
             grad = coef(lm(Value ~ Index))[2],
             r2 = summary(lm(Value ~ Index))$r.squared,
             P =  summary(lm(Value ~ Index))$coefficients[2,4],
-            Y = max(Value, na.rm = T)) 
+            Y = max(Value, na.rm = T),
+            sig = case_when(P < 0.05 ~ T,
+                            P > 0.05 ~ F)) 
 
 
 ggplot(filter(Int3a, !is.na(MetricL)), aes(x = Index, y = Value)) +
   geom_point(aes(color = Yr_type))+
   drt_color_pal_yrtype(aes_type = "color")+
-  geom_smooth(method = lm)+
-  geom_text(data = Indexes, aes(x = 9, y = Y, 
-                                  label = paste("y = x", round(grad, 3),
-                                                "+", round(intercept, 3), "\n R2 =", round(r2, 4),
-                                                " P = ", round(P, 4), sep = "")),
-            size = 3, nudge_y = -1)+
+  geom_smooth(method = lm, color = "grey 50", alpha = 0.2, linetype =2)+
+  geom_abline(data = Indexes, aes(intercept = intercept, slope = grad, alpha = sig), size = 1)+
+  scale_alpha_manual(values = c(0.1, 1), guide = NULL)+
+  # geom_text(data = Indexes, aes(x = 9, y = Y, 
+  #                                 label = paste(#"y = x", round(grad, 3),
+  #                                               #"+", round(intercept, 3), "\n 
+  #                                               "R2 =", round(r2, 2),
+  #                                               " P = ", round(P, 4), sep = "")),
+  #           size = 3, nudge_y = -1)+
   facet_wrap(~MetricL, scales = "free_y")+
   theme_bw() + xlab("Sac Valley Index")
 
+#Having the formulas on the plots is a mess. Maybe just the R2 and p-value?
 
+ggsave("plots/WYindexRegressions.tiff", device = "tiff", width = 10, height = 10, units = "in")
+
+write.csv(Indexes, "IndexRegressions.csv", row.names = FALSE)
+
+#######################################################################################
+#look at delta outflow (controlled by management) versus unimpaired flow
+
+library(patchwork)
+library(mgcv)
+out = filter(Int3a, MetricL == "Outflow")
+outgm = gam(Value ~ s(Index), data = out) 
+summary(outgm)
+plot(outgm)
+outGAM = ggplot(filter(Int3a, MetricL == "Outflow"), aes(x = Index, y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth()+
+  annotate("text", x = 4, y = 75000, label = "R2 = 0.975", hjust = 0)+
+  annotate("text", x = 4, y = 83000, label = "B", hjust = 0, size =10)+
+  theme_bw() + xlab("Sac Valley Index") + ylab("Annual Mean Delta Outflow (CFS)")
+
+outLM = ggplot(filter(Int3a, MetricL == "Outflow"), aes(x = Index, y = Value)) +
+  geom_point(aes(color = Yr_type))+
+  drt_color_pal_yrtype(aes_type = "color")+
+  geom_smooth(method = "lm")+
+  annotate("text", x = 4, y = 75000, label = "R2 = 0.925", hjust = 0)+
+  annotate("text", x = 4, y = 83000, label = "A", hjust = 0, size =10)+
+  theme_bw() + xlab("Sac Valley Index") + ylab("Annual Mean Delta Outflow (CFS)")+
+  theme(legend.position = "none")
+
+outLM + outGAM 
+
+ggsave("plots/WYvsOUT.tiff", device = "tiff", width = 10, height = 5, units = "in")
+
+
+
+#grab unimpaired monthly Sac flow form cdec
+library(cder)
+SMU = cdec_query("SMU", 65, start.date = as.Date("1970-01-01"), end.date = as.Date("2021-12-31"))
+FPT = cdec_query("FTP", 66, "E", start.date = as.Date("1970-01-01"), end.date = as.Date("2021-12-31"))
+DTO = cdec_query("DTO", 23, "D", start.date = as.Date("1970-01-01"), end.date = as.Date("2021-12-31"))
+
+
+DTOm =  mutate(DTO, Month = month(DateTime), Year = year(DateTime)) %>%
+  group_by(Month, Year) %>%
+  summarise(outFlow = mean(Value, na.rm = T))
+
+SMU = mutate(SMU, Month = month(DateTime), Year = year(DateTime)) %>%
+  mutate(flowUnimparied = Value*43559.9/2.628e+6) %>%
+select(Month, Year, flowUnimparied)
+  
+
+FPT = mutate(FPT, Month = month(DateTime), Year = year(DateTime)) %>%
+  select(Month, Year, Value)%>%
+  mutate(flowSac = Value*43559.9/2.628e+6)
+
+DF2 = mutate(DF, Month = month(Date), Year = year(Date)) %>%
+  filter(OUT >0) %>%
+  group_by(Month, Year) %>%
+  summarize(OUT = mean(OUT,na.rm = T))
+
+flows = left_join(SMU, FPT) %>%
+  left_join(DTOm) %>%
+  left_join(DF2)
+
+ggplot(flows, aes(x = log(flowUnimparied), y = log(OUT))) + geom_point(aes(color = Year))+geom_smooth()+
+  ylab("Delta Outflow (log-transformed)") + xlab("Sac River Unimpared flow (log-transformed)") + theme_bw()+
+  scale_color_viridis_b(option = "A") + facet_wrap(~Month, scales = "free")
+#monthly time step does not look as good
+
+ggplot(flows, aes(x = log(outFlow), y = log(OUT))) + geom_point(aes(color = Year))+geom_smooth()+
+  ylab("Sac River flow (log-transformed)") + xlab("Sac River Unimpared flow (log-transformed)") + theme_bw()+
+  scale_color_viridis_b(option = "A")
 
 ##############################################################
 #zooplankton map with slope of outflow relatinoship

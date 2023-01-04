@@ -1,0 +1,29 @@
+Metric,Cohen,magnitude,Pval,estimate,Sig,yval
+Am Shad log FMWT Index,-1.287783669,large,0.001375482,1.162490916,**,0.1
+Chl. Confluence (log(ug/L)),0.213841856,small,0.55885162,-0.101624335,(NS),-0.113841856
+Chl. North (log(ug/L)),-0.06353034,negligible,0.861781727,0.031906719,(NS),0.1
+Chl. SouthCentral (log(ug/L)),1.000504778,large,0.009505394,-0.549500787,**,-0.900504778
+Chl. Suisun Bay (log(ug/L)),-0.565630683,medium,0.128190165,0.291118391,(NS),0.1
+Delta Smelt log FMWT Index,-0.881321934,large,0.020820419,1.537747907,*,0.1
+logAmmonia,0.557636167,medium,0.133471074,-0.210462658,(NS),-0.457636167
+logNitrate,1.42025671,large,0.000450113,-0.254706029,***,-1.32025671
+logPhosohorus,1.574413508,large,0.00016111,-0.337889154,***,-1.474413508
+Longfin log FMWT Index,-2.164256523,large,1.71E-06,3.41924817,***,0.1
+Outflow (CFS),-2.92757748,large,3.89E-09,37012.77875,***,0.1
+"Sacramento
+Residence Time (days)",2.502711593,large,1.39E-08,-22.69431902,***,-2.402711593
+Salinity (PSU),3.195469989,large,5.73E-10,-2.090061029,***,-3.095469989
+Salmon CRR,-0.213421832,small,0.54960525,0.186788273,(NS),0.1
+"San Joaquin
+Residence Time, (days)",0.624580582,medium,0.076512819,-16.08021279,(NS),-0.524580582
+"Secchi Depth 
+(cm)",1.926575919,large,8.48E-06,-21.4012551,***,-1.826575919
+Striped Bass log FMWT Index,-1.060147137,large,0.006862908,1.4732317,**,0.1
+"SWP + CVP 
+Exports (CFS)",-0.937027455,large,0.014515256,1638.513723,*,0.1
+Temperature (C),1.44247424,large,0.00037966,-0.732104276,***,-1.34247424
+X2,3.434801244,large,1.10E-10,-16.41442517,***,-3.334801244
+Zoops Confluence (ugC/L),-0.033490059,negligible,0.927533148,0.01611721,(NS),0.1
+Zoops SouthCentral (ugC/L),1.164016783,large,0.00334205,-0.916231411,**,-1.064016783
+Zoops Suisun Bay  (ugC/L),-1.009172605,large,0.009671788,0.65039346,**,0.1
+Zoops Suisun Marsh  (ugC/L),0.029156274,negligible,0.936888625,-0.016667878,(NS),0.070843726

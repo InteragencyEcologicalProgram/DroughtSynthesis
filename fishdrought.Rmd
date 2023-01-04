@@ -13,6 +13,7 @@ library(viridis)
 library(lubridate)
 library(emmeans)
 library(visreg)
+library(ggsignif)
 
 ```
 
@@ -22,6 +23,8 @@ I categorized drought years into year '0' (wet years), '1' (single dry year or f
 
 ```{r echo = F}
 load("FishDrough.RData")
+
+
 library("ggbeeswarm")
 
 ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
@@ -31,6 +34,11 @@ ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(
   scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("Wet years", "First/only dry year",
                                                                             "Second dry year", "Thrid or more dry year"))+
   theme(legend.position = "bottom")
+
+
+ggplot(FishDrought, aes(x = Year, y = Value))+ geom_point()+ geom_line()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()
+
 
 ```
 
@@ -113,30 +121,140 @@ visreg(CRRs1)
 
 THree or more years of drought is REALLY bad for salmon. 
 
+
+### Threadfin
+
+```{r}
+
+TFshad = filter(FishDrought, Metric == "logTFS")
+TFshad1 = lm(Value ~ DroughtYear + Year, data = TFshad)
+summary(TFshad1)
+emmeans(TFshad1, pairwise ~ DroughtYear)
+plot(TFshad1)
+visreg(TFshad1)
+
+
+```
+
+
+
 ```{r}
 
 #final plot for paper
 
 #data frame of pairwise comparison results
-FishDrought = droplevels(FishDrought)
-pairs = data.frame(MetricL = rep(levels(FishDrought$MetricL), each = 4), 
-                   DroughtYear = rep(c("0", "1", "2", "3+"), 5),
-                   Group = c("A", "B", "B", "B", "A", "A", "A", "A", "A", 
-                             "B", "B", "B", "A", "B", "B", "B",
-                             "A", "A", "A", "B"),
-                   Y = c(rep(10, 4), rep(8, 4), rep(12, 4), rep(10, 4), rep(4, 4)))
+# FishDrought = droplevels(FishDrought)
+# pairs = data.frame(MetricL = rep(levels(FishDrought$MetricL), each = 4), 
+#                    DroughtYear = rep(c("0", "1", "2", "3+"), 5),
+#                    Group = c("A", "B", "B", "B", "A", "A", "A", "A", "A", 
+#                              "B", "B", "B", "A", "B", "B", "B",
+#                              "A", "A", "A", "B"),
+#                    Y = c(rep(10, 4), rep(8, 4), rep(12, 4), rep(10, 4), rep(4, 4)))
 
 ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
-  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
-  geom_text(data = pairs, aes(y = Y, label = Group))+
+ # geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), c("1", "2"), 
+#                                  c("1", "3+"), c("2, 3+")), position = c())+
+   theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
   xlab(NULL)+ ylab(NULL)+
-  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("0, Wet years", "1, First/only dry year",
-                                                                            "2, Second dry year", "3, Thrid or more dry year"))+
+  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("Wet years", "First/only dry year",
+                                                                            "Second dry year", "Thrid or more dry year"))+
+
   theme(legend.position = "bottom")
 
-ggsave("FishDrought.tiff", device = "tiff", width = 7, height = 6, units = "in")
+
+  
+LF = ggplot(filter(FishDrought, Metric == "logLFS"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
+              y_position = c(10,11,12,8, 9), test = t.test, 
+              map_signif_level=T)+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(0, 13)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+LF
+  
+sh = ggplot(filter(FishDrought, Metric == "logShad"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
+              y_position = c(9,9.5,10,8, 8.5), test = t.test, 
+              map_signif_level=T)+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(3,11)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+sh  
+
+crr = ggplot(filter(FishDrought, Metric == "Salmon CRR"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
+              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+              map_signif_level=T)+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(0,5.5)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+
+  crr
+  
+ds = ggplot(filter(FishDrought, Metric == "logDS"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "3+")), annotations = "All comparisons NS")+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(0,9)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)+
+
+  theme(legend.position = NULL)
+
+  ds
+  sb = ggplot(filter(FishDrought, Metric == "logSB", !is.na(Value)),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
+              y_position = c(10,11,12,8.5, 9.5), test = t.test, 
+              map_signif_level=T)+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(0,12.5)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("0, Wet years", "1, First/only dry year",
+                                                                            "2, Second dry year", "3+ Third or more dry year"))+
+    theme(legend.position = "bottom")
+
+  sb
+  sb2 = sb +  scale_fill_brewer(palette = "Dark2", guide = NULL)
+
+TFS =  ggplot(filter(FishDrought, Metric == "logTFS"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+  geom_boxplot() +
+  geom_quasirandom()+
+  geom_signif(comparisons = list(c("0", "3+")), annotations = "All comparisons NS")+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+ # geom_text(data = pairs, aes(y = Y, label = Group))+
+  xlab(NULL)+ ylab(NULL)+ ylim(0,12)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)+
+
+  theme(legend.position = NULL)
+
+  TFS
+    
+#print just the legend
+legend <- cowplot::get_legend(sb)
+ library(gridExtra)
+plots = grid.arrange(ds, LF, sh,TFS, sb2, crr, legend,  layout_matrix = rbind(c(1, 2, 3),
+                        c(4,5,6), c(NA, 7, NA)))
+  
+ggsave(plot = plots,"FishDrought.tiff", device = "tiff", width = 10, height = 10, units = "in")
 
 ```
 Now i need a table with all the statistical results
@@ -154,13 +272,37 @@ LFS1t = tidy(LFS1) %>%
 shad1t = tidy(shad1) %>%
   mutate(Species = "American Shad")
 
+
 Deltas = tidy(DS1) %>%
   mutate(Species = "Delta Smelt")
 
 Salmon = tidy(CRRs1) %>%
   mutate(Species = "Salmon CRR")
 
-models = bind_rows(FD1t, LFS1t, shad1t, Deltas, Salmon)
+Threadfin = tidy(TFshad1) %>%
+  mutate(Species = "Threadfin Shad")
+
+models = bind_rows(FD1t, LFS1t, shad1t, Deltas, Threadfin, Salmon)
 write.csv(models, "FishMultiYear.csv", row.names = F)
+```
+Plots for white papers
+
+```{r}
+
+FishDrought2 = filter(FishDrought, Metric != "Salmon CRR") %>%
+  mutate(Whitepaper = factor(Whitepaper, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet", "2020", "2021", "2022"),
+                             labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021", "2022")))
+  
+
+ggplot(FishDrought2,  aes(x = Whitepaper, y = Value, fill = Yr_type)) + 
+  geom_boxplot() +
+  drt_color_pal_yrtype()+
+  geom_quasirandom()+
+  facet_wrap(MetricL~., scales = "free_y", nrow = 5)+ theme_bw()+
+   ylab("log FMWT Index")+xlab(NULL)+
+  theme(legend.position = "none")
+
+ggsave("plots/whitepaper/fish.tiff", device = "tiff", height = 8, width = 5)
+
 ```
 

@@ -1,0 +1,41 @@
+Taxa,Region,Yr_type,Clearence
+Maeotias,Confluence,Below Normal,0.00400393
+Maeotias,North,Below Normal,0
+Maeotias,SouthCentral,Below Normal,0
+Maeotias,Suisun Bay,Below Normal,0.006173254
+Maeotias,Suisun Marsh,Below Normal,0.034824983
+Maeotias,Confluence,Critical,0.021486705
+Maeotias,North,Critical,0
+Maeotias,SouthCentral,Critical,0.001273755
+Maeotias,Suisun Bay,Critical,0.010158941
+Maeotias,Suisun Marsh,Critical,0.025606605
+Maeotias,Confluence,Dry,0.006201214
+Maeotias,North,Dry,0
+Maeotias,SouthCentral,Dry,4.21E-05
+Maeotias,Suisun Bay,Dry,0.011920144
+Maeotias,Suisun Marsh,Dry,0.020938843
+Maeotias,Confluence,Wet,0.004084796
+Maeotias,North,Wet,0
+Maeotias,SouthCentral,Wet,0
+Maeotias,Suisun Bay,Wet,0.074065626
+Maeotias,Suisun Marsh,Wet,0.095199668
+clams,Confluence,Below Normal,0.148980223
+clams,North,Below Normal,0.1298125
+clams,SouthCentral,Below Normal,0.201870478
+clams,Suisun Bay,Below Normal,0.262094543
+clams,Suisun Marsh,Below Normal,0.632007326
+clams,Confluence,Critical,0.218533863
+clams,North,Critical,0.171575893
+clams,SouthCentral,Critical,0.193460016
+clams,Suisun Bay,Critical,0.260494219
+clams,Suisun Marsh,Critical,0.444630682
+clams,Confluence,Dry,0.169915764
+clams,North,Dry,0.260561756
+clams,SouthCentral,Dry,0.21339839
+clams,Suisun Bay,Dry,0.199789127
+clams,Suisun Marsh,Dry,0.349935897
+clams,Confluence,Wet,0.104040349
+clams,North,Wet,0.109131944
+clams,SouthCentral,Wet,0.169647201
+clams,Suisun Bay,Wet,0.174395454
+clams,Suisun Marsh,Wet,0.288324519
