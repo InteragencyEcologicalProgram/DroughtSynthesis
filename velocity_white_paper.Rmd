@@ -1,0 +1,80 @@
+---
+title: "Fine scale velocity exploration for water quality drought synthesis"
+author: "Elizabeth Stumpner"
+date: "2022-12-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(ggbeeswarm)
+library(DroughtData)
+library(sf)
+library(mapview)
+library(stats)
+```
+# Overview
+
+This is the velocity analysis for the Drought paper. The weekly  velocity records are calculated from instantanous (15-min) records at four USGS flow stations. Stations include Cache at Ryer Island Ferry, San Joaquin River at Jersey Point, Middle River, and Old River at Bacon Island (see map below). The weekly velocity data is combined with dayflow parameters and drought classification in the DroughtData R package.
+
+```{r}
+vel_weekly <- read_rds("velocity.rds")
+
+lat_long <- read_csv('vel_coord.csv')
+```
+
+## Station map 
+
+Here is a map of the selected USGS stations flow stations in the Delta - from north to south the stations include Cache Slough (USGS 11455350 - inactive RYI station, 11455385 - active RYF station), Jersey Point (11337190), Old River at Bacon Island (11313405), and Middle River (11312676)
+
+```{r}
+lat_long_sf <- st_as_sf(lat_long, coords = c('LongitudeMeasure', 'LatitudeMeasure'), crs = 4326)
+
+mapview(lat_long_sf, layer.name = "Velocity", cex=10, label = 'site')
+
+```
+
+## Compare 2020 + 2021 to other years - WQ White Paper
+
+### Mean net velocity and maximum absolute velocity across stations
+The 2020 and 2021 net velocities compare well to previous drought years. Breaking the data down by station show the Cache and Jersey net velocities are most always seaward and Middle and Old Rivers most always landward, except during wet periods of wet years.
+
+The max. abs. tidal velocities in 2020 and 2021 are nearly identical to dry and critical years years except at Cache where they're slightly lower. With data faceted by station, a slight reduction in max. abs. tidal vel. range at Cache is observed in 2020 relative to other years.
+```{r}
+
+#zoom in
+vel_a <- ggplot(vel_weekly, aes(x=YearType_20_21, y=mean_net_vel_m, fill=YearType))+
+  geom_boxplot()+
+  facet_wrap(~station) +
+  drt_color_pal_yrtype()+
+  labs(x = "Water year index", y = expression(paste("mean net vel. (", m," ",s^-1, ")", sep="")), title = "A. mean net vel. across stations (2007 - 2021) - restricted y axis") +
+  guides(fill = guide_legend('Water year index')) +
+  ylim(c(-0.25, 0.25))+
+  theme_bw()+
+  geom_hline(yintercept=0, linetype='solid', col = 'black') +
+  theme(axis.text.x = element_text(angle = 90)) 
+
+ggsave("vel_a.tiff", device = "tiff", width = 8, height = 6)
+  
+vel_b <- ggplot(vel_weekly, aes(x=YearType_20_21, y=max_abs_tidal_vel_m, fill=YearType))+
+  geom_boxplot()+
+  facet_wrap(~station)+
+  drt_color_pal_yrtype()+
+  labs(x = "Water year index", y = expression(paste("max. abs. tidal vel. (", m," ",s^-1, ")", sep="")), title = "B. max. abs. tidal vel. across stations (2007 - 2021)") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90)) +
+  guides(fill = guide_legend('Water year index'))
+
+ggsave("vel_b.tiff", device = "tiff", width = 8, height = 6)
+```
+
+
+
