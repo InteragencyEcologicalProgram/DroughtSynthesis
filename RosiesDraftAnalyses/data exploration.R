@@ -302,24 +302,23 @@ DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen< 0 ~ 0.1,
                                                            TRUE ~ -Cohen + 0.1))
 write.csv(DroughtImpact2a, "DroughtImpact.csv", row.names = F)
 #save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
-#load("outputs/DroughtImpac.RData")
+load("outputs/DroughtImpac.RData")
 
 ##Arrow plot with all things, even the non-significant ones
 ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) + 
-  geom_segment(aes(xend = Metric, yend = Cohen, color = magnitude, alpha = Sig), 
+  geom_segment(aes(xend = Metric, yend = Cohen, color = Sig), 
                arrow = arrow(length = unit(0.2, "inches")),
                size = 2) +
   ylab("Drought Effect Size (Cohen's D)")+ xlab(NULL)+
-  scale_color_viridis_d(option = "C", direction = -1, name = "Magnatude of\nEffect")+
+ # scale_color_viridis_d(option = "C", direction = -1, name = "Magnatude of\nEffect")+
   theme_bw()+
-  scale_alpha_manual(values = c(0.5, 0.6, 0.8, 1), 
-                     labels = c("(NS) Non-Significant", "* P<0.05", "** P<0.01", "*** P<0.001"), 
+  scale_color_viridis_d(option = "C", direction  = -1, labels = c("(NS) Non-Significant", "* P<0.05", "** P<0.01", "*** P<0.001"), 
                      name = "Significance")+
   geom_text(aes(label = paste(Metric, Sig), y = -yval+0.2), angle = 90, hjust = 0)+
   coord_cartesian(ylim = c(-2.8, 5))+
-  theme(axis.text.x = element_blank(), legend.position = "bottom", legend.direction = "vertical")
+  theme(axis.text.x = element_blank(), legend.position = "right", legend.direction = "vertical")
 
-ggsave("plots/EffectArrows.tiff", device = "tiff", width = 8, height = 8, units = "in")
+ggsave("plots/EffectArrows.tiff", device = "tiff", width = 9, height = 7, units = "in")
 
 ######################################################################################
 #now try and do the origional graph but highlight which are significant
@@ -342,14 +341,14 @@ library(sf)
 library(deltamapr)
 load("DroughtRegions.RData")
 #I need to check whether the units are C/L or C/m3
-zoops = filter(DroughtImpact2a, Metric %in% c("Zoops Confluence (ugC/L)", 
-                                              "Zoops Suisun Bay  (ugC/L)", 
-                                              "Zoops Suisun Marsh  (ugC/L)",
-                                              "Zoops SouthCentral (ugC/L)" ))%>%
-  mutate(Region = case_when(Metric == "Zoops SouthCentral (ugC/L)" ~ "SouthCentral",
-                            Metric == "Zoops Confluence (ugC/L)" ~ "Confluence",
-                            Metric == "Zoops Suisun Marsh  (ugC/L)" ~ "Suisun Marsh",
-                            Metric == "Zoops Suisun Bay  (ugC/L)" ~ "Suisun Bay"))
+zoops = filter(DroughtImpact2a, Metric %in% c("Zoops Confluence", 
+                                              "Zoops Suisun Bay", 
+                                              "Zoops Suisun Marsh",
+                                              "Zoops SouthCentral" ))%>%
+  mutate(Region = case_when(Metric == "Zoops SouthCentral" ~ "SouthCentral",
+                            Metric == "Zoops Confluence" ~ "Confluence",
+                            Metric == "Zoops Suisun Marsh" ~ "Suisun Marsh",
+                            Metric == "Zoops Suisun Bay" ~ "Suisun Bay"))
 
 zoopRegions = left_join(Regions, zoops) %>%
   st_transform(crs = 4269) %>%
@@ -370,13 +369,13 @@ ggplot()+
 ############################################
 #chlorophyll map
 
-Chl = filter(DroughtImpact2a, Metric %in% c("Chl. Suisun Bay (log(ug/L))", 
-                                              "Chl. SouthCentral (log(ug/L))", "Chl. North (log(ug/L))",
-                                              "Chl. Confluence (log(ug/L))")) %>%
-  mutate(Region = case_when(Metric == "Chl. SouthCentral (log(ug/L))" ~ "SouthCentral",
-                            Metric == "Chl. Confluence (log(ug/L))" ~ "Confluence",
-                            Metric == "Chl. North (log(ug/L))" ~ "North",
-                            Metric == "Chl. Suisun Bay (log(ug/L))" ~ "Suisun Bay"))
+Chl = filter(DroughtImpact2a, Metric %in% c("Chl. Suisun Bay", 
+                                              "Chl. SouthCentral", "Chl. North",
+                                              "Chl. Confluence")) %>%
+  mutate(Region = case_when(Metric == "Chl. SouthCentral" ~ "SouthCentral",
+                            Metric == "Chl. Confluence" ~ "Confluence",
+                            Metric == "Chl. North" ~ "North",
+                            Metric == "Chl. Suisun Bay" ~ "Suisun Bay"))
 
 chRegions = left_join(Regions, Chl) %>%
   st_transform(crs = 4269) %>%
@@ -404,10 +403,11 @@ ggplot()+
   scale_fill_viridis(name = "Drought \nImpact", na.value = "grey90")+
   facet_wrap(~Metric, nrow = 2)+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.8, 38.45))+
-  north(x.min = -122.1, x.max = -121.2, y.min = 37.9, y.max = 38)+
-  scalebar(data = test, 
+  north(x.min = -122.1, x.max = -121.2, y.min = 37.8, y.max = 38.4, scale = .15)+
+  scalebar(data = test, st.dist = .03,
            transform = T, dist = 10, dist_unit = "km", location = "bottomleft",
-           facet.var = "Metric", facet.lev = "Chlorophyll")+ylab(NULL)+ ylab(NULL)
+           facet.var = "Metric", facet.lev = "Chlorophyll", st.bottom = FALSE)+xlab(NULL)+ ylab(NULL)
+
 ggsave("CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units = "in")
 #################################################################
 

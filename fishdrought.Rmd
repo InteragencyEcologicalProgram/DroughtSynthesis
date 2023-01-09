@@ -288,7 +288,7 @@ write.csv(models, "FishMultiYear.csv", row.names = F)
 Plots for white papers
 
 ```{r}
-
+library(ggbeeswarm)
 FishDrought2 = filter(FishDrought, Metric != "Salmon CRR") %>%
   mutate(Whitepaper = factor(Whitepaper, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet", "2020", "2021", "2022"),
                              labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021", "2022")))

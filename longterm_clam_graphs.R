@@ -18,6 +18,10 @@ clamdist = left_join(clamdist, yeartypes)
 ggplot(clams, aes(x = Drought, y = average_abundance)) + geom_boxplot() +
   facet_wrap(~SpeciesID)
 
+ggplot(clams, aes(x = Year, y = average_abundance))+ geom_col()+
+  facet_wrap(~SpeciesID)
+
+
 ggplot(clams, aes(x = Drought, y = median_abundance)) + geom_boxplot() +
   facet_wrap(~SpeciesID)
 

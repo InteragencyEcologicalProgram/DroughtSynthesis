@@ -46,8 +46,8 @@ ggsave("plots/whitepapermap.pdf", device = "pdf", width = 6, height = 6)
 Yolo = st_read("data/Flood_Bypasses/Flood_Bypasses.shp") %>%
   filter(NAME == "Yolo Bypass")
 
-ggplot()+
-  geom_sf(data = WW_Delta)+
+synthmap = ggplot()+
+  geom_sf(data = WW_Delta, fill = "lightgrey", color = "lightgrey", alpha = .5)+
   geom_sf(data = Yolo, fill = "darkgrey", alpha = 0.2)+
   geom_sf(data = Regions,
           aes(fill=Region), alpha = 0.2)+
@@ -72,7 +72,7 @@ ggplot()+
   geom_sf_text(data =  filter(Points, Type == "Island"), aes(label = Label), nudge_x = 0.01, nudge_y = -0.01, fontface = "italic", size = 3)+
   
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.6))
-
+synthmap
 ggsave("plots/synthmap.tiff", device = "tiff", width = 6, height = 6)
 ggsave("plots/synthmap.pdf", device = "pdf", width = 7, height = 7)
 
@@ -183,6 +183,13 @@ wqmapinste= ggdraw() +
 
 wqmapinste
 ggsave("plots/WQmap.tiff", device = "tiff", width = 8, height = 8)
+
+synthinste= ggdraw() +
+  draw_plot(synthmap) +
+  draw_plot(ggm3, x = 0.2, y = 0.65, width = 0.2, height = 0.3)
+synthinste
+
+ggsave("plots/synmap2.pdf", device = "pdf", width = 8, height = 8)
 
 ################################################################
 #blank map for concenptual model

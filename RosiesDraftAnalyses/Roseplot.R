@@ -74,7 +74,6 @@ library(viridis)
 #This is a mess and I don't know what I'm doing but here goes
 masterplot = read_excel("data/master plot.xlsx", sheet = "organized for data vis")
 masterplot = masterplot %>%
-  filter(Comparison != "Critical: Other year types") %>%
   mutate(Strength2 = case_when(
     direction == "Decrease" ~ Strength*-1,
     TRUE ~ Strength
@@ -222,7 +221,7 @@ p4
 
 # Make the plot
 data3 = masterplot %>%
-  filter(Comparison != "Critical: Other year types", Group != "Space3") %>%
+  filter(Group != "Space3") %>%
   mutate(Strength2 = case_when(
     direction == "Decrease" ~ Strength*-1,
     TRUE ~ Strength
@@ -267,21 +266,22 @@ p6 <- ggplot(data3) +
   theme(
     axis.text = element_blank(),
     axis.title = element_blank(),
-    legend.position = "bottom"#,
+    legend.position = "bottom",
+    plot.background = element_rect(fill = "white")
     # plot.margin = unit(rep(-.5,4), "cm") 
   ) 
 p6
 
-
+ggsave("plots/roseplotLT.tiff", device = "tiff", width = 8, height = 7, units = "in")
 
 ###############################################################
 #Now the version just for 2021
-master2021 = read_excel("data/master plot.xlsx", sheet = "thisyear")
-data2021 = master2021 %>%
+
+data2021 = masterplot %>%
   mutate(Strength2 = case_when(
-    direction == "Decrease" ~ Strength*-1,
-    TRUE ~ Strength
-  ), Group = factor(direction)) %>%
+    ThisDroughtdirection == "decrease" ~ ThisDroughtStrength*-1,
+    TRUE ~ ThisDroughtStrength
+  ), Group2 = factor(ThisDroughtdirection)) %>%
   mutate(Metric = factor(Metric, levels = levels(data3$Metric)))
 
 data2021a = left_join(data2021, dplyr::select(data3, Metric, ID))
@@ -303,7 +303,7 @@ label_data2021$angle <- ifelse(angle < -90, angle+180, angle)
 p2021 <- ggplot(data2021) +      
   
   # Add the stacked bar
-  geom_bar(aes(x=Metric, y=Strength,   fill = direction),  stat="identity") +
+  geom_bar(aes(x=Metric, y=ThisDroughtStrength,   fill = ThisDroughtdirection),  stat="identity") +
   scale_fill_manual(values = c( "palegreen3","#FDE333", "grey"),
   #scale_fill_manual(values = c("skyblue","darkorange", "grey"),
                    labels = c("Lower than \npast droughts", 
@@ -328,6 +328,8 @@ p2021 <- ggplot(data2021) +
   ) 
 p2021
 
+
+ggsave("plots/roseplot2021.tiff", device = "tiff", width = 8, height = 7, units = "in")
 
 ################################################################################
 #Try it with some of my new metrics

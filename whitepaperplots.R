@@ -45,9 +45,13 @@ ChlaA = left_join(ChlaA, yrs) %>%
 ggplot(ChlaA, aes(x = Whitepaper, y = log(Chlorophyll), fill = YearType)) + geom_boxplot()+
   drt_color_pal_yrtype() + theme_bw() + ylab("log Chlorophyll-a (ug/L)")+xlab(NULL)
 
-ggplot(ChlaA, aes(x = Whitepaper, y = log(Chlorophyll), fill = YearType)) + geom_boxplot()+
-  drt_color_pal_yrtype() + theme_bw() + ylab("Chlorophyll-a (ug/L)")+xlab(NULL)
-ggsave("plots/whitepaper/ChlWhitepaper.tiff", device = "tiff", width = 8, height = 6)
+ggplot(ChlaA, aes(x = Whitepaper, y = Chlorophyll, fill = YearType)) + geom_boxplot()+
+  drt_color_pal_yrtype() + theme_bw() + ylab("Chlorophyll-a (ug/L)")+xlab(NULL) +
+  facet_wrap(~Region, nrow = 4, strip.position = "right")+ 
+  scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021"))+
+  theme(legend.position ="none")
+  
+ggsave("plots/whitepaper/ChlWhitepaper.tiff", device = "tiff", width = 5, height = 6)
 
 ############################################
 # Temperature
@@ -73,7 +77,7 @@ ggsave("plots/whitepaper/SecchiWhitepaper.tiff", device = "tiff", width = 5, hei
 #Temperature
 ggplot(wq, aes(x = Whitepaper, y = Temperature, fill = YearType)) + geom_boxplot()+
   drt_color_pal_yrtype() + 
-  facet_wrap(~Season, nrow = 4, scales = "free_y", , strip.position = "right")+
+  facet_wrap(~Season, nrow = 4, scales = "free_y",  strip.position = "right")+
   theme_bw() + 
   scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021"))+
   ylab("Water Temperature (C)")+xlab(NULL)+ 

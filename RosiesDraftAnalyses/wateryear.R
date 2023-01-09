@@ -22,11 +22,14 @@ ggplot(WYs)+
   
   geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
  scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
-  coord_cartesian(xlim = c(1906, 2022))+theme_bw()+
+  coord_cartesian(xlim = c(1905, 2022))+theme_bw()+
+  scale_x_continuous(breaks = c(1905, 1925, 1950, 1975, 2000, 2021))+
   theme(legend.position = "top") +
   ylab("Sacramento Valley Index")+
   xlab(NULL)+
-  annotate("text", x = 1960, y = -2, label = "Drought (yellow)/Neutral(green)/Wet Period (blue)")
+  annotate("text", x = 1960, y = -2, label = "Drought (yellow)/ Neutral (green)/ Wet Period (blue)")
+
+ggsave("plots/Wateryears.tiff", device = "tiff", width = 9, height = 5)
 
 #year types by decade
 ggplot(WYs, aes(x = Year, fill = Yr_type))+ geom_histogram(binwidth = 10)+
