@@ -8,13 +8,13 @@ library(glue)
 
 #import 4 data sets
 
-Cache <- read_rds("data-raw/Hydrology/dv_cache.rds")
+Cache <- read_rds("dv_cache.rds")
 
-Jersey <- read_rds("data-raw/Hydrology/dv_jersey.rds")
+Jersey <- read_rds("dv_jersey.rds")
 
-Middle <- read_rds("data-raw/Hydrology/dv_middle.rds")
+Middle <- read_rds("dv_middle.rds")
 
-Old <- read_rds("data-raw/Hydrology/dv_old.rds")
+Old <- read_rds("dv_old.rds")
 
 #round dates down to week
 
@@ -99,10 +99,31 @@ Old_week$station <- "Old"
 
 #bind all dfs to one weekly df
 
-vel_weekly_pub <- rbind(Jersey_week, Old_week, Middle_week, Cache_week)
+vel_weekly <- rbind(Jersey_week, Old_week, Middle_week, Cache_week) %>%
+  mutate(Year = year(week), Month = month(week), YearAdj = case_when(Month == 12 ~ Year +1,
+                                                                     TRUE ~ Year))
 
+#For the white paper we don't need the outflow and X2 stuff
+
+yrs = read_csv("data/yearassignments.csv") %>%
+  rename(YearAdj = Year)
+vel_weekly_WP = left_join(vel_weekly, yrs) %>%
+  filter(YearAdj != 2023) %>%
+  mutate(Whitepaper = factor(Whitepaper, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet", "2020", "2021", "2022")))
+
+
+save(vel_weekly_WP, file = "data/vel_weekly_WP.RData")
+###############################################################
+#Now the stuff for the other data package
 #make raw_hydro into weekly mean
+# 
 
+
+
+
+#merge dayflow params and WY type
+
+  
 week_hydro <- subset(raw_hydro_1975_2021, Date > as.Date('2007-09-30'))
 
 week_hydro$week <- floor_date(week_hydro$Date, "week")
@@ -113,10 +134,7 @@ week_hydro <- week_hydro%>%
             Export = mean(Export),
             Outflow = mean(Outflow),
             Inflow = mean(InflowTotal))
-
-#merge dayflow params and WY type
-
-vel_weekly_pub <- merge(vel_weekly_pub, week_hydro, by = 'week')
+vel_weekly_pub <- left_join(vel_weekly, week_hydro, by = 'week')
 
 lt_seas <- lt_avg_hydro[c(1, 4:5)]
 

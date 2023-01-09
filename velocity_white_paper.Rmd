@@ -26,7 +26,7 @@ library(stats)
 This is the velocity analysis for the Drought paper. The weekly  velocity records are calculated from instantanous (15-min) records at four USGS flow stations. Stations include Cache at Ryer Island Ferry, San Joaquin River at Jersey Point, Middle River, and Old River at Bacon Island (see map below). The weekly velocity data is combined with dayflow parameters and drought classification in the DroughtData R package.
 
 ```{r}
-vel_weekly <- read_rds("velocity.rds")
+load("data/vel_weekly_WP.RData")
 
 lat_long <- read_csv('vel_coord.csv')
 ```
@@ -51,29 +51,38 @@ The max. abs. tidal velocities in 2020 and 2021 are nearly identical to dry and 
 ```{r}
 
 #zoom in
-vel_a <- ggplot(vel_weekly, aes(x=YearType_20_21, y=mean_net_vel_m, fill=YearType))+
+ann_text <- data.frame(Whitepaper = "Wet", station = c("Cache", "Jersey"),lab = "*", Yr_type = "Wet",
+                       mean_net_vel = .7)
+Vel_test = filter(vel_weekly_WP, mean_net_vel <0.7)
+Vel_test2 = filter(vel_weekly_WP, mean_net_vel >= 0.7)
+vel_wet = filter(vel_weekly_WP, station %in% c("Cache", "Jersey"), Yr_type == "Wet")
+vel_a <- ggplot(Vel_test, aes(x=Whitepaper, y=mean_net_vel, fill=Yr_type))+
   geom_boxplot()+
-  facet_wrap(~station) +
+  facet_wrap(~station, scales = "free_y") +
   drt_color_pal_yrtype()+
-  labs(x = "Water year index", y = expression(paste("mean net vel. (", m," ",s^-1, ")", sep="")), title = "A. mean net vel. across stations (2007 - 2021) - restricted y axis") +
-  guides(fill = guide_legend('Water year index')) +
-  ylim(c(-0.25, 0.25))+
+  labs(x = "Water year index", y = expression(paste("mean net vel. (", ft," ",s^-1, ")", sep="")), title = "A. mean net vel. across stations (2007 - 2022)") +
   theme_bw()+
+ # ylim(-0.5, 0.7)+
   geom_hline(yintercept=0, linetype='solid', col = 'black') +
-  theme(axis.text.x = element_text(angle = 90)) 
+  scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Wet","2020", "2021", "2022"))+
+  theme( legend.position = "none") +
+  geom_text(data = ann_text, aes(label = lab), color = "red", size = 8)
 
-ggsave("vel_a.tiff", device = "tiff", width = 8, height = 6)
+vel_a
+
+ggsave("plots/whitepaper/vel_a.tiff", device = "tiff", width = 8, height = 6)
   
-vel_b <- ggplot(vel_weekly, aes(x=YearType_20_21, y=max_abs_tidal_vel_m, fill=YearType))+
+vel_b <- ggplot(vel_weekly_WP, aes(x=Whitepaper, y=max_abs_tidal, fill=Yr_type))+
   geom_boxplot()+
-  facet_wrap(~station)+
+  facet_wrap(~station, scales = "free_y")+
   drt_color_pal_yrtype()+
-  labs(x = "Water year index", y = expression(paste("max. abs. tidal vel. (", m," ",s^-1, ")", sep="")), title = "B. max. abs. tidal vel. across stations (2007 - 2021)") +
+  labs(x = "Water year index", y = expression(paste("max. abs. tidal vel. (", ft," ",s^-1, ")", sep="")), title = "B. max. abs. tidal vel. across stations (2007 - 2021)") +
+  scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Wet","2020", "2021", "2022"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill = guide_legend('Water year index'))
+  theme(legend.position = "none")
+vel_b
 
-ggsave("vel_b.tiff", device = "tiff", width = 8, height = 6)
+ggsave("plots/whitepaper/vel_b.tiff", device = "tiff", width = 8, height = 6)
 ```
 
 
