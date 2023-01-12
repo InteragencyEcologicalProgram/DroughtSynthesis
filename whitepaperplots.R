@@ -47,7 +47,7 @@ ggplot(ChlaA, aes(x = Whitepaper, y = log(Chlorophyll), fill = YearType)) + geom
 
 ggplot(ChlaA, aes(x = Whitepaper, y = Chlorophyll, fill = YearType)) + geom_boxplot()+
   drt_color_pal_yrtype() + theme_bw() + ylab("Chlorophyll-a (ug/L)")+xlab(NULL) +
-  facet_wrap(~Region, nrow = 4, strip.position = "right")+ 
+  facet_wrap(~Region, nrow = 4, strip.position = "right", scales = "free_y")+ 
   scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021"))+
   theme(legend.position ="none")
   
