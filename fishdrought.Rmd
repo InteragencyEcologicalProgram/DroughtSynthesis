@@ -2,11 +2,13 @@
 title: "Fish multi-yeardrought"
 author: "Rosemary Hartman"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 library(tidyverse)
 library(readxl)
 library(viridis)
@@ -14,6 +16,7 @@ library(lubridate)
 library(emmeans)
 library(visreg)
 library(ggsignif)
+library(DroughtData)
 
 ```
 
@@ -138,7 +141,7 @@ visreg(TFshad1)
 
 
 
-```{r}
+```{r, warn = FALSE }
 
 #final plot for paper
 
@@ -287,7 +290,7 @@ write.csv(models, "FishMultiYear.csv", row.names = F)
 ```
 Plots for white papers
 
-```{r}
+```{r, warn = FALSE}
 library(ggbeeswarm)
 FishDrought2 = filter(FishDrought, Metric != "Salmon CRR") %>%
   mutate(Whitepaper = factor(Whitepaper, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet", "2020", "2021", "2022"),
