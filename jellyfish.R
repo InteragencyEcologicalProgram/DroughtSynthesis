@@ -595,3 +595,16 @@ species = group_by(Alljellies2, OrganismCode, Source) %>%
 species = group_by(Alljellies2, OrganismCode) %>%
   summarize(N = n(), TotCatch = sum(Catch, na.rm = T),
             Percent = TotCatch/sum(Alljellies2$Catch, na.rm = T))
+
+#plot total catch by survey
+ggplot(Alljellies2, aes(x = Year, y = CPUE, color = OrganismCode))+
+  geom_point()+
+  facet_wrap(~Source)+scale_y_log10()
+
+Alljellmean = group_by(Alljellies2, Source, Month, OrganismCode) %>%
+  dplyr::summarize(CPUEm = mean(CPUE, na.rm =T))
+
+ggplot(Alljellmean, aes(x = Month, y = CPUEm, fill = OrganismCode))+
+  geom_col()+
+  facet_wrap(~Source)+
+  scale_fill_viridis_d(option = "turbo")

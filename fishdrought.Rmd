@@ -51,11 +51,36 @@ Then I ran statistics. For POD species i included both "year of drought" and "ye
 
 ```{r}
 SB = filter(FishDrought, Metric == "logSB")
+#test regime instead of year
+
+SB = mutate(SB, regime = case_when(Year < 1987 ~ "preclam",
+                                   Year >= 1987 & Year < 2001 ~ "prepod",
+                                   Year >= 2001 ~ "POD"))
+
 FD1 = lm(Value ~ DroughtYear + Year, data = SB)
 summary(FD1)
 plot(FD1)
 emmeans(FD1, pairwise ~ DroughtYear)
 visreg(FD1)
+
+FD2 = lm(Value ~ DroughtYear + regime, data = SB)
+summary(FD2)
+plot(FD2)
+AIC(FD1)
+AIC(FD2)
+
+FD1 = lm(Value ~ Yr_type + Year, data = SB)
+summary(FD1)
+plot(FD1)
+emmeans(FD1, pairwise ~ DroughtYear)
+visreg(FD1)
+
+FD2 = lm(Value ~ Yr_type+ regime, data = SB)
+summary(FD2)
+plot(FD2)
+AIC(FD1)
+AIC(FD2)
+
 
 ```
 So, droughts are bad, but long droughts aren't much worse than short ones after accounting for long-term population trajectory

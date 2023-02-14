@@ -183,6 +183,7 @@ wqmapinste= ggdraw() +
 
 wqmapinste
 ggsave("plots/WQmap.tiff", device = "tiff", width = 8, height = 8)
+ggsave("plots/WQmap.pdf", device = "pdf", width = 8, height = 8)
 
 synthinste= ggdraw() +
   draw_plot(synthmap) +
@@ -194,6 +195,7 @@ ggsave("plots/synmap2.pdf", device = "pdf", width = 8, height = 8)
 ################################################################
 #blank map for concenptual model
 
+Regions = mutate(Regions, Labels = c("Confluence", "North", "South-Central", "Suisun Bay", "Suisun Marsh"))
 
 
 conmap= ggplot()+
@@ -201,7 +203,7 @@ conmap= ggplot()+
   geom_sf(data = Regions,
           aes(fill=Region), alpha = 0.2)+
   geom_sf_label(data = Regions,
-                aes(label = Region), position = position_nudge(y=Regions$nudge))+
+                aes(label = Labels), position = position_nudge(y=Regions$nudge), size = 10)+
   theme_bw()+
   theme(legend.position="none")+
   
@@ -210,3 +212,5 @@ conmap= ggplot()+
   
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.8, 38.6))
 conmap
+
+ggsave("plots/blankmap.tiff", device = "tiff", width = 8, height = 8)

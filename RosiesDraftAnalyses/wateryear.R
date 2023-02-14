@@ -12,9 +12,11 @@ indecies = bind_rows(indecies, i1820) %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
 write.csv(indecies, "data/indecies.csv")
 
+#import water year assignments
 WYs = read.csv("data/yearassignments.csv")
 WYs = mutate(WYs,Yr_type = factor(Yr_type, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet")))
 
+#plot of water years with drought periods for synthesis paper
 ggplot(WYs)+
   geom_tile(data = filter(WYs, Drought == "D"), aes(x = Year, y = -1, height = 0.5), fill = "#FDE333", color = "#FDE333")  +
   geom_tile(data = filter(WYs, Drought == "W"), aes(x = Year, y = -1, height = 0.5), fill = "#00588B", color = "#00588B")  +
@@ -31,6 +33,39 @@ ggplot(WYs)+
 
 ggsave("plots/Wateryears.tiff", device = "tiff", width = 9, height = 5)
 
+
+#plot of water years with drought periods for water quality paper
+ggplot(filter(WYs, Year > 1975, Year <2022))+
+  geom_tile(data = filter(WYs, Drought == "D", Year > 1975, Year <2022), aes(x = Year, y = -1, height = 0.5), fill = "#FDE333", color = "#FDE333")  +
+  geom_tile(data = filter(WYs, Drought == "W", Year > 1975, Year <2022), aes(x = Year, y = -1, height = 0.5), fill = "#00588B", color = "#00588B")  +
+  geom_tile(data = filter(WYs, Drought == "N", Year > 1975, Year <2022), aes(x = Year, y = -1, height = 0.5), fill = "#53CC67", color = "#53CC67")  +
+  
+  geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
+  scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
+  theme_bw()+
+  scale_x_continuous(breaks = c(1975, 2000, 2021))+
+  theme(legend.position = "top") +
+  ylab("Sacramento Valley Index")+
+  xlab(NULL)+
+  annotate("text", x =2000, y = -2, label = "Drought (yellow)/ Neutral (green)/ Wet Period (blue)")
+
+#try a simpler version
+pal_drought <- c(D = "#FDE333", N = "#53CC67", W = "#00588B")
+ggplot(filter(WYs, Year > 1974, Year <2022))+
+  geom_bar(aes(x = Year, y = Index, fill = Drought), stat = "identity")+
+  scale_fill_manual(values = pal_drought, name = NULL, labels = c("Drought", "Neutral", "Wet"))+
+  theme_bw()+
+  geom_hline(data = cutoffs, aes(yintercept = cutval), linetype = 2)+
+  geom_text(data = cutoffs, aes(x = 1970, y = cutval, label = Yr_type), vjust =0, hjust = 0, size = 3, lineheight = .9)+
+  scale_x_continuous(breaks = c(1975, 2000, 2021))+
+  theme(legend.position = "top") +
+  ylab("Sacramento Valley Index")+
+  xlab(NULL)
+
+
+ggsave("plots/Wateryears1975.tiff", device = "tiff", width = 6, height = 5)
+
+
 #year types by decade
 ggplot(WYs, aes(x = Year, fill = Yr_type))+ geom_histogram(binwidth = 10)+
   drt_color_pal_yrtype()
@@ -45,12 +80,17 @@ ggplot(WYs, aes(x = decade, y = decYear, fill = Yr_type))+ geom_tile()+
   drt_color_pal_yrtype()
 
 
-#without the drought periods
+#without the drought periods, and with lines for year type cut offs
+cutoffs = data.frame(Yr_type = c("Critical", "Dry", "Below \nNormal", "Above \nNormal", "Wet"),
+                     cutval = c(0, 5.4, 6.5, 7.8, 9.2))
+
+
 ggplot(WYs)+
-  
   geom_bar(aes(x = Year, y = Index, fill = Yr_type), stat = "identity")+
+  geom_hline(data = cutoffs, aes(yintercept = cutval), linetype = 2)+
+  geom_text(data = cutoffs, aes(x = 1900, y = cutval, label = Yr_type), vjust =0, hjust = .5)+
   scale_fill_manual(values = pal_yrtype, name = "Water Year Type")+
-  coord_cartesian(xlim = c(1906, 2022))+theme_bw()+
+  coord_cartesian(xlim = c(1900, 2022))+theme_bw()+
   theme(legend.position = "top") +
   ylab("Sacramento Valley Index")+
   xlab("Water Year")
@@ -149,3 +189,19 @@ ggplot(DWrecent, aes(x = Year, y = Index, fill = DW)) + geom_col() +
 
 ggplot(DW, aes(x = Year, y = Index, fill = Yr_type)) + geom_col() +  
   scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))
+
+
+########################################################
+#multiple drought years in a row for fish paper
+
+ggplot(filter(WYs, Year >1969, Year < 2022))+
+  geom_bar(aes(x = Year, y = Index, fill = as.factor(DroughtYear)), stat = "identity")+
+  coord_cartesian(xlim = c(1965, 2021))+theme_bw()+
+  scale_x_continuous(breaks = c( 1975, 1990, 2005, 2021))+
+  theme(legend.position = "top") +
+  ylab("Sacramento Valley Index")+
+  geom_hline(data = cutoffs, aes(yintercept = cutval), linetype = 2)+
+  geom_text(data = cutoffs, aes(x = 1965, y = cutval, label = Yr_type), vjust =0, hjust = 0, size = 3, lineheight = .9)+
+  scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("Wet years", "First/only dry year",
+                                                              "Second dry year", "Thrid or more dry year"))+
+  xlab(NULL)

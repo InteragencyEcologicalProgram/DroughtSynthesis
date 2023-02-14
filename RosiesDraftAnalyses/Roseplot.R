@@ -79,7 +79,8 @@ masterplot = masterplot %>%
     TRUE ~ Strength
   ), Group = factor(Group, levels = unique(Group))) %>%
   arrange(Group, Strength2) %>% 
-  mutate(Metric = factor(Metric, levels = unique(Metric)))
+  filter(!Metric %in% c("Fish", "Salmon", "Lower Trophic", "Water Quality")) %>%
+  mutate(Metric = factor(Metric, levels = unique(Metric))) 
 
 data = masterplot
 

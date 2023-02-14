@@ -40,6 +40,14 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
   geom_col()+ facet_wrap(~Region)
 
+
+#steve wants catch by survey and month
+
+monthly = group_by(AlljelliesTot, Month, Source) %>%
+  summarize(Jellies = mean(TotJellies))
+
+ggplot(monthly, aes(x = Month, y = Jellies, fill = Source))+ geom_col(position = "dodge")
+
 #I'm going to alter Dave's drougth color palette just slightly so the wet years aren't so dark
 pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#481F70FF") 
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
@@ -49,13 +57,21 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
   ylab("Mean monthly Maeotias CPUE") + theme_bw()+
   facet_wrap(~Region)
 
+AlljelliesTot = filter(AlljelliesTot, Year <2021) %>%
+  mutate(Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
+
+#############this is figure 3
+ylab3 = expression(paste(italic("Maeotias"), " CPUE (log-transformed)"))
 ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
   geom_boxplot(aes(fill = Yr_type))+
-  scale_fill_manual(values = pal_yrtype)+
+  scale_fill_manual(values = pal_yrtype, name = "Year Type")+
   # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
-  ylab("Log Maeotias CPUE") + theme_bw()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))+
-  facet_wrap(~Region)
+  ylab(ylab3) + theme_bw()+ xlab(NULL)+
+  scale_x_discrete(breaks = c(2010, 2015, 2020))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5), legend.position = "bottom")+
+  facet_wrap(~Region, nrow = 1)
+
+ggsave("plots/jelliesbyyear.tiff", device = "tiff", width = 8, height = 6)
 
 ggplot(AlljelliesTot, aes(x = Temp_surf, y = TotJellies, 
                           color = Yr_type)) +
@@ -86,8 +102,8 @@ ggplot(Alltotsub, aes(x = Drought, y = log(TotJellies+1))) +
   geom_boxplot()+ facet_wrap(~Region)
 
 
-Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10)) #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
-
+Allmeansub = filter(AlljelliesMean, Month %in% c(6,7,8,9,10)) %>% #, Region %in% c( "Suisun Bay","Confluence","Suisun Marsh"))
+mutate(Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
   
 ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
   #  scale_fill_manual(guide = NULL, values = pal_drought)+
@@ -97,13 +113,15 @@ ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
 
 ##############
 #Box plot of year type by region (this is the one we like)
-ylabMaeotias <- expression(paste("Mean summer ", italic("Maeotias"), " CPUE (log-transformed)"))
+ylabMaeotias <- expression(paste("Mean Jun-Oct ", italic("Maeotias"), " CPUE (log-transformed)"))
+
+
 ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
   scale_fill_manual(guide = NULL, values = pal_yrtype)+
-  geom_boxplot( alpha = 0.8)+ facet_wrap(~Region) + theme_bw()+
+  geom_boxplot( alpha = 0.8)+ facet_wrap(~Region, nrow = 1) + theme_bw()+
   scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Wet"))+
-  ylab(ylabMaeotias)
-ggsave("plots/Jelliesboxplot.tiff", device = "tiff", width = 6, height = 5)
+    ylab(ylabMaeotias)+xlab(NULL)
+ggsave("plots/Jelliesboxplot.tiff", device = "tiff", width = 7, height = 5)
 
 library(rphylopic)
 jelly = image_data("ef63437d-d6f4-4583-9d75-a8c9b19a203d", size = 256)[[1]]
@@ -240,9 +258,9 @@ ggplot(effDF, aes(x = Yr_type2, y = Prediction))+ geom_point()+ geom_line()+
              color = "blue", alpha = 0.3, width = 0.2)+
   theme_bw()+ xlab(NULL)+
   scale_x_continuous(breaks = c(1,2,3,4), labels =  c("Critical", "Dry", "Below\nNormal", "Wet"))+
-  ylab("Model predicted summer Meaotias CPUE \n(individuals per 10000m3)")
+  ylab("Model predicted Jun-Oct Meaotias CPUE \n(individuals per 10000m3)")
 
-ggsave("JellyResiduals.tiff", width = 7, height =4, device = "tiff")
+ggsave("plots/JellyResiduals.tiff", width = 7, height =4, device = "tiff")
 
 #test models one region at a time, just to make sure
 susuin = filter(AlljelliesMean2, Region == "Suisun Bay")
@@ -333,7 +351,8 @@ weighted = mutate(Alltotsub, weightedSal = Sal_surf*TotJellies) %>%
 ggplot(weighted, aes(x= Salbin, y = TotJellies/15)) + geom_col(aes(fill = Salbin))+
   scale_color_viridis_b(guide = NULL)+
   xlab("Salinity (PSU)")+ ylab("Average annual Maeotias CPUE")+
-  theme_bw()
+  theme_bw()+
+  facet_wrap(~Source)
 
 Saliniteis = group_by(weighted, Salbin2) %>%
   dplyr::summarize(percent = sum(TotJellies)/sum(weighted$TotJellies))
@@ -350,7 +369,7 @@ ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1), fill = Yr_type)) + ge
   scale_fill_manual(values = pal_yrtype2) +
   ylab(ylabMaeotias) + xlab("Water Year Type")+
   theme_bw()+ theme(legend.position = "none")
-ggsave("Maeotias4_7ppt.tiff", device = "tiff", height = 6, width = 6)
+ggsave("plots/Maeotias4_7ppt.tiff", device = "tiff", height = 4, width = 4)
 
 
 jelz3ss = lmer(log(meanJellies+1)~ Yr_type*Region + (1|Month) + (1|Yearf), 
@@ -369,6 +388,19 @@ summary(jelz3ss2)
 #Nope. Odd.
 
 emmeans(jelz3ss2, pairwise ~ Yr_type)
+
+###############################################################################
+#steve wanted to know if the good salinity zone different by survey
+
+
+ggplot() + 
+  geom_violin(data = Alltotsub, 
+              aes(y = Sal_surf, x = Source,  fill = Source), alpha = 0.9)+  
+  annotate("rect", ymin = minsal, ymax = maxsal, xmin = 0.5, xmax = 4.5, alpha = 0.5)+
+  
+  theme_bw()+ xlab("Year type") + ylab("Salinity of samples")
+
+
 ####################################################################################
 #center of distribution from the Golden Gate
 # 
@@ -438,7 +470,8 @@ EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
             b = format(unname(coef(jl1s)[2]), digits = 2), "x,", " R2 = ",
             r2 = format(R2[1], digits = 3), sep = "")
  EQ
-# 
+
+ # 
  pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
 # 
 # #Plot of outflow versus center of distribution for paper
@@ -593,15 +626,16 @@ write.csv(Maxes2, "Clearence.csv")
 
 clear = read_csv("Clearence_wclams.csv") %>%
   mutate(Yr_type = factor(Yr_type, levels = c("Critical", "Dry","Below Normal", "Wet"),
-                          labels = c("Critical", "Dry", "Below\nNormal", "Wet")))
+                          labels = c("Critical", "Dry", "Below\nNormal", "Wet")),
+         Region =  factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
 
-ggplot(clear, aes(x = Yr_type,fill = Taxa)) + facet_wrap(~Region) +
+ggplot(clear, aes(x = Yr_type,fill = Taxa)) + facet_wrap(~Region, nrow = 1) +
   geom_col(position = "dodge", aes( y = MeanClearence))+ 
   geom_col(position = "dodge", aes( y = MaxClearence), alpha = 0.5)+ 
   theme_bw()+
   scale_fill_brewer(palette = "Dark2", name = "Taxon")+ylab("Clearance Rate (/day)")+
   xlab("Water Year Type")
-ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 8, units = "in")
+ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 5, units = "in")
 
 #####################################################
 

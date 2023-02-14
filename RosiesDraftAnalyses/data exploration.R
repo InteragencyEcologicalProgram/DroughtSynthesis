@@ -138,6 +138,12 @@ Int3a = filter(Int2, !is.na(MetricL))
 #save(Int3a, Int2, file = "data/Integrateddata.Rdata")
 load("data/Integrateddata.Rdata")
 
+#nick asked for a subset of the data
+Drought4Nick = filter(Int2, Metric %in% c("logNat", "Nitrate", "Ammonia", "logAm", "Phos", "logPhos", "Temperature", 
+                                          "Secchi", "Salinity"))
+
+save(Int2, Drought4Nick, file = "data/DroughtNick.Rdata")
+
 #look at it without the "not drought or wet" years
 ggplot(filter(Int3a, Drought != "N"), aes(x = Drought, y = Value)) + geom_boxplot() +
   facet_wrap(MetricL~., scales = "free_y")
