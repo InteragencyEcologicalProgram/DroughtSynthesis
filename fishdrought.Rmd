@@ -220,6 +220,8 @@ sh = ggplot(filter(FishDrought, Metric == "logShad"),  aes(x = as.factor(Drought
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 sh  
 
+crrmeans = group_by(filter(FishDrought, Metric == "Salmon CRR"), Yr_type) %>%
+  summarize(meanccr = mean(Value), medcrr = median(Value))
 crr = ggplot(filter(FishDrought, Metric == "Salmon CRR"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
@@ -280,9 +282,9 @@ TFS =  ggplot(filter(FishDrought, Metric == "logTFS"),  aes(x = as.factor(Drough
 legend <- cowplot::get_legend(sb)
  library(gridExtra)
 plots = grid.arrange(ds, LF, sh,TFS, sb2, crr, legend,  layout_matrix = rbind(c(1, 2, 3),
-                        c(4,5,6), c(NA, 7, NA)))
+                        c(4,5,6), c(NA, 7, NA)), heights = c(2,2,.5))
   
-ggsave(plot = plots,"FishDrought.tiff", device = "tiff", width = 10, height = 10, units = "in")
+ggsave(plot = plots,"FishDrought.tiff", device = "tiff", width = 10, height = 8, units = "in")
 
 ```
 Now i need a table with all the statistical results

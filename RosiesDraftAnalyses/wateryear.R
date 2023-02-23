@@ -203,5 +203,7 @@ ggplot(filter(WYs, Year >1969, Year < 2022))+
   geom_hline(data = cutoffs, aes(yintercept = cutval), linetype = 2)+
   geom_text(data = cutoffs, aes(x = 1965, y = cutval, label = Yr_type), vjust =0, hjust = 0, size = 3, lineheight = .9)+
   scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("Wet years", "First/only dry year",
-                                                              "Second dry year", "Thrid or more dry year"))+
+                                                              "Second dry year", "Third or more dry year"))+
   xlab(NULL)
+
+ggsave("plots/fishdroughtyears.tiff", device = "tiff", width = 7, height =5)
