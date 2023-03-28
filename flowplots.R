@@ -68,6 +68,8 @@ Flow2122 = filter(DF3, Year %in% c(2020, 2021, 2022))
 pal_yrt <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95", 
 "Above Normal" = "#00588B","Wet" = "#481F70FF", "2020" = "black", "2021" = "grey40", "2022" = "grey80") 
 
+#######################################################
+#plot for white paper
 ggplot(filter(DF3, !Year  %in% c(2020, 2021, 2022)), mapping = aes(x = wyDay, y = Flow, color = Whitepaper, fill = Whitepaper))+
   geom_smooth(size = 0.5, method = "gam", formula = y ~ s(x, bs = "cc"))+ 
   facet_wrap(~Station, scales = "free_y")+
@@ -87,5 +89,31 @@ ggplot(filter(DF3, !Year  %in% c(2020, 2021, 2022)), mapping = aes(x = wyDay, y 
 
 ggsave("plots/flowplots.tiff", device = "tiff", width = 9, height = 7, units = "in")
 
+################################################################
+#Box plot of % diverted
 
-            
+DFsum = pivot_wider(DF3, names_from = Station, values_from = Flow) %>%
+  mutate(PercetDiverted = `SWP+CVP Exports`/(`Sacramento at Freeport`+ `San Joaquin at Vernalis`),
+         Season = case_when(Month %in% c(3,4,5) ~ "Spring",
+                            Month %in% c(6,7,8) ~ "Summer",
+                            Month %in% c(9,10,11) ~ "Fall",
+                            Month %in% c(12,1,2) ~ "Winter"),
+         Season = factor(Season, levels = c("Winter", "Spring", "Summer", "Fall")))
+
+DFsum2 = group_by(DFsum, Season, Year, Month, Yr_type, Whitepaper) %>%
+  summarize(PercentDiverted = mean(PercetDiverted)) %>%
+  filter(!is.na(Whitepaper))
+
+group_by(DFsum2, Whitepaper) %>%
+  summarize(PercentDiverted = mean(PercentDiverted, na.rm =T))
+
+
+ggplot(DFsum2, aes(x = Whitepaper, y = PercentDiverted))+ geom_boxplot(aes(fill = Yr_type)) +
+  facet_wrap(~Season)+ drt_color_pal_yrtype()+ theme_bw()+ ylab("Export to Inflow Ratio")
+
+ggplot(DFsum2, aes(x = Whitepaper, y = PercentDiverted))+ geom_boxplot(aes(fill = Yr_type)) +
+   drt_color_pal_yrtype()+ theme_bw()+ ylab("Export to Inflow Ratio")+
+  scale_x_discrete(labels = c("Critical", "Dry", "Below\nNormal", "Above\nNormal", "Wet", "2020", "2021", "2022"))+
+  xlab(NULL)+ theme(legend.position = "none")
+
+ggsave("plots/whitepaper/FlowRatio.tiff", device = "tiff", width = 8, height = 6)

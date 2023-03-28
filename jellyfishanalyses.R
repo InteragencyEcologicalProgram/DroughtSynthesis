@@ -38,7 +38,9 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = ShortTerm)) +
 
 
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
-  geom_col()+ facet_wrap(~Region)
+  geom_col()+ facet_wrap(~Region)+
+  theme_bw()+
+  ylab("Mean Jellyfish CPUE")
 
 
 #steve wants catch by survey and month

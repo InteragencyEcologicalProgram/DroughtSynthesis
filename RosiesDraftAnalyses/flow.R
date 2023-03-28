@@ -17,7 +17,7 @@ library(multcomp)
 
 #we also want DTO for Delta Outflow - sensor 23
 
-Outflow = cdec_query("DTO", 23, "D", as.Date("2014-01-01"), as.Date("2020-09-30"))
+Outflow = cdec_query("DTO", 23, "D", as.Date("2014-01-01"), as.Date("2022-12-30"))
 names(Outflow)
 #better source for 2021 outflow
 DTO = read_csv("data/NDOI_WY2021.csv")
@@ -25,11 +25,16 @@ DTO = mutate(DTO, DateTime = mdy(Date), SensorType = "OUTFLOW", SensorNumber = 2
   rename(Value = NDOIcfs)
 
 
-Ex1 = cdec_query("HRO", 70, "D", as.Date("2014-01-01"), as.Date("2021-10-31"))
+Ex1 = cdec_query("HRO", 70, "D", as.Date("2014-01-01"), as.Date("2022-12-31"))
 
-Ex2 = cdec_query("TRP", 70, "D", as.Date("2014-01-01"), as.Date("2021-10-31"))
+Ex2 = cdec_query("TRP", 70, "D", as.Date("2014-01-01"), as.Date("2022-12-31"))
 
-flow = bind_rows(Outflow, Ex1, Ex2, DTO)
+vernalis = cdec_query("SJG", 20, "E", as.Date("2014-01-01"), as.Date("2022-12-31"))
+SJ = mutate(vernalis, DateTime = date(DateTime)) %>%
+  group_by(DateTime, SensorType, StationID) %>%
+  summarize(Value = mean(Value, na.rm =T))
+
+flow = bind_rows(Outflow, Ex1, Ex2, SJ)#, DTO)
 
 ggplot(flow, aes(x = DateTime, y = Value, color = StationID))+geom_line()+
   facet_wrap(~StationID, scales = "free_y", nrow = 3)
@@ -42,6 +47,12 @@ flow2 = group_by(flow, DateTime, SensorNumber, SensorType) %>%
 
 ggplot(flow2, aes(x = DateTime, y = Value, color = SensorType))+geom_line()+
   facet_wrap(~SensorType, scales = "free_y", nrow = 3)
+
+#Quick plot of just 2022
+flow22 = filter(flow2, Year == 2022)
+ggplot(flow22, aes(x = DateTime, y = Value, color = SensorType))+geom_line()+
+  facet_wrap(~SensorType, scales = "free_y", nrow = 3) + ylab("Flow CFS")+
+  theme_bw()
 
 #Average by month
 flowmonth = group_by(flow2, Month, Year, SensorType) %>%
@@ -352,3 +363,40 @@ ggplot(DFsummer, aes(y = OUT, x = Projects)) + geom_point()+ geom_smooth()+
   geom_abline(slope = 1, intercept = 0, size = 2, color = "red")
 
 ggplot(DFsummer, aes(x = ominuse)) + geom_histogram()       
+
+###################################################
+#Quick look at salinity at a bunch of stations in October
+
+salinity = cdec_query(stations = c("SJG", "HLT", "SJR", "MDM", "FRK", "BDT", "SJD", "MSD", "PPT"), 
+                      sensors = 100, start.date = as.Date("2022-09-01"), end.date = as.Date("2022-12-31"))
+
+sal = mutate(salinity, Date = date(DateTime)) %>%
+  group_by(StationID, SensorNumber, Date) %>%
+  summarize(EC = mean(Value, na.rm =T))
+
+#sort stations by location on the SJR
+sal = mutate(sal, StationID = factor(StationID, levels = c("FRK", "HLT", "MDM", "PPT", "SJG", "BDT", "SJD", "MSD", 'SJR')))
+
+ggplot(sal, aes(x = Date, y = EC)) +
+  geom_point(aes(color = EC))+
+  scale_color_viridis(guide = NULL, option = "B")+
+  geom_line()+
+  facet_wrap(~StationID)+
+  ylab("Daily Average EC uS/cm")+
+  theme_bw()
+
+#Reservoir releases
+reservoirs = cdec_query(stations = c("NML", "DNP", "CMN", "MIL", "NHG", "FRM", "GDW", "LGR", "MCS", "BUC", "HID"), 
+                        sensors = 23, start.date = as.Date("2022-09-01"), end.date = as.Date("2022-12-31"))
+
+res = mutate(reservoirs, Date = date(DateTime)) %>%
+  group_by(StationID, SensorNumber, Date) %>%
+  summarize(Flow = mean(Value, na.rm =T))
+
+ggplot(res, aes(x = Date, y = Flow)) +
+  geom_point(aes(color = Flow))+
+  scale_color_viridis(guide = NULL, option = "B")+
+  geom_line()+
+  facet_wrap(~StationID, scales = "free_y")+
+  ylab("Reservoir Outflow (CFS)")+
+  theme_bw()

@@ -129,9 +129,17 @@ siteNumbers <- c(
 )
 
 vel_coords <- dataRetrieval::whatWQPsites(siteid = siteNumbers)%>%
-  select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) 
-vels = st_as_sf(vel_coords, coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326)
+  dplyr::select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure) 
+vels = st_as_sf(vel_coords, coords = c("LongitudeMeasure", "LatitudeMeasure"), crs = 4326) %>%
+  mutate(ID = c(1,2,3,4,5), name = c("Cache Slough at Ryer Island (inactive)", 
+                                     "Cache Slough above Ryer Island Ferry (active)",
+                                     "San Joaquin River at Jersey Point",
+                                     "Old River at Bacon Island",
+                                    "Middle River at Middle River"),
+         Abbreviation = c("Cache", "Cache", "Jersey", "Old", "Middle"),
+         USGSnumbs = siteNumbers)
 
+write.csv(vels, "data/Velocitystations.csv")
 
 wqmap = ggplot()+
   geom_sf(data = WW_Delta, fill = "lightskyblue", color = "grey")+
@@ -142,7 +150,8 @@ wqmap = ggplot()+
   theme_bw()+
   geom_sf(data = stas, aes(shape = Source))+
   scale_shape_manual(values = c(15,16,17,18,22,23,24,25,11,1, 2), name = "Discrete \nSamples")+    
-  geom_sf(data = vels, shape = 16, size = 4,aes(color = "Continous\nVelocity"))+
+  geom_sf(data = vels, shape = 16, size = 5,aes(color = "Continous\nVelocity"))+
+  geom_sf_text(data = vels, aes(label = ID))+
   scale_color_discrete(name = NULL)+
    theme(legend.position="none")+
 
@@ -214,3 +223,5 @@ conmap= ggplot()+
 conmap
 
 ggsave("plots/blankmap.tiff", device = "tiff", width = 8, height = 8)
+
+####################

@@ -25,6 +25,16 @@ Fishfall = filter(Fish, Season == "Fall") %>%
   pivot_longer(cols = c(Sbindex, SmeltIndex, LongfinIndex, AmShadIndex, logDS, logShad, logSB, logLFS, TFSindex, logTFS), 
                names_to = "Metric", values_to = "Value")
 
+#quick graph of FMWT DS index for another reason...
+dsfall = filter(Fishfall, Metric == "SmeltIndex")
+ggplot(dsfall, aes(x = YearAdj, y = Value)) + geom_col()+
+  geom_text(data = filter(dsfall, YearAdj >2011), aes(y = Value +10, label = Value), vjust = 0)+
+  ylab("FMWT Delta Smelt Index")+ xlab("Year")+
+  annotate("text", x = 1974, y = 1, label = "No Index", angle = 90, hjust =0)+
+  annotate("text", x = 1979, y = 1, label = "No Index", angle = 90, hjust =0)+
+  theme_bw()
+
+
 yrs = read_csv("data/yearassignments.csv") 
 
 
