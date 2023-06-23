@@ -20,6 +20,11 @@ Regions = mutate(Regions, nudge = c(-.1, .1, -.1, -.09, .09))
 Points =read_excel("data/points.xlsx")
 Points = st_as_sf(Points, coords = c("Longitude", "Latitude"), crs = 4326)
 
+st_write(Regions, "data/DroughtRegions.shp")
+st_write(WW_Delta, "data/Delta.shp")
+Regions = st_read("data/regionshapefile/DroughtRegions.shp")
+save(Regions, file = "DroughtRegions.RData")
+
 ggplot()+
   geom_sf(data = WW_Delta)+
   geom_sf(data = Regions,

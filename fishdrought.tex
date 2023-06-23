@@ -1,0 +1,880 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Fish multi-yeardrought},
+  pdfauthor={Rosemary Hartman},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Fish multi-yeardrought}
+\author{Rosemary Hartman}
+\date{2023-01-17}
+
+\begin{document}
+\maketitle
+
+\hypertarget{fish---multiple-drought-years}{%
+\subsection{Fish - multiple drought
+years}\label{fish---multiple-drought-years}}
+
+I categorized drought years into year `0' (wet years), `1' (single dry
+year or first year of drought), `2' (Second year of drought) and `3+'
+(third or more year of drought. )
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-1-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-1-2.pdf}
+
+Then I ran statistics. For POD species i included both ``year of
+drought'' and ``year'' to account for changes over time.
+
+\hypertarget{first-striped-bass}{%
+\subsubsection{First, striped bass}\label{first-striped-bass}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{SB }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logSB"}\NormalTok{)}
+\NormalTok{FD1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear }\SpecialCharTok{+}\NormalTok{ Year, }\AttributeTok{data =}\NormalTok{ SB)}
+\FunctionTok{summary}\NormalTok{(FD1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear + Year, data = SB)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.45583 -0.53370  0.06044  0.51148  1.50960 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   187.693029  14.387779  13.045  < 2e-16 ***
+## DroughtYear1   -0.554860   0.263277  -2.108  0.04055 *  
+## DroughtYear2   -1.126090   0.343270  -3.280  0.00198 ** 
+## DroughtYear3+  -0.655741   0.292645  -2.241  0.02991 *  
+## Year           -0.090656   0.007222 -12.554  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.7344 on 46 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.8263, Adjusted R-squared:  0.8112 
+## F-statistic: 54.72 on 4 and 46 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(FD1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{emmeans}\NormalTok{(FD1, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $emmeans
+##  DroughtYear emmean    SE df lower.CL upper.CL
+##  0             6.67 0.157 46     6.36     6.99
+##  1             6.12 0.212 46     5.69     6.55
+##  2             5.55 0.302 46     4.94     6.16
+##  3+            6.02 0.239 46     5.54     6.50
+## 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast estimate    SE df t.ratio p.value
+##  0 - 1       0.555 0.263 46   2.108  0.1660
+##  0 - 2       1.126 0.343 46   3.280  0.0103
+##  0 - (3+)    0.656 0.293 46   2.241  0.1275
+##  1 - 2       0.571 0.369 46   1.548  0.4180
+##  1 - (3+)    0.101 0.320 46   0.315  0.9890
+##  2 - (3+)   -0.470 0.380 46  -1.238  0.6064
+## 
+## P value adjustment: tukey method for comparing a family of 4 estimates
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(FD1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-5.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-2-6.pdf}
+So, droughts are bad, but long droughts aren't much worse than short
+ones after accounting for long-term population trajectory
+
+\hypertarget{now-longfin-smelt}{%
+\subsubsection{Now longfin smelt}\label{now-longfin-smelt}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{LFS }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logLFS"}\NormalTok{)}
+\NormalTok{LFS1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear }\SpecialCharTok{+}\NormalTok{ Year, }\AttributeTok{data =}\NormalTok{ LFS)}
+\FunctionTok{summary}\NormalTok{(LFS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear + Year, data = LFS)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2.26460 -0.79994  0.05845  0.79698  3.05904 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   163.27414   23.36338   6.988 9.48e-09 ***
+## DroughtYear1   -2.01296    0.42752  -4.708 2.32e-05 ***
+## DroughtYear2   -1.43022    0.55741  -2.566   0.0136 *  
+## DroughtYear3+  -2.59382    0.47521  -5.458 1.86e-06 ***
+## Year           -0.07801    0.01173  -6.652 3.03e-08 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.193 on 46 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.7207, Adjusted R-squared:  0.6964 
+## F-statistic: 29.67 on 4 and 46 DF,  p-value: 3.196e-12
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(LFS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{emmeans}\NormalTok{(LFS1, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $emmeans
+##  DroughtYear emmean    SE df lower.CL upper.CL
+##  0             7.50 0.254 46     6.99     8.02
+##  1             5.49 0.344 46     4.80     6.18
+##  2             6.07 0.490 46     5.09     7.06
+##  3+            4.91 0.389 46     4.13     5.69
+## 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast estimate    SE df t.ratio p.value
+##  0 - 1       2.013 0.428 46   4.708  0.0001
+##  0 - 2       1.430 0.557 46   2.566  0.0631
+##  0 - (3+)    2.594 0.475 46   5.458  <.0001
+##  1 - 2      -0.583 0.599 46  -0.972  0.7657
+##  1 - (3+)    0.581 0.520 46   1.117  0.6810
+##  2 - (3+)    1.164 0.617 46   1.886  0.2482
+## 
+## P value adjustment: tukey method for comparing a family of 4 estimates
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(LFS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-5.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-3-6.pdf}
+
+Again, droughts are bad, but long droughts aren't much worse than short
+ones after accounting for long-term population trajectory
+
+\hypertarget{delta-smelt}{%
+\subsubsection{Delta Smelt}\label{delta-smelt}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{DS }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logDS"}\NormalTok{)}
+\NormalTok{DS1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear }\SpecialCharTok{+}\NormalTok{ Year, }\AttributeTok{data =}\NormalTok{ DS)}
+\FunctionTok{summary}\NormalTok{(DS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear + Year, data = DS)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -2.4207 -0.7723 -0.1449  0.6740  2.6136 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   234.02469   23.66651   9.888 5.81e-13 ***
+## DroughtYear1   -0.69550    0.43307  -1.606    0.115    
+## DroughtYear2   -0.69398    0.56465  -1.229    0.225    
+## DroughtYear3+  -0.42266    0.48137  -0.878    0.384    
+## Year           -0.11471    0.01188  -9.657 1.22e-12 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.208 on 46 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.716,  Adjusted R-squared:  0.6913 
+## F-statistic:    29 on 4 and 46 DF,  p-value: 4.648e-12
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(DS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(DS1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-5.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-4-6.pdf}
+Delta Smelt just don't want to behave.
+
+\hypertarget{american-shad}{%
+\subsubsection{American Shad}\label{american-shad}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{shad }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logShad"}\NormalTok{)}
+\NormalTok{shad1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear }\SpecialCharTok{+}\NormalTok{ Year, }\AttributeTok{data =}\NormalTok{ shad)}
+\FunctionTok{summary}\NormalTok{(shad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear + Year, data = shad)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2.18734 -0.62640  0.02317  0.58049  1.53875 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)   
+## (Intercept)   29.282382  16.281836   1.798  0.07867 . 
+## DroughtYear1  -0.999479   0.297936  -3.355  0.00160 **
+## DroughtYear2  -1.240137   0.388459  -3.192  0.00254 **
+## DroughtYear3+ -0.906320   0.331169  -2.737  0.00879 **
+## Year          -0.010822   0.008172  -1.324  0.19196   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.8311 on 46 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.3501, Adjusted R-squared:  0.2935 
+## F-statistic: 6.194 on 4 and 46 DF,  p-value: 0.0004496
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{emmeans}\NormalTok{(shad1, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $emmeans
+##  DroughtYear emmean    SE df lower.CL upper.CL
+##  0             7.67 0.177 46     7.32     8.03
+##  1             6.67 0.240 46     6.19     7.16
+##  2             6.43 0.341 46     5.75     7.12
+##  3+            6.77 0.271 46     6.22     7.31
+## 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast estimate    SE df t.ratio p.value
+##  0 - 1      0.9995 0.298 46   3.355  0.0084
+##  0 - 2      1.2401 0.388 46   3.192  0.0131
+##  0 - (3+)   0.9063 0.331 46   2.737  0.0422
+##  1 - 2      0.2407 0.418 46   0.576  0.9387
+##  1 - (3+)  -0.0932 0.362 46  -0.257  0.9940
+##  2 - (3+)  -0.3338 0.430 46  -0.776  0.8648
+## 
+## P value adjustment: tukey method for comparing a family of 4 estimates
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(shad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(shad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-5.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-5-6.pdf}
+It's all about dry versus wet, not multi-year droughts
+
+\hypertarget{now-salmon-crr}{%
+\subsubsection{Now Salmon CRR}\label{now-salmon-crr}}
+
+I calculated a mean CRR for all the runs combined. I''m not sure that's
+appropriate, but I went for it. I could break them out if you don't like
+it.
+
+I wasn't quite sure if I needed Year as a predictor here, so I did a
+quick plot
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{CRRs }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"Salmon CRR"}\NormalTok{)}
+\FunctionTok{ggplot}\NormalTok{(CRRs, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{Year, }\AttributeTok{y =}\NormalTok{ Value))}\SpecialCharTok{+} \FunctionTok{geom\_point}\NormalTok{()}\SpecialCharTok{+} \FunctionTok{geom\_smooth}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+\end{verbatim}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+No real trend over time, so I'll skip that.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{CRRs1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear, }\AttributeTok{data =}\NormalTok{ CRRs)}
+\FunctionTok{summary}\NormalTok{(CRRs1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear, data = CRRs)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.5045 -0.5492 -0.1386  0.2978  1.8332 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)    1.45259    0.17898   8.116 2.75e-10 ***
+## DroughtYear1  -0.02169    0.29681  -0.073    0.942    
+## DroughtYear2   0.42873    0.37967   1.129    0.265    
+## DroughtYear3+ -0.86769    0.32677  -2.655    0.011 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.8202 on 44 degrees of freedom
+## Multiple R-squared:  0.1969, Adjusted R-squared:  0.1421 
+## F-statistic: 3.595 on 3 and 44 DF,  p-value: 0.02079
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(CRRs1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-7-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-7-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-7-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-7-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{emmeans}\NormalTok{(CRRs1, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $emmeans
+##  DroughtYear emmean    SE df lower.CL upper.CL
+##  0            1.453 0.179 44   1.0919     1.81
+##  1            1.431 0.237 44   0.9537     1.91
+##  2            1.881 0.335 44   1.2065     2.56
+##  3+           0.585 0.273 44   0.0339     1.14
+## 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast estimate    SE df t.ratio p.value
+##  0 - 1      0.0217 0.297 44   0.073  0.9999
+##  0 - 2     -0.4287 0.380 44  -1.129  0.6737
+##  0 - (3+)   0.8677 0.327 44   2.655  0.0518
+##  1 - 2     -0.4504 0.410 44  -1.098  0.6924
+##  1 - (3+)   0.8460 0.362 44   2.339  0.1046
+##  2 - (3+)   1.2964 0.432 44   2.999  0.0222
+## 
+## P value adjustment: tukey method for comparing a family of 4 estimates
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(CRRs1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-7-5.pdf}
+
+THree or more years of drought is REALLY bad for salmon.
+
+\hypertarget{threadfin}{%
+\subsubsection{Threadfin}\label{threadfin}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{TFshad }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logTFS"}\NormalTok{)}
+\NormalTok{TFshad1 }\OtherTok{=} \FunctionTok{lm}\NormalTok{(Value }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear }\SpecialCharTok{+}\NormalTok{ Year, }\AttributeTok{data =}\NormalTok{ TFshad)}
+\FunctionTok{summary}\NormalTok{(TFshad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = Value ~ DroughtYear + Year, data = TFshad)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -2.8064 -0.6783  0.2244  0.6866  2.4686 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   114.01026   23.58090   4.835 1.53e-05 ***
+## DroughtYear1   -0.23063    0.43150  -0.534    0.596    
+## DroughtYear2   -0.39681    0.56260  -0.705    0.484    
+## DroughtYear3+  -0.48075    0.47963  -1.002    0.321    
+## Year           -0.05331    0.01184  -4.504 4.54e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.204 on 46 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.3759, Adjusted R-squared:  0.3216 
+## F-statistic: 6.925 on 4 and 46 DF,  p-value: 0.0001887
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{emmeans}\NormalTok{(TFshad1, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ DroughtYear)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $emmeans
+##  DroughtYear emmean    SE df lower.CL upper.CL
+##  0             7.56 0.257 46     7.05     8.08
+##  1             7.33 0.347 46     6.63     8.03
+##  2             7.17 0.495 46     6.17     8.16
+##  3+            7.08 0.392 46     6.29     7.87
+## 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast estimate    SE df t.ratio p.value
+##  0 - 1      0.2306 0.431 46   0.534  0.9502
+##  0 - 2      0.3968 0.563 46   0.705  0.8945
+##  0 - (3+)   0.4807 0.480 46   1.002  0.7488
+##  1 - 2      0.1662 0.605 46   0.275  0.9927
+##  1 - (3+)   0.2501 0.525 46   0.477  0.9639
+##  2 - (3+)   0.0839 0.623 46   0.135  0.9991
+## 
+## P value adjustment: tukey method for comparing a family of 4 estimates
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(TFshad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-1.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-2.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-3.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{visreg}\NormalTok{(TFshad1)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-5.pdf}
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-8-6.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#final plot for paper}
+
+\CommentTok{\#data frame of pairwise comparison results}
+\CommentTok{\# FishDrought = droplevels(FishDrought)}
+\CommentTok{\# pairs = data.frame(MetricL = rep(levels(FishDrought$MetricL), each = 4), }
+\CommentTok{\#                    DroughtYear = rep(c("0", "1", "2", "3+"), 5),}
+\CommentTok{\#                    Group = c("A", "B", "B", "B", "A", "A", "A", "A", "A", }
+\CommentTok{\#                              "B", "B", "B", "A", "B", "B", "B",}
+\CommentTok{\#                              "A", "A", "A", "B"),}
+\CommentTok{\#                    Y = c(rep(10, 4), rep(8, 4), rep(12, 4), rep(10, 4), rep(4, 4)))}
+
+\FunctionTok{ggplot}\NormalTok{(FishDrought, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), c("1", "2"), }
+\CommentTok{\#                                  c("1", "3+"), c("2, 3+")), position = c())+}
+   \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Wet years"}\NormalTok{, }\StringTok{"First/only dry year"}\NormalTok{,}
+                                                                            \StringTok{"Second dry year"}\NormalTok{, }\StringTok{"Thrid or more dry year"}\NormalTok{))}\SpecialCharTok{+}
+
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"bottom"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{LF }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logLFS"}\NormalTok{),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }
+                                 \FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"2"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }
+              \AttributeTok{y\_position =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{,}\DecValTok{11}\NormalTok{,}\DecValTok{12}\NormalTok{,}\DecValTok{8}\NormalTok{, }\DecValTok{9}\NormalTok{), }\AttributeTok{test =}\NormalTok{ t.test, }
+              \AttributeTok{map\_signif\_level=}\NormalTok{T)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{13}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}
+\NormalTok{LF}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sh }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logShad"}\NormalTok{),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }
+                                 \FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"2"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }
+              \AttributeTok{y\_position =} \FunctionTok{c}\NormalTok{(}\DecValTok{9}\NormalTok{,}\FloatTok{9.5}\NormalTok{,}\DecValTok{10}\NormalTok{,}\DecValTok{8}\NormalTok{, }\FloatTok{8.5}\NormalTok{), }\AttributeTok{test =}\NormalTok{ t.test, }
+              \AttributeTok{map\_signif\_level=}\NormalTok{T)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{3}\NormalTok{,}\DecValTok{11}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}
+\NormalTok{sh  }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{crr }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"Salmon CRR"}\NormalTok{),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }
+                                 \FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"2"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }
+              \AttributeTok{y\_position =} \FunctionTok{c}\NormalTok{(}\DecValTok{4}\NormalTok{,}\FloatTok{4.5}\NormalTok{,}\DecValTok{5}\NormalTok{,}\FloatTok{4.2}\NormalTok{, }\FloatTok{3.7}\NormalTok{), }\AttributeTok{test =}\NormalTok{ t.test, }
+              \AttributeTok{map\_signif\_level=}\NormalTok{T)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{0}\NormalTok{,}\FloatTok{5.5}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}
+
+\NormalTok{  crr}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ds }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logDS"}\NormalTok{),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }\AttributeTok{annotations =} \StringTok{"All comparisons NS"}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{9}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+}
+
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \ConstantTok{NULL}\NormalTok{)}
+
+\NormalTok{  ds}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-5.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{  sb }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logSB"}\NormalTok{, }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(Value)),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }
+                                 \FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"2"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"1"}\NormalTok{, }\StringTok{"3+"}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\StringTok{"2"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }
+              \AttributeTok{y\_position =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{,}\DecValTok{11}\NormalTok{,}\DecValTok{12}\NormalTok{,}\FloatTok{8.5}\NormalTok{, }\FloatTok{9.5}\NormalTok{), }\AttributeTok{test =}\NormalTok{ t.test, }
+              \AttributeTok{map\_signif\_level=}\NormalTok{T)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{0}\NormalTok{,}\FloatTok{12.5}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"0, Wet years"}\NormalTok{, }\StringTok{"1, First/only dry year"}\NormalTok{,}
+                                                                            \StringTok{"2, Second dry year"}\NormalTok{, }\StringTok{"3+ Third or more dry year"}\NormalTok{))}\SpecialCharTok{+}
+    \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"bottom"}\NormalTok{)}
+
+\NormalTok{  sb}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-6.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{  sb2 }\OtherTok{=}\NormalTok{ sb }\SpecialCharTok{+}  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Scale for fill is already present.
+## Adding another scale for fill, which will replace the existing scale.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{TFS }\OtherTok{=}  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{==} \StringTok{"logTFS"}\NormalTok{),  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{as.factor}\NormalTok{(DroughtYear), }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =} \FunctionTok{as.factor}\NormalTok{(DroughtYear))) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_signif}\NormalTok{(}\AttributeTok{comparisons =} \FunctionTok{list}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"0"}\NormalTok{, }\StringTok{"3+"}\NormalTok{)), }\AttributeTok{annotations =} \StringTok{"All comparisons NS"}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+ \CommentTok{\# geom\_text(data = pairs, aes(y = Y, label = Group))+}
+  \FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{ylim}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{12}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Dark2"}\NormalTok{, }\AttributeTok{name =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{guide =} \ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+}
+
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \ConstantTok{NULL}\NormalTok{)}
+
+\NormalTok{  TFS}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-7.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#print just the legend}
+\NormalTok{legend }\OtherTok{\textless{}{-}}\NormalTok{ cowplot}\SpecialCharTok{::}\FunctionTok{get\_legend}\NormalTok{(sb)}
+ \FunctionTok{library}\NormalTok{(gridExtra)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'gridExtra'
+## 
+## The following object is masked from 'package:dplyr':
+## 
+##     combine
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{plots }\OtherTok{=} \FunctionTok{grid.arrange}\NormalTok{(ds, LF, sh,TFS, sb2, crr, legend,  }\AttributeTok{layout\_matrix =} \FunctionTok{rbind}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{),}
+                        \FunctionTok{c}\NormalTok{(}\DecValTok{4}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{6}\NormalTok{), }\FunctionTok{c}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\DecValTok{7}\NormalTok{, }\ConstantTok{NA}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-9-8.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggsave}\NormalTok{(}\AttributeTok{plot =}\NormalTok{ plots,}\StringTok{"FishDrought.tiff"}\NormalTok{, }\AttributeTok{device =} \StringTok{"tiff"}\NormalTok{, }\AttributeTok{width =} \DecValTok{10}\NormalTok{, }\AttributeTok{height =} \DecValTok{10}\NormalTok{, }\AttributeTok{units =} \StringTok{"in"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Now i need a table with all the statistical results
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(broom)}
+
+\NormalTok{FD1t }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(FD1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"Striped Bass"}\NormalTok{)}
+
+\NormalTok{LFS1t }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(LFS1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"Longfin Smelt"}\NormalTok{)}
+
+\NormalTok{shad1t }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(shad1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"American Shad"}\NormalTok{)}
+
+
+\NormalTok{Deltas }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(DS1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"Delta Smelt"}\NormalTok{)}
+
+\NormalTok{Salmon }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(CRRs1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"Salmon CRR"}\NormalTok{)}
+
+\NormalTok{Threadfin }\OtherTok{=} \FunctionTok{tidy}\NormalTok{(TFshad1) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Species =} \StringTok{"Threadfin Shad"}\NormalTok{)}
+
+\NormalTok{models }\OtherTok{=} \FunctionTok{bind\_rows}\NormalTok{(FD1t, LFS1t, shad1t, Deltas, Threadfin, Salmon)}
+\FunctionTok{write.csv}\NormalTok{(models, }\StringTok{"FishMultiYear.csv"}\NormalTok{, }\AttributeTok{row.names =}\NormalTok{ F)}
+\end{Highlighting}
+\end{Shaded}
+
+Plots for white papers
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ggbeeswarm)}
+\NormalTok{FishDrought2 }\OtherTok{=} \FunctionTok{filter}\NormalTok{(FishDrought, Metric }\SpecialCharTok{!=} \StringTok{"Salmon CRR"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Whitepaper =} \FunctionTok{factor}\NormalTok{(Whitepaper, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Critical"}\NormalTok{, }\StringTok{"Dry"}\NormalTok{, }\StringTok{"Below Normal"}\NormalTok{, }\StringTok{"Above Normal"}\NormalTok{, }\StringTok{"Wet"}\NormalTok{, }\StringTok{"2020"}\NormalTok{, }\StringTok{"2021"}\NormalTok{, }\StringTok{"2022"}\NormalTok{),}
+                             \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Critical"}\NormalTok{, }\StringTok{"Dry"}\NormalTok{, }\StringTok{"Below}\SpecialCharTok{\textbackslash{}n}\StringTok{Normal"}\NormalTok{, }\StringTok{"Above}\SpecialCharTok{\textbackslash{}n}\StringTok{Normal"}\NormalTok{, }\StringTok{"Wet"}\NormalTok{, }\StringTok{"2020"}\NormalTok{, }\StringTok{"2021"}\NormalTok{, }\StringTok{"2022"}\NormalTok{)))}
+  
+
+\FunctionTok{ggplot}\NormalTok{(FishDrought2,  }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Whitepaper, }\AttributeTok{y =}\NormalTok{ Value, }\AttributeTok{fill =}\NormalTok{ Yr\_type)) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{drt\_color\_pal\_yrtype}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{geom\_quasirandom}\NormalTok{()}\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(MetricL}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{, }\AttributeTok{nrow =} \DecValTok{5}\NormalTok{)}\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}\SpecialCharTok{+}
+   \FunctionTok{ylab}\NormalTok{(}\StringTok{"log FMWT Index"}\NormalTok{)}\SpecialCharTok{+}\FunctionTok{xlab}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{fishdrought_files/figure-latex/unnamed-chunk-11-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggsave}\NormalTok{(}\StringTok{"plots/whitepaper/fish.tiff"}\NormalTok{, }\AttributeTok{device =} \StringTok{"tiff"}\NormalTok{, }\AttributeTok{height =} \DecValTok{8}\NormalTok{, }\AttributeTok{width =} \DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
