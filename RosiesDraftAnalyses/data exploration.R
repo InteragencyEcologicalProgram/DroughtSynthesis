@@ -8,7 +8,14 @@ library(emmeans)
 
 #Boz's integrated data set
 
-load("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/outputs/NutrientsChlorophyll.RData")
+#load("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/outputs/NutrientsChlorophyll.RData")
+Nuts = readRDS("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/data/lt_avg_nutr.rds")
+Chl = readRDS("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/data/lt_avg_chla.rds")
+WQ = readRDS("C:/Users/rhartman/OneDrive - California Department of Water Resources/Drought/WQ-LT-Publication/data/lt_avg_wq_meas.rds")
+
+wqnuts = left_join(Nuts, Chl) %>%
+  left_join(WQ) %>%
+  mutate(LogChl = log(Chlorophyll))
 
 #Fish indecies
 Fish <- read_excel("data/Integrated data set.xlsx", na = "NA") %>%
@@ -46,13 +53,13 @@ zoopsBPUE_regional = read_csv("data/zoop_drought_lt_bpue_reg.csv") %>%
   mutate(Value = log(ZoopBPUE), Metric = paste(Region, "logZoopBPUE", sep = "_"))
   
 #Chlorophyll data
-Chl2 = select(NutsCLa, Season, Region, YearAdj, Chlorophyll, LogChl) %>%
+Chl2 = select(wqnuts, Season, Region, YearAdj, Chlorophyll, LogChl) %>%
   group_by(YearAdj, Region) %>%
   summarize(Chl = mean(Chlorophyll, na.rm = T), logChl = log(Chl)) %>%
   mutate(Metric = paste(Region, "logChl", sep = "_"), Value = logChl)
 
 
-Nuts = group_by(NutsCLa, YearAdj) %>%
+Nuts = group_by(wqnuts, YearAdj) %>%
   summarize(Nitrate = mean(DissNitrateNitrite, na.rm = T), logNat = log(Nitrate),
             Ammonia = mean(DissAmmonia, na.rm = T), logAm = log(Ammonia), Phos = mean(DissOrthophos, na.rm =t),
             logPhos = log(Phos)) %>%
@@ -68,7 +75,7 @@ hyro = pivot_longer(lt_avg_hydro, cols = c(Outflow, Export, X2), names_to = "Met
 
 
 #water quality is pretty consistant, both seasonally and regionally. Let's just do the annual mean
-WQreg = pivot_longer(lt_avg_wq, cols = c(Temperature, Salinity, Secchi),
+WQreg = pivot_longer(wqnuts, cols = c(Temperature, Salinity, Secchi),
                      names_to = "Metric", values_to = "Value") %>%
   group_by(YearAdj, Metric) %>%
   summarize(Value = mean(Value, na.rm = T))
@@ -146,7 +153,8 @@ Int3a = filter(Int2, !is.na(MetricL))
 
 #save teh data so I can just make the graphs quickly
 #save(Int3a, Int2, file = "data/Integrateddata.Rdata")
-load("data/Integrateddata.Rdata")
+#save(Int3a, Int2, file = "data/Integrateddata2023.Rdata")
+#load("data/Integrateddata2023.Rdata")
 
 #nick asked for a subset of the data
 Drought4Nick = filter(Int2, Metric %in% c("logNat", "Nitrate", "Ammonia", "logAm", "Phos", "logPhos", "Temperature", 
@@ -243,6 +251,7 @@ ggplot(Int3, aes(x = SACRT, y = Value)) +
   theme_bw()
 
 
+
 # Now do outflow
 
 Int4 = rename(lt_avg_hydro, Year = YearAdj) %>%
@@ -317,8 +326,8 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = magnitude)) + geom_col
 DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen< 0 ~ 0.1,
                                                            TRUE ~ -Cohen + 0.1))
 write.csv(DroughtImpact2a, "DroughtImpact.csv", row.names = F)
-#save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
-load("outputs/DroughtImpac.RData")
+save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
+#load("outputs/DroughtImpac.RData")
 
 ##Arrow plot with all things, even the non-significant ones
 ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) + 
@@ -334,7 +343,7 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) +
   coord_cartesian(ylim = c(-2.8, 5))+
   theme(axis.text.x = element_blank(), legend.position = "right", legend.direction = "vertical")
 
-ggsave("plots/EffectArrows.tiff", device = "tiff", width = 9, height = 7, units = "in")
+ggsave("plots/EffectArrows2023.tiff", device = "tiff", width = 9, height = 7, units = "in")
 
 ######################################################################################
 #now try and do the origional graph but highlight which are significant
@@ -349,7 +358,7 @@ ggplot(Int3a, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
   theme_bw()+ theme(legend.position = "none")
 
 
-ggsave("plots/AllParamssig.tiff", device = "tiff", width = 9, height = 8, units = "in")
+ggsave("plots/AllParamssig2023.tiff", device = "tiff", width = 9, height = 8, units = "in")
 
 #mapps for zooplankton and chlorophyll
 
