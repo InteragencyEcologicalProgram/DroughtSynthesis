@@ -17,6 +17,7 @@ library(emmeans)
 library(visreg)
 library(ggsignif)
 library(DroughtData)
+library(zoo)
 
 ```
 
@@ -26,7 +27,38 @@ I categorized drought years into year '0' (wet years), '1' (single dry year or f
 
 ```{r echo = F}
 load("FishDrough.RData")
+#create a "long term drought" index that is the sum of the previous three year's CVI
+yrs = read_csv("data/yearassignments.csv") %>%
+  arrange(Year) %>%
+  mutate(LTD3 = rollsum(Index, 3, fill = NA, align = "right"),
+         LTD2 = rollsum(Index, 2, fill = NA, align = "right"),
+         LTD4 = rollsum(Index, 4, fill = NA, align = "right")) %>%
+  select(Year, DroughtYear2, LTD2,LTD3, LTD4, DroughtNum)
 
+#OK, what about outflow instead?
+load("data/Dayflow.RData")
+DFy = mutate(DF, Month = month(Date), Year = year(Date), WY = case_when(Month %in% c(10,11, 12)~Year+1,
+                                                                       TRUE ~ Year)) %>%
+  filter(OUT >0) %>%
+  group_by(WY) %>%
+  summarize(OUT = mean(OUT), SAC = mean(SAC)) %>%
+  mutate(Year = WY,
+         LTo3 = rollsum(OUT, 3, fill = NA, align = "right"),
+         LTo2 = rollsum(OUT, 2, fill = NA, align = "right"),
+         LTo4 = rollsum(OUT, 4, fill = NA, align = "right"))
+
+#calculate a 'rolling deficity from average' but just by each drought.
+aveout = mean(filter(DFy, Year>1970)$OUT)
+
+DFy2 = left_join(yrs, DFy) %>%
+  arrange(Year) %>%
+  group_by(DroughtNum) %>%
+  mutate(outdiff = OUT-aveout,
+         rollout = rollsum(outdiff, 3, fill = outdiff, align = "right"))
+  
+
+
+FishDrought = left_join(FishDrought, DFy2)
 
 library("ggbeeswarm")
 
@@ -42,6 +74,19 @@ ggplot(FishDrought, aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(
 ggplot(FishDrought, aes(x = Year, y = Value))+ geom_point()+ geom_line()+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()
 
+ggplot(FishDrought, aes(x = DroughtYear2, y = Value, color = MetricL)) + 
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ggplot(FishDrought, aes(x = LTD, y = Value, color = MetricL)) + 
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ggplot(FishDrought, aes(x = Index, y = Value, color = MetricL)) + 
+  geom_point()+
+  geom_smooth(method = "lm")
+
+
 
 ```
 
@@ -50,7 +95,13 @@ Then I ran statistics. For POD species i included both "year of drought" and "ye
 ### First, striped bass
 
 ```{r}
-SB = filter(FishDrought, Metric == "logSB")
+#add a lag term to account for previous year's population
+#Or matt suggests N-4 because most striped bass mature at age 4. 
+
+
+SB = filter(FishDrought, Metric == "logSB") %>%
+  arrange(Year) %>%
+  mutate( lagindex = lag(Value), lagindex4 = lag(Value, n =3))
 #test regime instead of year
 
 SB = mutate(SB, regime = case_when(Year < 1987 ~ "preclam",
@@ -58,6 +109,7 @@ SB = mutate(SB, regime = case_when(Year < 1987 ~ "preclam",
                                    Year >= 2001 ~ "POD"))
 
 FD1 = lm(Value ~ DroughtYear + Year, data = SB)
+acf(residuals(FD1))
 summary(FD1)
 plot(FD1)
 emmeans(FD1, pairwise ~ DroughtYear)
@@ -69,27 +121,171 @@ plot(FD2)
 AIC(FD1)
 AIC(FD2)
 
-FD1 = lm(Value ~ Yr_type + Year, data = SB)
-summary(FD1)
-plot(FD1)
-emmeans(FD1, pairwise ~ DroughtYear)
-visreg(FD1)
+FD1x =lm(Value ~ Yr_type + Year, data = SB)
+summary(FD1x)
+plot(FD1x)
+visreg(FD1x)
 
-FD2 = lm(Value ~ Yr_type+ regime, data = SB)
-summary(FD2)
-plot(FD2)
-AIC(FD1)
-AIC(FD2)
+FD1x1 =lm(Value ~ Yr_type + Year+lagindex, data = SB)
+summary(FD1x1)
+plot(FD1x1)
+emmeans(FD1x1, pairwise ~ DroughtYear)
+visreg(FD1x1)
 
+FD2x = lm(Value ~ Yr_type+ regime, data = SB)
+summary(FD2x)
+plot(FD2x)
+AIC(FD1x)
+AIC(FD2x)
+```
+
+The reviewers didn't like our simple analysis. Something to incorporate temporal autocorrelation.
+
+```{r}
+
+SB = mutate(SB, DroughtYear3 = as.ordered(DroughtYear))
+FD1.1 = lm(Value ~ DroughtYear3 + Year+ lagindex, data = SB)
+acf(residuals(FD1.1))
+FD1.1a = lm(Value ~ DroughtYear + Year+ lagindex4, data = SB)
+summary(FD1.1)
+plot(FD1.1)
+emmeans(FD1.1, pairwise ~ DroughtYear)
+visreg(FD1.1)
+visreg(FD1.1a)
+
+FD1.2 = lm(Value ~ DroughtYear2 + Year+ lagindex, data = SB)
+
+FD1.2a = lm(Value ~ DroughtYear2 + Year+ lagindex4, data = SB)
+summary(FD1.2)
+plot(FD1.2)
+visreg(FD1.2)
+
+FD1.3 = lm(Value ~ LTD3 + Year+ lagindex, data = SB)
+FD1.3a = lm(Value ~ LTD3 + Year+ lagindex4, data = SB)
+summary(FD1.3)
+plot(FD1.3)
+visreg(FD1.3)
+
+#now see if the droughts were different from each other?
+#no, this is crap
+FD1.4 = lm(Value ~ DroughtNum + Year+ lagindex, data = SB)
+FD1.4a = lm(Value ~ DroughtNum + Year+ lagindex4, data = SB)
+summary(FD1.4)
+plot(FD1.4)
+visreg(FD1.4)
+
+
+library(AICcmodavg)
+models = list(FD1, FD2, FD1x, FD2x, FD1.1, FD1.2, FD1.3, FD1.4, FD1x1, FD1.1a, FD1.2a, FD1.3a, FD1.4a)
+modnames = c("factordrought + Year", "factordrought + regime", "yeartype + Year",
+             "Yeartype + regime", "factordrought + Year+ lag", "contdrought + Year+ lag",
+             "droughtindex + Year+ lag", "yeartype + Year+lag","droughtnum", "factordrought + Year+ lag4", "contdrought + Year+ lag4",
+             "droughtindex + Year+ lag4", "yeartype + Year+lag4")
+aictab(models, modnames)
+aictab(models)
 
 ```
 So, droughts are bad, but long droughts aren't much worse than short ones after accounting for long-term population trajectory
+
+OK, visually, what is going on? 
+
+```{r}
+ggplot(SB, aes(x = Year, y = Value, fill = DroughtYear))+ geom_col()
+
+
+```
+
+Try looking at different rolled sums of water year index
+
+```{r}
+
+
+FD2 = lm(Value ~ Index + Year+ lagindex, data = SB)
+FD2 = lm(Value ~ Index + Year, data = SB)
+acf(residuals(FD2))
+
+summary(FD2)
+visreg(FD2)
+
+
+FD2.2 = lm(Value ~ LTD2 + Year+ lagindex, data = SB)
+summary(FD2.2)
+visreg(FD2.2)
+
+FD2.3 = lm(Value ~ LTD3 + Year+ lagindex, data = SB)
+summary(FD2.3)
+plot(FD2.3)
+visreg(FD2.3)
+
+
+FD2.4 = lm(Value ~ LTD4 + Year+ lagindex, data = SB)
+summary(FD2.4)
+plot(FD2.4)
+visreg(FD2.4)
+
+models = list(FD2, FD2.2, FD2.3, FD2.4)
+modnames = c("WYI", "WYI-two years", "WYI - Three years",
+             "WYI - four years")
+aictab(models, modnames)
+
+
+```
+
+Try again with outflow instead of sac valley index
+
+
+
+```{r}
+FD2o = lm(Value ~ OUT + Year+ lagindex, data = SB)
+summary(FD2o)
+visreg(FD2o)
+
+FD2.2o = lm(Value ~ LTo2 + Year+ lagindex, data = SB)
+summary(FD2.2o)
+visreg(FD2.2o)
+
+FD2.3o = lm(Value ~ LTo3 + Year+ lagindex, data = SB)
+summary(FD2.3o)
+plot(FD2.3o)
+visreg(FD2.3o)
+
+
+FD2.4o = lm(Value ~ LTo4 + Year+ lagindex, data = SB)
+summary(FD2.4o)
+plot(FD2.4o)
+visreg(FD2.4o)
+
+models = list(FD2o, FD2.2o, FD2.3o, FD2.4o)
+modnames = c("WYI", "WYI-two years", "WYI - Three years",
+             "WYI - four years")
+aictab(models, modnames)
+
+```
+
+
+```{r}
+#Maybe I need to just to the "drought severity index" for the drought years, but reset it when we get a wet year. 
+#Maybe a rolling deficit or excess of average?
+
+FD2r = lm(Value ~ rollout + Year+ lagindex, data = SB)
+summary(FD2r)
+visreg(FD2r)
+
+#yuck, no.
+#or i could try adding the lag one, lag two , lag three outflow terms to the model as seperate terms and evaluate with aic. 
+
+```
+
+
+
+
 
 ### Now longfin smelt
 
 ```{r}
 LFS = filter(FishDrought, Metric == "logLFS")
 LFS1 = lm(Value ~ DroughtYear + Year, data = LFS)
+acf(residuals(LFS1))
 summary(LFS1)
 plot(LFS1)
 emmeans(LFS1, pairwise ~ DroughtYear)
@@ -98,16 +294,98 @@ visreg(LFS1)
 
 Again, droughts are bad, but long droughts aren't much worse than short ones after accounting for long-term population trajectory
 
+Add the lag term 
+
+```{r}
+LFS = mutate(LFS, lagindex = lag(Value))
+
+LFS1.1 = lm(Value ~ DroughtYear + Year+lagindex, data = LFS)
+summary(LFS1.1)
+plot(LFS1.1)
+emmeans(LFS1.1, pairwise ~ DroughtYear)
+visreg(LFS1.1)
+
+LFS1.2 = lm(Value ~ DroughtYear2 + Year+lagindex, data = LFS)
+summary(LFS1.2)
+plot(LFS1.2)
+visreg(LFS1.2)
+
+LFS1.2x = lm(Value ~ DroughtYear2 + Year, data = LFS)
+summary(LFS1.2x)
+plot(LFS1.2x)
+visreg(LFS1.2x)
+
+
+```
+
+
+
+Try looking at different rolled sums of water year index
+
+```{r}
+
+
+LF2 = lm(Value ~ Index + Year+ lagindex, data = LFS)
+
+LF2.2 = lm(Value ~ LTD2 + Year+ lagindex, data =LFS)
+
+LF2.3 = lm(Value ~ LTD3 + Year+ lagindex, data = LFS)
+
+
+LF2.4 = lm(Value ~ LTD4 + Year+ lagindex, data = LFS)
+
+
+models = list(LF2, LF2.2, LF2.3, LF2.4)
+modnames = c("WYI", "WYI-two years", "WYI - Three years",
+             "WYI - four years")
+aictab(models, modnames)
+
+
+
+```
+
 ### Delta Smelt
 
 ```{r}
 
 
-DS = filter(FishDrought, Metric == "logDS")
+DS = filter(FishDrought, Metric == "logDS") %>%
+  mutate(lagindex = lag(Value))
 DS1 = lm(Value ~ DroughtYear + Year, data = DS)
+acf(residuals(DS1))
+
 summary(DS1)
 plot(DS1)
 visreg(DS1)
+
+DS1.1 = lm(Value ~ DroughtYear + Year+lagindex, data = DS)
+acf(residuals(DS1.1))
+summary(DS1.1)
+plot(DS1.1)
+visreg(DS1.1)
+
+DS1.2 = lm(Value ~ DroughtYear2 + Year, data = DS)
+summary(DS1.2)
+plot(DS1.2)
+visreg(DS1.2)
+
+
+
+D2 = lm(Value ~ Index + Year+ lagindex, data = DS)
+
+D2.2 = lm(Value ~ LTD2 + Year+ lagindex, data =DS)
+
+D2.3 = lm(Value ~ LTD3 + Year+ lagindex, data = DS)
+
+
+D2.4 = lm(Value ~ LTD4 + Year+ lagindex, data =DS)
+
+
+models = list(D2, D2.2, D2.3, D2.4)
+modnames = c("WYI", "WYI-two years", "WYI - Three years",
+             "WYI - four years")
+aictab(models, modnames)
+
 ```
 Delta Smelt just don't want to behave. 
 
@@ -116,12 +394,29 @@ Delta Smelt just don't want to behave.
 ```{r}
 
 
-shad = filter(FishDrought, Metric == "logShad")
+shad = filter(FishDrought, Metric == "logShad") %>%
+  mutate(lagindex = lag(Value))
 shad1 = lm(Value ~ DroughtYear + Year, data = shad)
+acf(residuals(shad1))
 summary(shad1)
 emmeans(shad1, pairwise ~ DroughtYear)
 plot(shad1)
 visreg(shad1)
+
+shad1.1 = lm(Value ~ DroughtYear + Year+lagindex, data = shad)
+summary(shad1.1)
+acf(residuals(shad1.1))
+emmeans(shad1.1, pairwise ~ DroughtYear)
+plot(shad1.1)
+visreg(shad1.1)
+
+shad1.2 = lm(Value ~ DroughtYear2 + Year+lagindex, data = shad)
+summary(shad1.2)
+
+plot(shad1.2)
+visreg(shad1.2)
+
+
 ```
 It's all about dry versus wet, not multi-year droughts
 
@@ -132,7 +427,8 @@ I calculated a mean CRR for all the runs combined. I"m not sure that's appropria
 I wasn't quite sure if I needed Year as a predictor here, so I did a quick plot
 
 ```{r}
-CRRs = filter(FishDrought, Metric == "Salmon CRR")
+CRRs = filter(FishDrought, Metric == "Salmon CRR") %>%
+  mutate(lagcrr = lag(Value))
 ggplot(CRRs, aes(x=Year, y = Value))+ geom_point()+ geom_smooth()
 ```
 
@@ -145,9 +441,64 @@ summary(CRRs1)
 plot(CRRs1)
 emmeans(CRRs1, pairwise ~ DroughtYear)
 visreg(CRRs1)
+
+CRRs1.1 = lm(Value ~ DroughtYear+lagcrr, data = CRRs)
+summary(CRRs1.1)
+plot(CRRs1.1)
+emmeans(CRRs1.1, pairwise ~ DroughtYear)
+visreg(CRRs1.1)
+
+CRRs1.2 = lm(Value ~ DroughtYear2+lagcrr, data = CRRs)
+summary(CRRs1.2)
+
+visreg(CRRs1.2)
+
+CRRs1.3 = lm(Value ~ DroughtYear2, data = CRRs)
+summary(CRRs1.3)
+
+visreg(CRRs1.3)
+
+
 ```
 
 THree or more years of drought is REALLY bad for salmon. 
+
+```{r}
+
+
+
+C2 = lm(Value ~ Index + lagcrr, data = CRRs)
+
+
+
+
+C2.2 = lm(Value ~ LTD2 + lagcrr, data =CRRs)
+
+C2.3 = lm(Value ~ LTD3 +  lagcrr, data = CRRs)
+
+
+C2.4 = lm(Value ~ LTD4 +  lagcrr, data =CRRs)
+
+
+models = list(C2, C2.2, C2.3, C2.4, C2x)
+
+modnames = c("WYI", "WYI-two years", "WYI - Three years",
+             "WYI - four years", "nolag")
+aictab(models, modnames)
+
+C2x = lm(Value ~ Index, data = CRRs)
+C2.2x = lm(Value ~ LTD2, data = CRRs)
+C2.3x = lm(Value ~ LTD3, data = CRRs)
+C2.4x = lm(Value ~ LTD4, data = CRRs)
+
+aictab(list(C2x, C2.2x, C2.3x, C2.4x))
+
+#does it make sense to have the lag of the cohort replacement rate in for salmon? Probably not.
+
+ggplot(CRRs, aes(Value, lagcrr, color = Drought))+ geom_point()+ geom_smooth(method = "lm")
+
+```
+
 
 
 ### Threadfin

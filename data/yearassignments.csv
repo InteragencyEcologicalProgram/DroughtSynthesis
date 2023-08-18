@@ -1,118 +1,118 @@
-Year,Index,Yr_type,Drought,DroughtYear,ShortTerm,SprNDOI,Whitepaper
-1970,10.4,Wet,W,0,,,Wet
-1971,10.37,Wet,W,0,,,Wet
-1972,7.29,Below Normal,N,1,,,Below Normal
-1973,8.58,Above Normal,N,0,,,Above Normal
-1974,12.99,Wet,W,0,,,Wet
-1975,9.35,Wet,W,0,,43479.41,Wet
-1976,5.29,Critical,D,1,,6797.435,Critical
-1977,3.11,Critical,D,2,,3301.37,Critical
-1978,8.65,Above Normal,N,0,,62530.5,Above Normal
-1979,6.67,Below Normal,N,1,,22083.75,Below Normal
-1980,9.04,Above Normal,N,0,,49755.08,Above Normal
-1981,6.21,Dry,N,1,,15802.5,Dry
-1982,12.76,Wet,W,0,,92823.39,Wet
-1983,15.29,Wet,W,0,,161594.9,Wet
-1984,10,Wet,W,0,,20275.77,Wet
-1985,6.47,Dry,N,1,,8196.717,Dry
-1986,9.96,Wet,N,0,,77599.54,Wet
-1987,5.86,Dry,D,1,,11379.98,Dry
-1988,4.65,Critical,D,2,,6802.62,Critical
-1989,6.13,Dry,D,3+,,19414.24,Dry
-1990,4.81,Critical,D,3+,,5810.815,Critical
-1991,4.21,Critical,D,3+,,10790.5,Critical
-1992,4.06,Critical,D,3+,,7613.13,Critical
-1993,8.54,Above Normal,N,0,,44486.29,Above Normal
-1994,5.02,Critical,N,1,,8903.435,Critical
-1995,12.89,Wet,W,0,,130267.1,Wet
-1996,10.26,Wet,W,0,,59252.24,Wet
-1997,10.82,Wet,W,0,,20176.62,Wet
-1998,13.31,Wet,W,0,,86775.03,Wet
-1999,9.8,Wet,W,0,,42350.47,Wet
-2000,8.94,Above Normal,W,0,Wet,45960.3,Above Normal
-2001,5.76,Dry,D,1,Dry,15149.27,Dry
-2002,6.35,Dry,D,2,Dry,14183.96,Dry
-2003,8.21,Above Normal,N,0,Wet,26639.72,Above Normal
-2004,7.51,Below Normal,N,1,Dry,30333.39,Below Normal
-2005,8.49,Above Normal,W,0,Wet,39927.85,Above Normal
-2006,13.2,Wet,W,0,Wet,124798.1,Wet
-2007,6.19,Dry,D,1,Dry,11566.13,Dry
-2008,5.16,Critical,D,2,Dry,9996.587,Critical
-2009,5.78,Dry,D,3+,Dry,15993.04,Dry
-2010,7.08,Below Normal,D,3+,Dry,20761.24,Below Normal
-2011,10.54,Wet,N,0,Wet,78677.28,Wet
-2012,6.89,Below Normal,D,1,Dry,20046.54,Below Normal
-2013,5.83,Dry,D,2,Dry,10831.62,Dry
-2014,4.07,Critical,D,3+,Dry,8273.967,Critical
-2015,4,Critical,D,3+,Barrier,6232.337,Critical
-2016,6.71,Below Normal,D,3+,Dry,32350.87,Below Normal
-2017,14.14,Wet,N,0,Wet,98739.67,Wet
-2018,7.14,Below Normal,N,1,Dry,27439.77,Below Normal
-2019,10.34,Wet,N,0,Wet,85507.54,Wet
-2020,6.13,Dry,D,1,Dry,10242.07,2020
-2021,3.86,Critical,D,2,Barrier,,2021
-2022,4.5,Critical,D,3+,Barrier,,2022
-1906,11.76,Wet,W,,,,Wet
-1907,14.07,Wet,W,,,,Wet
-1908,7.73,Below Normal,N,,,,Below Normal
-1909,12.1,Wet,W,,,,Wet
-1910,9.38,Wet,W,,,,Wet
-1911,11.74,Wet,W,,,,Wet
-1912,6.71,Below Normal,D,,,,Below Normal
-1913,6.24,Dry,D,,,,Dry
-1914,10.92,Wet,W,,,,Wet
-1915,10.99,Wet,W,,,,Wet
-1916,10.83,Wet,W,,,,Wet
-1917,8.83,Above Normal,W,,,,Above Normal
-1918,6.19,Dry,D,,,,Dry
-1919,7,Below Normal,D,,,,Below Normal
-1920,5.15,Critical,D,,,,Critical
-1921,9.2,Above Normal,W,,,,Above Normal
-1922,8.97,Above Normal,W,,,,Above Normal
-1923,7.06,Below Normal,D,,,,Below Normal
-1924,3.87,Critical,D,,,,Critical
-1925,6.39,Dry,D,,,,Dry
-1926,5.75,Dry,D,,,,Dry
-1927,9.52,Wet,W,,,,Wet
-1928,8.27,Above Normal,W,,,,Above Normal
-1929,5.22,Critical,D,,,,Critical
-1930,5.9,Dry,D,,,,Dry
-1931,3.66,Critical,D,,,,Critical
-1932,5.48,Dry,D,,,,Dry
-1933,4.63,Critical,D,,,,Critical
-1934,4.07,Critical,D,,,,Critical
-1935,6.98,Below Normal,D,,,,Below Normal
-1936,7.75,Below Normal,D,,,,Below Normal
-1937,6.87,Below Normal,D,,,,Below Normal
-1938,12.62,Wet,N,,,,Wet
-1939,5.58,Dry,N,,,,Dry
-1940,8.88,Above Normal,W,,,,Above Normal
-1941,11.47,Wet,W,,,,Wet
-1942,11.27,Wet,W,,,,Wet
-1943,9.77,Wet,W,,,,Wet
-1944,6.35,Dry,D,,,,Dry
-1945,6.8,Below Normal,D,,,,Below Normal
-1946,7.7,Below Normal,D,,,,Below Normal
-1947,5.61,Dry,D,,,,Dry
-1948,7.12,Below Normal,D,,,,Below Normal
-1949,6.09,Dry,D,,,,Dry
-1950,6.62,Below Normal,D,,,,Below Normal
-1951,9.18,Above Normal,W,,,,Above Normal
-1952,12.38,Wet,W,,,,Wet
-1953,9.55,Wet,W,,,,Wet
-1954,8.51,Above Normal,W,,,,Above Normal
-1955,6.14,Dry,N,,,,Dry
-1956,11.38,Wet,W,,,,Wet
-1957,7.83,Above Normal,W,,,,Above Normal
-1958,12.16,Wet,W,,,,Wet
-1959,6.75,Below Normal,D,,,,Below Normal
-1960,6.2,Dry,D,,,,Dry
-1961,5.68,Dry,D,,,,Dry
-1962,6.65,Below Normal,D,,,,Below Normal
-1963,9.63,Wet,N,,,,Wet
-1964,6.41,Dry,N,,,,Dry
-1965,10.15,Wet,N,,,,Wet
-1966,7.16,Below Normal,N,,,,Below Normal
-1967,10.2,Wet,N,,,,Wet
-1968,7.24,Below Normal,N,,,,Below Normal
-1969,11.05,Wet,W,,,,Wet
+Year,Index,Yr_type,Drought,DroughtYear,ShortTerm,SprNDOI,Whitepaper,DroughtYear2,DroughtNum
+1970,10.4,Wet,W,0,,,Wet,0,1
+1971,10.37,Wet,W,0,,,Wet,0,1
+1972,7.29,Below Normal,N,1,,,Below Normal,1,1
+1973,8.58,Above Normal,N,0,,,Above Normal,0,1
+1974,12.99,Wet,W,0,,,Wet,0,1
+1975,9.35,Wet,W,0,,43479.41,Wet,0,1
+1976,5.29,Critical,D,1,,6797.435,Critical,1,a
+1977,3.11,Critical,D,2,,3301.37,Critical,2,a
+1978,8.65,Above Normal,N,0,,62530.5,Above Normal,0,2
+1979,6.67,Below Normal,N,1,,22083.75,Below Normal,1,2
+1980,9.04,Above Normal,N,0,,49755.08,Above Normal,0,2
+1981,6.21,Dry,N,1,,15802.5,Dry,1,2
+1982,12.76,Wet,W,0,,92823.39,Wet,0,2
+1983,15.29,Wet,W,0,,161594.9,Wet,0,2
+1984,10,Wet,W,0,,20275.77,Wet,0,2
+1985,6.47,Dry,N,1,,8196.717,Dry,1,2
+1986,9.96,Wet,N,0,,77599.54,Wet,0,2
+1987,5.86,Dry,D,1,,11379.98,Dry,1,b
+1988,4.65,Critical,D,2,,6802.62,Critical,2,b
+1989,6.13,Dry,D,3+,,19414.24,Dry,3,b
+1990,4.81,Critical,D,3+,,5810.815,Critical,4,b
+1991,4.21,Critical,D,3+,,10790.5,Critical,5,b
+1992,4.06,Critical,D,3+,,7613.13,Critical,6,b
+1993,8.54,Above Normal,N,0,,44486.29,Above Normal,0,3
+1994,5.02,Critical,N,1,,8903.435,Critical,1,3
+1995,12.89,Wet,W,0,,130267.1,Wet,0,3
+1996,10.26,Wet,W,0,,59252.24,Wet,0,3
+1997,10.82,Wet,W,0,,20176.62,Wet,0,3
+1998,13.31,Wet,W,0,,86775.03,Wet,0,3
+1999,9.8,Wet,W,0,,42350.47,Wet,0,3
+2000,8.94,Above Normal,W,0,Wet,45960.3,Above Normal,0,3
+2001,5.76,Dry,D,1,Dry,15149.27,Dry,1,c
+2002,6.35,Dry,D,2,Dry,14183.96,Dry,2,c
+2003,8.21,Above Normal,N,0,Wet,26639.72,Above Normal,0,4
+2004,7.51,Below Normal,N,1,Dry,30333.39,Below Normal,1,4
+2005,8.49,Above Normal,W,0,Wet,39927.85,Above Normal,0,4
+2006,13.2,Wet,W,0,Wet,124798.1,Wet,0,4
+2007,6.19,Dry,D,1,Dry,11566.13,Dry,1,d
+2008,5.16,Critical,D,2,Dry,9996.587,Critical,2,d
+2009,5.78,Dry,D,3+,Dry,15993.04,Dry,3,d
+2010,7.08,Below Normal,D,3+,Dry,20761.24,Below Normal,4,d
+2011,10.54,Wet,N,0,Wet,78677.28,Wet,0,5
+2012,6.89,Below Normal,D,1,Dry,20046.54,Below Normal,1,e
+2013,5.83,Dry,D,2,Dry,10831.62,Dry,2,e
+2014,4.07,Critical,D,3+,Dry,8273.967,Critical,3,e
+2015,4,Critical,D,3+,Barrier,6232.337,Critical,4,e
+2016,6.71,Below Normal,D,3+,Dry,32350.87,Below Normal,5,e
+2017,14.14,Wet,N,0,Wet,98739.67,Wet,0,6
+2018,7.14,Below Normal,N,1,Dry,27439.77,Below Normal,1,6
+2019,10.34,Wet,N,0,Wet,85507.54,Wet,0,6
+2020,6.13,Dry,D,1,Dry,10242.07,2020,1,f
+2021,3.86,Critical,D,2,Barrier,,2021,2,f
+2022,4.5,Critical,D,3+,Barrier,,2022,3,f
+1906,11.76,Wet,W,,,,Wet,,
+1907,14.07,Wet,W,,,,Wet,,
+1908,7.73,Below Normal,N,,,,Below Normal,,
+1909,12.1,Wet,W,,,,Wet,,
+1910,9.38,Wet,W,,,,Wet,,
+1911,11.74,Wet,W,,,,Wet,,
+1912,6.71,Below Normal,D,,,,Below Normal,,
+1913,6.24,Dry,D,,,,Dry,,
+1914,10.92,Wet,W,,,,Wet,,
+1915,10.99,Wet,W,,,,Wet,,
+1916,10.83,Wet,W,,,,Wet,,
+1917,8.83,Above Normal,W,,,,Above Normal,,
+1918,6.19,Dry,D,,,,Dry,,
+1919,7,Below Normal,D,,,,Below Normal,,
+1920,5.15,Critical,D,,,,Critical,,
+1921,9.2,Above Normal,W,,,,Above Normal,,
+1922,8.97,Above Normal,W,,,,Above Normal,,
+1923,7.06,Below Normal,D,,,,Below Normal,,
+1924,3.87,Critical,D,,,,Critical,,
+1925,6.39,Dry,D,,,,Dry,,
+1926,5.75,Dry,D,,,,Dry,,
+1927,9.52,Wet,W,,,,Wet,,
+1928,8.27,Above Normal,W,,,,Above Normal,,
+1929,5.22,Critical,D,,,,Critical,,
+1930,5.9,Dry,D,,,,Dry,,
+1931,3.66,Critical,D,,,,Critical,,
+1932,5.48,Dry,D,,,,Dry,,
+1933,4.63,Critical,D,,,,Critical,,
+1934,4.07,Critical,D,,,,Critical,,
+1935,6.98,Below Normal,D,,,,Below Normal,,
+1936,7.75,Below Normal,D,,,,Below Normal,,
+1937,6.87,Below Normal,D,,,,Below Normal,,
+1938,12.62,Wet,N,,,,Wet,,
+1939,5.58,Dry,N,,,,Dry,,
+1940,8.88,Above Normal,W,,,,Above Normal,,
+1941,11.47,Wet,W,,,,Wet,,
+1942,11.27,Wet,W,,,,Wet,,
+1943,9.77,Wet,W,,,,Wet,,
+1944,6.35,Dry,D,,,,Dry,,
+1945,6.8,Below Normal,D,,,,Below Normal,,
+1946,7.7,Below Normal,D,,,,Below Normal,,
+1947,5.61,Dry,D,,,,Dry,,
+1948,7.12,Below Normal,D,,,,Below Normal,,
+1949,6.09,Dry,D,,,,Dry,,
+1950,6.62,Below Normal,D,,,,Below Normal,,
+1951,9.18,Above Normal,W,,,,Above Normal,,
+1952,12.38,Wet,W,,,,Wet,,
+1953,9.55,Wet,W,,,,Wet,,
+1954,8.51,Above Normal,W,,,,Above Normal,,
+1955,6.14,Dry,N,,,,Dry,,
+1956,11.38,Wet,W,,,,Wet,,
+1957,7.83,Above Normal,W,,,,Above Normal,,
+1958,12.16,Wet,W,,,,Wet,,
+1959,6.75,Below Normal,D,,,,Below Normal,,
+1960,6.2,Dry,D,,,,Dry,,
+1961,5.68,Dry,D,,,,Dry,,
+1962,6.65,Below Normal,D,,,,Below Normal,,
+1963,9.63,Wet,N,,,,Wet,,
+1964,6.41,Dry,N,,,,Dry,,
+1965,10.15,Wet,N,,,,Wet,,
+1966,7.16,Below Normal,N,,,,Below Normal,,
+1967,10.2,Wet,N,,,,Wet,,
+1968,7.24,Below Normal,N,,,,Below Normal,,
+1969,11.05,Wet,W,,,,Wet,,

@@ -171,9 +171,13 @@ summary(lm3SJ)
 #Quick plot of drought/wet years
 
 DW = read_excel("data/Integrated data set.xlsx", sheet = "yearassignments")
-ggplot(DW, aes(x = Year, y = Index, fill = Drought)) + geom_col() + 
-  scale_fill_manual(values = c("red", "grey", "blue"), 
-                    labels = c("Drought", "Neutral", "Wet Period"))
+
+#this one is for the zooplankton paper. 
+ggplot(filter(DW, Year>1993), aes(x = Year, y = Index, fill = Drought)) + geom_col() + 
+  scale_fill_manual(values = c("#FDE333", "grey", "#00588B"), 
+                    labels = c("Drought", "Neutral", "Wet Period"),
+                    name = "Drought Categories")+
+  theme_bw()+ ylab("Sacramento Valley Index")+ xlab("Water Year")
 
 #recent years
 DWrecent = data.frame(Year = 2011:2021, DW = c("Wet", "Neutral", "Neutral", 
@@ -184,11 +188,13 @@ DWrecent = data.frame(Year = 2011:2021, DW = c("Wet", "Neutral", "Neutral",
 
 ggplot(DWrecent, aes(x = Year, y = Index, fill = DW)) + geom_col() + 
   scale_fill_manual(values = c("orange", "red", "grey", "blue"), name = NULL)+
-  scale_x_continuous(breaks = c(2011, 2014, 2015, 2017, 2019, 2020, 2021))
+  scale_x_continuous(breaks = c(2011, 2014, 2015, 2017, 2019, 2020, 2021))+
+  theme_bw()
 
 
 ggplot(DW, aes(x = Year, y = Index, fill = Yr_type)) + geom_col() +  
-  scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))
+  scale_fill_manual(values = c("chartreuse3", "darkorange", "firebrick", "firebrick1", "dodgerblue"))+
+  theme_bw()
 
 
 ########################################################

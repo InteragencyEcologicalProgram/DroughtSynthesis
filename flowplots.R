@@ -13,13 +13,13 @@ load("data/dayflow.RData")
 yrs = read_csv("data/yearassignments.csv")
 
 #Delta outflow, Sacramento flow, SJR flow, etc, from 2022
-DTO = cdec_query("DTO",23, start.date = as.Date("2021-10-1"), end.date= as.Date("2022-10-1"))
+DTO = cdec_query("DTO",23, start.date = as.Date("2021-10-1"), end.date= as.Date("2023-7-1"))
 SAC = cdec_query("FPT", 20,"D", start.date = as.Date("2021-10-1"), 
-                 end.date= as.Date("2022-10-1"))
+                 end.date= as.Date("2023-7-1"))
 SJR = cdec_query("VNS", 41,"D", start.date = as.Date("2021-10-1"), 
-                 end.date= as.Date("2022-10-1"))
+                 end.date= as.Date("2023-7-1"))
 Exporst =  cdec_query(c("TRP","HRO"), 70,"D", start.date = as.Date("2021-10-1"), 
-                      end.date= as.Date("2022-10-1"))
+                      end.date= as.Date("2023-7-1"))
 flow2022 = data.frame(Date = SAC$DateTime, OUT = DTO$Value, SJR = SJR$Value,
                       SAC = SAC$Value, CVP = filter(Exporst, StationID == "HRO")$Value,
                       SWP = filter(Exporst, StationID == "TRP")$Value)
@@ -43,6 +43,36 @@ DF3 = pivot_longer(DF2, cols = c(SAC, OUT, EXPORTS, SJR, GCD, CVP, SWP, MISDV, P
                           labels = c("Delta Outflow", "SWP+CVP Exports",
                                      "Sacramento at Freeport", "San Joaquin at Vernalis")),
          Whitepaper = factor(Whitepaper, levels = c("Critical", "Dry", "Below Normal", "Above Normal", "Wet", "2020", "2021", "2022")))
+
+
+ggplot(DF3, aes(x = Date, y = Flow, color = Station)) + geom_line()
+########################################################################
+
+#Plot of change in exports over time for SBDS paper
+DFyear = group_by(DF3, Yr_type, Year, Index, Station) %>%
+  summarize(AnnualFlow = mean(Flow, na.rm =T))
+
+
+ggplot(DFyear, aes(x = Year, y = AnnualFlow, color = Station))+ geom_line()+
+  facet_wrap(~Station, scales = "free_y")+ theme_bw()
+
+#list of droughts
+droughts = data.frame(droughtstart = rep(c(1976, 1987, 2007, 2012, 2020),4),
+                      Station = c(rep("Delta Outflow",5), rep("SWP+CVP Exports",5),
+                                  rep("Sacramento at Freeport",5), rep("San Joaquin at Vernalis",5)),
+                      droughtend = rep(c(1977, 1994, 2009, 2016, 2022),4),
+                      ymax = c(rep(90000,5), rep(10000,5), rep(50000, 5), rep(20000, 5)))
+
+ggplot(DFyear, aes(x = Year, y = AnnualFlow, color = Station))+ geom_line(linewidth = 1)+
+  facet_wrap(~Station, scales = "free_y")+ 
+  scale_color_brewer(palette = "Dark2", guide = NULL)+
+  geom_rect(data = droughts, aes(xmin = droughtstart, xmax = droughtend+1, ymin = 0, ymax = ymax), inherit.aes = F,
+            alpha = 0.3)+
+    theme_bw()+
+  ylab("Average Annual Flow (CFS)")+
+  xlab("Water Year")
+
+#########################################################
 library(zoo)
 DF_WYT = group_by(DF3, Yr_type, wyDay, Station) %>%
   summarize(Flow = mean(Flow, na.rm = T))
@@ -117,3 +147,15 @@ ggplot(DFsum2, aes(x = Whitepaper, y = PercentDiverted))+ geom_boxplot(aes(fill 
   xlab(NULL)+ theme(legend.position = "none")
 
 ggsave("plots/whitepaper/FlowRatio.tiff", device = "tiff", width = 8, height = 6)
+
+DFsum3 = group_by(DFsum, Year, Yr_type) %>%
+  summarize(PercentDiverted = mean(PercetDiverted, na.rm =T)) 
+
+ggplot(DFsum3, aes(x = Year, y = PercentDiverted))+ geom_line() +
+  geom_rect(data = filter(droughts, Station =="Delta Outflow"),
+            aes(xmin = droughtstart, xmax = droughtend+1, ymin = 0, ymax = 1), 
+            inherit.aes = F,alpha = 0.3)+
+  theme_bw()+
+  ylab("Annual Percent of inflow diverted")+
+  xlab("Water Year")
+

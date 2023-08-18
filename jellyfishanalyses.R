@@ -51,11 +51,14 @@ monthly = group_by(AlljelliesTot, Month, Source) %>%
 ggplot(monthly, aes(x = Month, y = Jellies, fill = Source))+ geom_col(position = "dodge")
 
 #I'm going to alter Dave's drougth color palette just slightly so the wet years aren't so dark
+library(colorspace)
 pal_yrtype <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Above Normal" = "#00588B", "Wet" = "#481F70FF") 
+pal_yrtypecols = darken(pal_yrtype, amount = .3) 
+
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
   geom_col(aes(fill = Yr_type), position = "dodge")+
   scale_fill_manual(values = pal_yrtype)+
-  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
+  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies, group = Region))+
   ylab("Mean monthly Maeotias CPUE") + theme_bw()+
   facet_wrap(~Region)
 
@@ -65,8 +68,9 @@ AlljelliesTot = filter(AlljelliesTot, Year <2021) %>%
 #############this is figure 3
 ylab3 = expression(paste(italic("Maeotias"), " CPUE (log-transformed)"))
 ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
-  geom_boxplot(aes(fill = Yr_type))+
+  geom_boxplot(aes(fill = Yr_type, color = Yr_type))+
   scale_fill_manual(values = pal_yrtype, name = "Year Type")+
+  scale_color_manual(values = pal_yrtypecols, name = "Year Type")+
   # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
   ylab(ylab3) + theme_bw()+ xlab(NULL)+
   scale_x_discrete(breaks = c(2010, 2015, 2020))+

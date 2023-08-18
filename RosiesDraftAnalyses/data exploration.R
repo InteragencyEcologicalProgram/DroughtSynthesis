@@ -278,18 +278,49 @@ DroughtImpact = group_by(Int3a, Metric, Drought) %>%
   pivot_wider(names_from = Drought, values_from = Mean) %>%
   mutate(Index = (D-W)/mean(c(D,N, W), na.rm = T), IndexB = D/W)
 
-#Let's try it again and use Cohen's D
-DroughtImpact2 = filter(Int3a, Drought != "N") %>%
+#Let's try it again and use Cohen's F
+DroughtImpact2 = filter(Int3a, Drought != "N", !Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
   mutate(Drought = as.factor(Drought)) %>%
   group_by(Metric) %>%
-  summarize(Cohen = cohen.d(Value ~ Drought, na.rm = T)$estimate, 
-            magnitude = cohen.d(Value ~ Drought, na.rm = T)$magnitude,
+  summarize(Cohen = cohens_f(lm(Value ~ Drought))$Cohens_f, 
+            #magnitude = cohen.d(Value ~ Drought, na.rm = T)$magnitude,
             Pval = summary(lm(Value ~ Drought))$coefficients[2,4],
             estimate = summary(lm(Value ~ Drought))$coefficients[2,1],
             Sig = case_when(Pval < 0.05 & Pval > 0.01 ~ "*",
                             Pval < 0.01 & Pval > 0.001 ~ "**",
                             Pval < 0.001 ~ "***",
-                            Pval > 0.05 ~ "(NS)"))
+                            Pval > 0.05 ~ "(NS)"),
+            Cohen = Cohen*sign(estimate)*-1)
+
+library(effectsize)
+
+DSdat = filter(Int3a, Metric =="logDS") %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(Metric) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N")
+
+test =  cohens_f(lm(Value ~ Drought+ Year + lagValue, data = DSdat))
+
+#do the fish seperately (per Matt Nobriga)
+DroughtImpact2f = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(Metric) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  summarize(Cohen = cohens_f(lm(Value ~ Drought+ Year + lagValue))$Cohens_f_partial[1], 
+           
+            Pval = summary(lm(Value ~ Drought+ Year + lagValue))$coefficients[2,4],
+            estimate = summary(lm(Value ~ Drought+ Year + lagValue))$coefficients[2,1],
+            Sig = case_when(Pval < 0.05 & Pval > 0.01 ~ "*",
+                            Pval < 0.01 & Pval > 0.001 ~ "**",
+                            Pval < 0.001 ~ "***",
+                            Pval > 0.05 ~ "(NS)"),
+            Cohen = Cohen*sign(estimate)*-1)
+
+DroughtImpact2 = bind_rows(DroughtImpact2, DroughtImpact2f)
 
 #BAR PLOTS/Arrow plows
 DroughtImpact2a = mutate(DroughtImpact2, 
@@ -315,7 +346,7 @@ DroughtImpact2a = mutate(DroughtImpact2,
                                                                                               "American Shad", "Threadfin Shad", "Salmon CRR"))) %>%
   filter(!is.na(Metric))
 
-ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = magnitude)) + geom_col() +
+ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = Sig)) + geom_col() +
   ylab("Drought Effect Size")+
   theme_bw()+
   scale_fill_viridis_d(option = "C", direction = 1, alpha = 0.6)+
@@ -334,13 +365,13 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) +
   geom_segment(aes(xend = Metric, yend = Cohen, color = Sig), 
                arrow = arrow(length = unit(0.2, "inches")),
                size = 2) +
-  ylab("Drought Effect Size (Cohen's D)")+ xlab(NULL)+
+  ylab("Drought Effect Size (Cohen's F)")+ xlab(NULL)+
  # scale_color_viridis_d(option = "C", direction = -1, name = "Magnatude of\nEffect")+
   theme_bw()+
   scale_color_viridis_d(option = "C", direction  = -1, labels = c("(NS) Non-Significant", "* P<0.05", "** P<0.01", "*** P<0.001"), 
                      name = "Significance")+
   geom_text(aes(label = paste(Metric, Sig), y = -yval+0.2), angle = 90, hjust = 0)+
-  coord_cartesian(ylim = c(-2.8, 5))+
+  coord_cartesian(ylim = c(-1.5, 2.5))+
   theme(axis.text.x = element_blank(), legend.position = "right", legend.direction = "vertical")
 
 ggsave("plots/EffectArrows2023.tiff", device = "tiff", width = 9, height = 7, units = "in")
@@ -491,6 +522,7 @@ Outmetric = Int4 %>%
             r2 = summary(lm(Value ~ log(Outflow)))$r.squared,
             P =  summary(lm(Value ~ log(Outflow)))$coefficients[2,4],
             Y = max(Value, na.rm = T)) 
+
 
 
 ggplot(filter(Int4, !is.na(MetricL)), aes(x = log(Outflow), y = Value)) +

@@ -10,6 +10,22 @@ library(smonitr)
 
 Dayflow = get_odp_data(pkg_id = "dayflow", fnames = "Dayflow Results")
 
+DF20s = Dayflow$`Dayflow Results 1929 - 1939`%>%
+  mutate( Date = as.Date(Date, format = "%m/%d/%Y"), OUT = OUT1) %>%
+  select(Date, OUT, SAC, SJR)
+
+DF40s = Dayflow$`Dayflow Results 1940 - 1949`%>%
+  mutate( Date = as.Date(Date, format = "%m/%d/%Y"), OUT = OUT2, EXPORTS =EXPOR) %>%
+  select(Date, OUT, SAC, SJR, EXPORTS)
+
+DF50s = Dayflow$`Dayflow Results 1950 - 1955`%>%
+  mutate( Date = as.Date(Date, format = "%m/%d/%Y"), OUT = OUT2, EXPORTS =EXPOR) %>%
+  select(Date, OUT, SAC, SJR, EXPORTS)
+
+DF60s = Dayflow$`Dayflow Results 1956 - 1969`%>%
+  mutate( Date = as.Date(Date, format = "%m/%d/%Y"), EXPORTS =EXPORT) %>%
+  select(Date, OUT, SAC, SJR, EXPORTS, CVP, SWP)
+
 
 DF1997_2020 =  Dayflow$`Dayflow Results 1997 - 2020` %>%
   mutate( Date = as.Date(Date, format = "%m/%d/%Y")) %>%
@@ -31,13 +47,15 @@ DF1984_1996 = Dayflow$`Dayflow Results 1984 - 1996` %>%
   mutate(Month = month(Date), Julian = yday(Date)) %>%
   rename(EXPORTS = EXPORT)
 
-Dflow = bind_rows(DF1970_1983, DF1984_1996, DF1997_2020) %>%
+Dflow = bind_rows(DF20s, DF40s, DF50s, DF60s, DF1970_1983, DF1984_1996, DF1997_2020) %>%
  mutate(Year = year(Date), Year=if_else(Month==12, Year+1, Year), # Move Decembers to the following year
 Season=case_when(Month%in%3:5 ~ "Spring", # Create seasonal variables
                  Month%in%6:8 ~ "Summer",
                  Month%in%9:11 ~ "Fall",
                  Month%in%c(12, 1, 2) ~ "Winter",
                  TRUE ~ NA_character_))
+
+write.csv(Dflow, "Dayflow.csv")
 
 DFsum = group_by(Dflow, Year) %>%
   summarize(X2 = mean(X2), OUT = mean(OUT), EXPORTS = mean(EXPORTS),
