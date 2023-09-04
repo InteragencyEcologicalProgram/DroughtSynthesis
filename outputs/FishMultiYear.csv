@@ -1,31 +1,43 @@
-Species,term,estimate,std.error,statistic,p.value
-Striped Bass,Intercept - wet,189.857,17.285,10.984,<0.0001
-Striped Bass,First/only dry year,-0.603,0.290,-2.084,0.0434
-Striped Bass,Second dry year,-1.139,0.361,-3.154,0.0030
-Striped Bass,Third + dry year,-0.720,0.315,-2.287,0.0275
-Striped Bass,Long term trend,-0.092,0.009,-10.589,<0.0001
-Longfin Smelt,Intercept - wet,191.611,25.245,7.590,<0.0001
-Longfin Smelt,First/only dry year,-1.961,0.423,-4.637,<0.0001
-Longfin Smelt,Second dry year,-1.409,0.528,-2.671,0.0108
-Longfin Smelt,Third + dry year,-2.893,0.460,-6.290,<0.0001
-Longfin Smelt,Long term trend,-0.092,0.013,-7.286,<0.0001
-American Shad,Intercept - wet,54.549,17.917,3.045,0.0041
-American Shad,First/only dry year,-0.997,0.300,-3.320,0.0019
-American Shad,Second dry year,-1.303,0.374,-3.481,0.0012
-American Shad,Third + dry year,-0.958,0.326,-2.935,0.0054
-American Shad,Long term trend,-0.023,0.009,-2.608,0.0127
-Delta Smelt,Intercept - wet,238.270,27.795,8.573,<0.0001
-Delta Smelt,First/only dry year,-0.792,0.466,-1.702,0.0964
-Delta Smelt,Second dry year,-0.782,0.581,-1.347,0.1854
-Delta Smelt,Third + dry year,-0.325,0.506,-0.641,0.5252
-Delta Smelt,Long term trend,-0.117,0.014,-8.385,<0.0001
-Threadfin Shad,Intercept - wet,128.691,27.791,4.631,<0.0001
-Threadfin Shad,First/only dry year,-0.321,0.466,-0.689,0.4946
-Threadfin Shad,Second dry year,-0.476,0.581,-0.820,0.4168
-Threadfin Shad,Third + dry year,-0.529,0.506,-1.045,0.3020
-Threadfin Shad,Long term trend,-0.061,0.014,-4.352,0.0001
-Salmon CRR,Intercept - wet,1.414,0.161,8.758,<0.0001
-Salmon CRR,First/only dry year,0.034,0.268,0.127,0.8996
-Salmon CRR,Second dry year,0.285,0.342,0.832,0.4098
-Salmon CRR,Third + dry year,-0.804,0.295,-2.730,0.0091
-Salmon CRR,Long term trend,Not included,,,
+term,estimate,std.error,statistic,p.value,Species
+(Intercept),127.705432,30.90077456,4.132758283,0.000167332,Striped Bass
+DroughtYear3.L,-0.462502259,0.215737876,-2.143815756,0.037882624,Striped Bass
+DroughtYear3.Q,0.665981519,0.230206908,2.892969303,0.006024511,Striped Bass
+DroughtYear3.C,0.088579674,0.25211007,0.351353178,0.727079946,Striped Bass
+Year,-0.061917485,0.015088582,-4.103598682,0.000183081,Striped Bass
+LagValue,0.321413637,0.13725155,2.341785118,0.024009139,Striped Bass
+(Intercept),104.3584334,31.63479213,3.298849981,0.001983706,Longfin Smelt
+DroughtYear1,-2.319228199,0.41303999,-5.615020951,1.42E-06,Longfin Smelt
+DroughtYear2,-1.036893768,0.535151074,-1.937572059,0.059418925,Longfin Smelt
+DroughtYear3+,-2.239460254,0.45711597,-4.89910745,1.48E-05,Longfin Smelt
+Year,-0.049595679,0.015589168,-3.181419258,0.002755455,Longfin Smelt
+LagValue,0.335873386,0.115838009,2.899509316,0.005921062,Longfin Smelt
+(Intercept),20.85220609,16.3077588,1.278667801,0.208034643,American Shad
+DroughtYear1,-1.198907134,0.281643567,-4.256824138,0.000113861,American Shad
+DroughtYear2,-0.947506791,0.37048231,-2.55749537,0.014242788,American Shad
+DroughtYear3+,-0.632172824,0.317339529,-1.992102361,0.052886984,American Shad
+Year,-0.008074945,0.008061512,-1.001666274,0.322241078,American Shad
+LagValue,0.409744366,0.128217159,3.195706163,0.00264826,American Shad
+(Intercept),70.70537998,30.21400123,2.340152813,0.024101824,Delta Smelt
+DroughtYear1,-0.953028816,0.313973093,-3.035383721,0.004113273,Delta Smelt
+DroughtYear2,-0.685592169,0.40238263,-1.703831424,0.095801824,Delta Smelt
+DroughtYear3+,-0.32917911,0.343202471,-0.959139686,0.342977566,Delta Smelt
+Year,-0.034618264,0.014935105,-2.31791237,0.025397074,Delta Smelt
+LagValue,0.719045654,0.104177161,6.902142947,2.01E-08,Delta Smelt
+(Intercept),45.69189333,23.90290526,1.911562332,0.062771466,Threadfin Shad
+DroughtYear1,-0.195778646,0.336232261,-0.582272044,0.56349635,Threadfin Shad
+DroughtYear2,-0.444544493,0.431629516,-1.029921441,0.308941698,Threadfin Shad
+DroughtYear3+,-0.212042188,0.372593524,-0.569097889,0.572320771,Threadfin Shad
+Year,-0.021483539,0.011714092,-1.833991004,0.073747074,Threadfin Shad
+LagValue,0.636918089,0.115712112,5.50433381,2.04E-06,Threadfin Shad
+(Intercept),1.58337031,0.271004312,5.842601913,5.75E-07,Spring Run CRR
+DroughtYear1,-0.273090793,0.449409809,-0.607665403,0.546533107,Spring Run CRR
+DroughtYear2,0.862055115,0.57488696,1.49952108,0.140880055,Spring Run CRR
+DroughtYear3+,-1.125870359,0.494783916,-2.275478896,0.027801577,Spring Run CRR
+(Intercept),1.616500404,0.309684323,5.219832863,4.65E-06,Winter Run CRR
+DroughtYear1,-0.076028288,0.513553351,-0.148043603,0.882984728,Winter Run CRR
+DroughtYear2,0.217749105,0.656939653,0.331459829,0.741870773,Winter Run CRR
+DroughtYear3+,-0.789332293,0.56540363,-1.396050982,0.169703564,Winter Run CRR
+(Intercept),1.246774477,0.160409444,7.772450598,8.58E-10,Fall Run CRR
+DroughtYear1,0.191425125,0.266008969,0.719619064,0.475564739,Fall Run CRR
+DroughtYear2,-0.000101656,0.340279816,-0.000298743,0.999762988,Fall Run CRR
+DroughtYear3+,-0.651456982,0.292866236,-2.224418189,0.031297724,Fall Run CRR

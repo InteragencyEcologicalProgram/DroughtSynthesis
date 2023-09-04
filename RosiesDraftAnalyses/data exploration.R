@@ -5,6 +5,8 @@ library(viridis)
 library(DroughtData)
 library(lubridate)
 library(emmeans)
+library(effsize)
+library(effectsize)
 
 #Boz's integrated data set
 
@@ -90,9 +92,10 @@ RTlong = ungroup(DFRTann) %>%
 #Now add salmon
 salmon = read_excel("data/Grandtab WR FR SR CRR.xlsx", sheet = "salmonforR")
 #we want to associate CRR with migration year, not return year
-salmon2 = salmon %>% #mutate(salmon, Year = Year-2) %>% 
-  pivot_longer(cols = c(`WR CRR`, `SR SR CRR`, `CV SR CRR`,`CV FR CRR`,       
-                        `SR FR CRR`, `Hatchery FR CRR`, `Wild SR FR CRR`), names_to = "Metric", values_to = "Value")
+salmon2 = mutate(salmon) %>% 
+  pivot_longer(cols = c(`CV SR CRR`,`CV FR CRR`), names_to = "Metric", values_to = "Value") %>%
+  dplyr::select(Year, Metric, Value, Migration) %>%
+  left_join(yrs)
 
 ggplot(filter(salmon2, !is.na(Migration)), aes(x = Year, y = Value, fill = Migration))+ geom_col()+
   facet_wrap(~Metric) + scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
@@ -101,19 +104,28 @@ ggplot(filter(salmon2, !is.na(Migration)), aes(x = Migration, y = Value, fill = 
   facet_wrap(~Metric)+ scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
   theme_bw()
 
+ggplot(filter(salmon2, !is.na(Migration)), aes(x = Migration, y = Value, fill = Migration))+ geom_boxplot()+
+  facet_wrap(~Metric)+ scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
+  theme_bw()
+
+ggplot(filter(salmon2, !is.na(Migration)), aes(x = Drought, y = Value, fill = Drought))+ geom_boxplot()+
+  facet_wrap(~Metric)+ scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
+  theme_bw()
+
 #Can I make an "all salmon" metric?
 yrs = read_csv("data/yearassignments.csv")
-salsum = group_by(salmon2, Year, Migration) %>%
-  filter(!Metric %in% c("Hatchery FR CRR", "SR FR CRR")) %>%
-  summarise(CRR = mean(Value, na.rm = T)) %>%
-  filter(!is.na(CRR)) %>%
-  mutate(Metric = "Salmon CRR", Value = CRR, YearAdj = Year)
+# salsum = group_by(salmon2, Year, Migration) %>%
+#   filter(!Metric %in% c("Hatchery FR CRR", "SR FR CRR")) %>%
+#   summarise(CRR = mean(Value, na.rm = T)) %>%
+#   filter(!is.na(CRR)) %>%
+#   mutate(Metric = "Salmon CRR", Value = CRR, YearAdj = Year)
 
 ggplot(salsum, aes(x = Migration, y = CRR, fill = Migration))+ geom_boxplot()+
   scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
   theme_bw()
 
-salsum = select(salsum, YearAdj,Metric, Value)
+salsum = mutate(salmon2, YearAdj = Year-2) %>%
+  select(-Migration)
 
 
 #Bind them together
@@ -133,7 +145,7 @@ Int2 = left_join(IntLong, yrs) %>%
                                             "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
                                            "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
                                            "Suisun Marsh_logZoopBPUE",              
-                                 "logSB", "logDS", "logLFS", "logShad",  "logTFS","Salmon CRR"), 
+                                 "logSB", "logDS", "logLFS", "logShad",  "logTFS","CV SR CRR", "CV FR CRR"), 
                                 labels = c("Outflow", "Exports", "X2", "Sacramento Res. Time", 
                                            "San Joaquin Res. Time",
                                            "Salinity",  "Secchi Depth",
@@ -146,7 +158,7 @@ Int2 = left_join(IntLong, yrs) %>%
                                            "Zoops Suisun Marsh",              
                                            "Striped Bass", "Delta Smelt", 
                                            "Longfin Smelt", 
-                                           "American Shad", "Threadfin Shad", "Salmon CRR")))
+                                           "American Shad", "Threadfin Shad", "Spring Run CRR", "Fall Run CRR")))
 
 Int3a = filter(Int2, !is.na(MetricL))
 ##############################################################################################################
@@ -189,9 +201,10 @@ zoops = filter(Int3a, Metric == "Suisun Bay_logZoopBPUE") %>%
 ###################################################################################
 #Fish were the only interesting ones in the "drought year" plot
 
-FishDrought = filter(Int3a, Metric %in% c("logSB", "logDS", "logShad", "logLFS", "Salmon CRR", "logTFS")) %>%
+FishDrought = filter(Int3a, Metric %in% c("logSB", "logDS", "logShad", "logLFS", "CV SR CRR", "CV FR CRR", "logTFS")) %>%
   mutate(DroughtYear = factor(DroughtYear, levels = c("0", "1", "2", "3+"), ordered = F),
-         DY = as.numeric(DroughtYear))
+         DY = as.numeric(DroughtYear)) %>%
+  filter(!is.na(DroughtYear))
 
 save(FishDrought, file = "FishDrough.RData")
 
@@ -238,40 +251,9 @@ emmeans(CRRs1, pairwise ~ DroughtYear)
 #The difference really shows up in 3 or more years of drought.
 #not too bad!
 save(FishDrought, file ="FishDrough.RData")
-#####################################################################################
-# rework it so residence time is a column
-
-Int3 = left_join(ungroup(Int3a), dplyr::select(rename(ungroup(DFRTann), Year = WY), Year, SACRT, SJRT))
-
-ggplot(Int3, aes(x = SACRT, y = Value)) +
-  geom_point(aes(color = Yr_type))+
-  drt_color_pal_yrtype(aes_type = "color")+
-  geom_smooth()+
-  facet_wrap(~MetricL, scales = "free_y")+
-  theme_bw()
-
-
-
-# Now do outflow
-
-Int4 = rename(lt_avg_hydro, Year = YearAdj) %>%
-   dplyr::select( Year, Outflow) %>%
-  group_by(Year) %>%
-  summarize(Outflow = mean(Outflow, na.rm = T)) %>%
-  right_join(ungroup(Int2)) %>%
-  filter(Metric != "Outflow")
-
-ggplot(Int4, aes(x = log(Outflow), y = Value)) +
-  geom_point(aes(color = Yr_type))+
-  drt_color_pal_yrtype(aes_type = "color")+
-  geom_smooth()+
-  facet_wrap(~MetricL, scales = "free_y")+
-  theme_bw()
-
 
 ##############################################################################################
 #Let's make a rough "Drought impact" index. I"m just making this up tho.
-library(effsize)
 
 DroughtImpact = group_by(Int3a, Metric, Drought) %>%
   summarize(Mean = mean(Value, na.rm = T)) %>% 
@@ -292,7 +274,7 @@ DroughtImpact2 = filter(Int3a, Drought != "N", !Metric %in% c("logDS", "logShad"
                             Pval > 0.05 ~ "(NS)"),
             Cohen = Cohen*sign(estimate)*-1)
 
-library(effectsize)
+
 
 DSdat = filter(Int3a, Metric =="logDS") %>%
   mutate(Drought = as.factor(Drought)) %>%
@@ -330,7 +312,8 @@ DroughtImpact2a = mutate(DroughtImpact2,
                                                                     "North_logChl", "SouthCentral_logChl", "Suisun Bay_logChl",
                                                                   "Confluence_logZoopBPUE","SouthCentral_logZoopBPUE","Suisun Bay_logZoopBPUE", 
                                                                                                        "Suisun Marsh_logZoopBPUE",              
-                                                                                                       "logSB", "logDS", "logLFS", "logShad", "logTFS", "Salmon CRR"), 
+                                                                                                       "logSB", "logDS", "logLFS", "logShad", "logTFS", 
+                                                             "CV SR CRR", "CV FR CRR"), 
                                                                                    labels = c("Outflow", "Exports", "X2", "Sacramento Res. Time", 
                                                                                               "San Joaquin Res. Time",
                                                                                               "Salinity",  "Secchi Depth",
@@ -343,7 +326,8 @@ DroughtImpact2a = mutate(DroughtImpact2,
                                                                                               "Zoops Suisun Marsh",              
                                                                                               "Striped Bass", "Delta Smelt", 
                                                                                               "Longfin Smelt", 
-                                                                                              "American Shad", "Threadfin Shad", "Salmon CRR"))) %>%
+                                                                                              "American Shad", "Threadfin Shad", "Spring Run CRR",
+                                                                                              "Fall Run CRR"))) %>%
   filter(!is.na(Metric))
 
 ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = Sig)) + geom_col() +
@@ -357,6 +341,7 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = Cohen, fill = Sig)) + geom_col() +
 DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen< 0 ~ 0.1,
                                                            TRUE ~ -Cohen + 0.1))
 write.csv(DroughtImpact2a, "DroughtImpact.csv", row.names = F)
+
 save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
 #load("outputs/DroughtImpac.RData")
 
@@ -366,7 +351,7 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) +
                arrow = arrow(length = unit(0.2, "inches")),
                size = 2) +
   ylab("Drought Effect Size (Cohen's F)")+ xlab(NULL)+
- # scale_color_viridis_d(option = "C", direction = -1, name = "Magnatude of\nEffect")+
+ # scale_color_viridis_d(option = "C", direction = -1, name = "Magnitude of\nEffect")+
   theme_bw()+
   scale_color_viridis_d(option = "C", direction  = -1, labels = c("(NS) Non-Significant", "* P<0.05", "** P<0.01", "*** P<0.001"), 
                      name = "Significance")+
@@ -377,14 +362,14 @@ ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) +
 ggsave("plots/EffectArrows2023.tiff", device = "tiff", width = 9, height = 7, units = "in")
 
 ######################################################################################
-#now try and do the origional graph but highlight which are significant
+#now try and do the original graph but highlight which are significant
 impacts =rename(DroughtImpact2a, MetricL = Metric) %>%
   arrange(MetricL) %>%
-  mutate(Y = c(75000, 8000, 90, 60, 120, 5, 90, 17.5, -0.7, -1.9, -2.1, 2, 2.2, 3.1, 2.4, 9.5, 10.5, 10, 10.5, 9, 7, 10, 8.5, 9, 4)) %>%
+  mutate(Y = c(75000, 8000, 90, 60, 120, 5, 90, 17.5, -0.7, -1.9, -2.1, 2, 2.2, 3.1, 2.4, 9.5, 10.5, 10, 10.5, 9, 7, 10, 8.5, 9, 4,4)) %>%
   filter(Sig != "(NS)")
 
-ggplot(Int3a, aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
-  geom_text(data = impacts, x = 1, aes(label = Sig, y = Y), inherit.aes = F, size = 10, color = "red")+
+ggplot(filter(Int3a, MetricL!= "X2"), aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
+  geom_text(data = filter(impacts, MetricL != "X2"), x = 1, aes(label = Sig, y = Y), inherit.aes = F, size = 10, color = "red")+
   facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()+
   theme_bw()+ theme(legend.position = "none")
 
@@ -487,61 +472,14 @@ ggsave("CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units = "in")
 #   theme(axis.text.x = element_blank())
 
 
-#what about the slope of the residence time line?
-Int3 = filter(Int3, !is.na(Value), !is.nan(Value))
-Resmetric = filter(Int3, !is.na(Value), !is.nan(Value), Metric != "SACRT") %>%
-  group_by(MetricL) %>%
-  summarize(intercept = coef(lm(Value ~ SACRT))[1],
-            grad = coef(lm(Value ~ SACRT))[2],
-            r2 = summary(lm(Value ~ SACRT))$r.squared,
-            P =  summary(lm(Value ~ SACRT))$coefficients[2,4],
-            Y = max(Value)) 
+
 
 #############################################################################
 #linear models of stuff versus residence time
-ggplot(filter(Int3, Metric != "SACRT"), aes(x = SACRT, y = Value)) +
-  geom_point(aes(color = Yr_type))+
-  drt_color_pal_yrtype(aes_type = "color")+
-  geom_smooth(method = "lm")+
-  geom_text(data = Resmetric, aes(x = 50, y = Y, 
-                                  label = paste("y = x", round(grad, 3),
-                                                "+", round(intercept, 3), "\n R2 =", round(r2, 4),
-                                                " P = ", round(P, 4), sep = "")),
-            size = 3, nudge_y = -1)+
- xlab("Sacramento Residence Time (days)")+
-  facet_wrap(~MetricL, scales = "free_y")+
-  theme_bw()
-
-
-#now versus net delta outflow
-
-Outmetric = Int4 %>%
-  group_by(MetricL) %>%
-  summarize(intercept = coef(lm(Value ~ log(Outflow)))[1],
-            grad = coef(lm(Value ~ log(Outflow)))[2],
-            r2 = summary(lm(Value ~ log(Outflow)))$r.squared,
-            P =  summary(lm(Value ~ log(Outflow)))$coefficients[2,4],
-            Y = max(Value, na.rm = T)) 
-
-
-
-ggplot(filter(Int4, !is.na(MetricL)), aes(x = log(Outflow), y = Value)) +
-  geom_point(aes(color = Yr_type))+
-  drt_color_pal_yrtype(aes_type = "color")+
-  geom_smooth(method = lm)+
-  geom_text(data = Outmetric, aes(x = 9, y = Y, 
-                                  label = paste("y = x", round(grad, 3),
-                                                "+", round(intercept, 3), "\n R2 =", round(r2, 4),
-                                                " P = ", round(P, 4), sep = "")),
-            size = 3, nudge_y = -1)+
-  facet_wrap(~MetricL, scales = "free_y")+
-  theme_bw()
-
-
 
 #Verses sac valley index
 
-
+Int3a = filter(Int3a, MetricL != "X2", !is.na(MetricL))
 Indexes = Int3a %>%
   group_by(MetricL) %>%
   summarize(intercept = coef(lm(Value ~ Index))[1],
@@ -566,7 +504,7 @@ ggplot(filter(Int3a, !is.na(MetricL)), aes(x = Index, y = Value)) +
   #                                               " P = ", round(P, 4), sep = "")),
   #           size = 3, nudge_y = -1)+
   facet_wrap(~MetricL, scales = "free_y")+
-  theme_bw() + xlab("Sac Valley Index")
+  theme_bw() + xlab("Sacramento Valley Index")
 
 #Having the formulas on the plots is a mess. Maybe just the R2 and p-value?
 
@@ -741,154 +679,7 @@ ggplot(data = Outzoopchl)+
 #I'm going to try a new index where I run a linear model on each metric and use the 
 #R2 from the model as my index.
 
-Rsquar = function(data, Value, vars) {
-  rs = data.frame(Metrics = vars, Rs = rep(NA, length(vars)), 
-                  Est = rep(NA, length(vars)),
-                  Ps = rep(NA, length(vars)))
-  for(i in 1:length(vars)){
-    m1 = lm(unlist(data[,vars[i]])~ data$Drought)
-    rs[i,2]= summary(m1)$adj.r.squared
-    rs[i,3]= -summary(m1)$coefficients[3,1]
-    rs[i,4]= summary(m1)$coefficients[3,4]
-    
-  }
-  return(rs)
-  
-}
-
-AnnIm3 =  Int %>%
-  mutate(SmeltIndex = case_when(
-    Season == "Fall" ~ SmeltIndex,),
-  logzoopB = case_when(
-    Season %in% c("Fall", "Spring", "Summer") ~ logzoopB ),
-  TempSummer = case_when(
-    Season %in% c("Summer") ~ Temperature
-  ),
-  Turbidity = Secchi * -1) %>%
-  mutate(across(`Outflow`:Turbidity, scale)) 
-
-#Hmmm, no effect of temperature, but maybe it gets swamped by seasonal effects
-m = glm(Temperature~ Drought+Season, data = AnnIm3)
-m2 = glm(Temperature~ Drought, data = AnnIm3)
-summary(m)
-library(car)
-Anova(m)
-library(visreg)
-visreg(m)
-visreg(m, xvar = "Drought", by = "Season")
-visreg(m, xvar = "Season", by = "Drought")
-
-
-#can I pull out the Rsquraed for just the drought effect?
-library(rsq)
-rsq.partial(m, adj = T)
-rsq.partial(m, m2, adj = TRUE)
-
-test = Rsquar(AnnIm3, vars = names(AnnIm3)[6:25])
-AnnIm4 = mutate(test, colr = case_when(
-  Ps > 0.05 ~ "grey",
-  Ps < 0.05 & Est >0 ~ "blue",
-  Ps < 0.05 & Est < 0 ~ "red"
-),
-sig = case_when(
-  Ps > 0.05 ~ "grey",
-  Ps < 0.05 ~ "blue"
-)
-  ) %>%
-  filter(!Metrics %in% c("logzooC", "SpCndSurface", "TotPhos", "Secchi", "X2", "Sbindex", "ZoopBPUE", 
-                         "SmeltIndex", "LongfinIndex", "AmShadIndex", "Chla"))
-
-
-AnnIm4 = mutate(AnnIm4, Metrics = factor(Metrics, levels =  c("Export", "Outflow",
-                                     "Turbidity","Salinity",  "Temperature", "TempSummer",
-                                     "logzoopB", "logSB", "logDS", "logLFS", "logShad", "logChl"), 
-                labels = 
-                  c("Exports",  "Outflow","Turbidity", 
-                    "Salinity", "Temperature", "Summer Temperature",
-                    
-                    "Zooplankton", "Age-Zero Striped Bass", 
-                    "Delta Smelt", "Longfin Smelt", "American Shad", "Chlorophyll")))
-
-
-#plot of R2
-ggplot(filter(AnnIm4, !Metrics %in% c("Temperature", "Zoops")), aes(x=Metrics)) +
-  geom_col(aes(y = Rs, fill = colr))+
-  geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_fill_manual(values = c("lightblue", "grey", "red"), 
-                    labels = c("increase", "non-significant", "decrease"),
-                    name = "Direction of impact")+
-  scale_y_continuous( name = "Drought Impact Level (R2)") + 
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank())
-
-
-#plot of coefficients
-ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metrics)) +
-  geom_col(aes(y = Est, fill = colr))+
-  geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_fill_manual(values = c("lightblue", "grey", "red"), 
-                    labels = c("increase", "non-significant", "decrease"),
-                    name = "Direction of impact")+
-  scale_y_continuous( name = "Drought Impact Level (Coeficient)") + 
-  scale_x_discrete(name = NULL) + theme(axis.text.x = element_blank(), legend.position = c(0.85,0.85))
-
-#let's try varying alpha by R2
-ggplot(filter(AnnIm4, Metrics != "Temperature", Metrics != "Zoops"), aes(x=Metrics)) +
-  geom_col(aes(y = Est, fill = sig, alpha = Rs))+
-  geom_text(aes(x = Metrics, label =  Metrics), y = 0, hjust = 0, angle = 90,
-            position = position_dodge2(width = 1, preserve = "single"))+
-  theme_bw()+
-  scale_fill_manual(values = c("blue", "black"), 
-                    labels = c("p<0.05", "non-significant"),
-                    name = "Significance")+
-  scale_alpha(range = c(0.3, 1), name = "R-squared")+
-  scale_y_continuous( name = "Drought Impact Level (Coeficient)") + 
-  scale_x_discrete(name = NULL) + 
-  theme(axis.text.x = element_blank(), 
-        legend.position = c(0.85,0.8))
-
-
 ##############################################################################
-
-#####################################################
-#NMDS!!!
-
-library(vegan)
-Intmat = pivot_wider(Int4, id_cols = c(Year, Outflow, Yr_type, Drought), names_from = "Metric", values_from = "Value")
-Intmat = Intmat[which(!is.na(rowSums(Intmat[,5:23]))),]
-
-
-
-Envmat = select(Intmat, Year, Outflow, Yr_type, Drought) %>%
-  mutate(Drought = factor(Drought))
-
-
-Intmat2 = Intmat[,5:23]
-
-maxes = group_by(Int4, Metric) %>%
-  summarise(Max = max(Value, na.rm = T))
-  
-Intmat3 = select(Intmat2, !`logChla North`)
-
-Intmat4 = left_join(Int4, maxes) %>%
-  mutate(Percent = Value/Max) %>%
-  pivot_wider(id_cols = c(Year, Outflow, Yr_type, Drought), names_from = "Metric", values_from = "Percent") %>%
-  select(!"logChla North")
-Intmat4 = Intmat4[which(!is.na(rowSums(Intmat4[,5:22]))),]
-Intmat4a = Intmat4[,5:22]
-
-DroughtNMDS = metaMDS(Intmat3)
-source("plotNMDS.R")
-PlotNMDS(DroughtNMDS, group = "Drought", data = Envmat)
-PlotNMDS(DroughtNMDS, group = "Yr_type", data = Envmat)
-
-DroughtNMDS2 = metaMDS(Intmat4a)
-PlotNMDS(DroughtNMDS2, group = "Drought", data = Envmat)
-PlotNMDS(DroughtNMDS2, group = "Yr_type", data = Envmat)
-PlotNMDS2(DroughtNMDS2, group = "Yr_type", lines = "Outflow", data = Envmat)
 
 #################################################################
 #South Central chlorophyll versus San Juaquin RT

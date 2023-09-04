@@ -88,7 +88,8 @@ ggplot(AlljelliesTot, aes(x = Year, y = TotJellies,
   geom_point()+ facet_wrap(~Region)
 
 
-ggplot(filter(AlljelliesTot, Region != "North", Region != "SouthCentral"), aes(x = Month, y = TotJellies)) +
+ggplot(filter(AlljelliesTot, Region != "North", Region != "SouthCentral"), 
+       aes(x = Month, y = TotJellies)) +
   geom_point()+ facet_grid(Year~Region)+ 
   scale_y_log10()
 
@@ -119,9 +120,9 @@ ggplot(Allmeansub, aes(x = Drought, y = log(meanJellies+1), fill = Drought)) +
 
 ##############
 #Box plot of year type by region (this is the one we like)
-ylabMaeotias <- expression(paste("Mean Jun-Oct ", italic("Maeotias"), " CPUE (log-transformed)"))
+ylabMaeotias <- expression(paste("Mean Jun-Oct ", italic("M. marginata"), " CPUE (log-transformed)"))
 
-
+#THis is figure 4 (now figure 3)
 ggplot(Allmeansub, aes(x = Yr_type, y= log(meanJellies+1), fill = Yr_type)) +
   scale_fill_manual(guide = NULL, values = pal_yrtype)+
   geom_boxplot( alpha = 0.8)+ facet_wrap(~Region, nrow = 1) + theme_bw()+
@@ -206,6 +207,7 @@ jelz3c = lmer(log(meanJellies+1)~ Yr_type*Region + (1|Month) + (1|Yearf),
 summary(jelz3c)
 res2 = simulateResiduals(jelz3c)
 plot(res2)
+
 #That looks perfect why be overly complicated?
 write.csv(summary(jelz3c)$coefficients, "JellyfishCPUEmodel.csv")
 library(car)
