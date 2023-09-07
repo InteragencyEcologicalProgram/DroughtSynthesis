@@ -7,6 +7,7 @@ library(lubridate)
 library(emmeans)
 library(effsize)
 library(effectsize)
+library(sf)
 
 #Boz's integrated data set
 
@@ -120,13 +121,13 @@ yrs = read_csv("data/yearassignments.csv")
 #   filter(!is.na(CRR)) %>%
 #   mutate(Metric = "Salmon CRR", Value = CRR, YearAdj = Year)
 
-ggplot(salsum, aes(x = Migration, y = CRR, fill = Migration))+ geom_boxplot()+
-  scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
-  theme_bw()
+
 
 salsum = mutate(salmon2, YearAdj = Year-2) %>%
   select(-Migration)
-
+ggplot(salsum, aes(x = Migration, y = CRR, fill = Migration))+ geom_boxplot()+
+  scale_fill_manual(values = c("#FDE333","#53CC67","#00588B"), guide = NULL)+
+  theme_bw()
 
 #Bind them together
 #Combine
@@ -166,7 +167,7 @@ Int3a = filter(Int2, !is.na(MetricL))
 #save teh data so I can just make the graphs quickly
 #save(Int3a, Int2, file = "data/Integrateddata.Rdata")
 #save(Int3a, Int2, file = "data/Integrateddata2023.Rdata")
-#load("data/Integrateddata2023.Rdata")
+load("data/Integrateddata2023.Rdata")
 
 #nick asked for a subset of the data
 Drought4Nick = filter(Int2, Metric %in% c("logNat", "Nitrate", "Ammonia", "logAm", "Phos", "logPhos", "Temperature", 
@@ -365,17 +366,23 @@ ggsave("plots/EffectArrows2023.tiff", device = "tiff", width = 9, height = 7, un
 #now try and do the original graph but highlight which are significant
 impacts =rename(DroughtImpact2a, MetricL = Metric) %>%
   arrange(MetricL) %>%
-  mutate(Y = c(75000, 8000, 90, 60, 120, 5, 90, 17.5, -0.7, -1.9, -2.1, 2, 2.2, 3.1, 2.4, 9.5, 10.5, 10, 10.5, 9, 7, 10, 8.5, 9, 4,4)) %>%
+  mutate(Y = c(75000, 8000, 90, 60, 120, 4, 
+               95,  17.5, -0.7, -1.9, -2.2, 
+               2, 2.2, 3.1, 2.4, 9.5, 
+               10, 10, 10.5, 9, 7, 
+               10, 8.5, 9, 4,4)) %>%
   filter(Sig != "(NS)")
 
 ggplot(filter(Int3a, MetricL!= "X2"), aes(x = Drought, y = Value, fill = Drought)) + geom_boxplot() +
-  geom_text(data = filter(impacts, MetricL != "X2"), x = 1, aes(label = Sig, y = Y), inherit.aes = F, size = 10, color = "red")+
+  geom_text(data = filter(impacts, MetricL != "X2"), 
+            x = 1, aes(label = Sig, y = Y), inherit.aes = F, size = 10, color = "red")+
   facet_wrap(MetricL~., scales = "free_y")+ drt_color_pal_drought()+
   theme_bw()+ theme(legend.position = "none")
 
 
 ggsave("plots/AllParamssig2023.tiff", device = "tiff", width = 9, height = 8, units = "in")
 
+##################################################################################
 #mapps for zooplankton and chlorophyll
 
 library(sf)
@@ -443,13 +450,13 @@ ggplot()+
   geom_sf(data = WW_Delta, alpha = 0.2) + theme_bw()+
   scale_fill_viridis(name = "Drought \nImpact", na.value = "grey90")+
   facet_wrap(~Metric, nrow = 2)+
-  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.8, 38.45))+
+  coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.45))+
   north(x.min = -122.1, x.max = -121.2, y.min = 37.8, y.max = 38.4, scale = .15)+
-  scalebar(data = test, st.dist = .03,
+  scalebar(data = test, st.dist = .03, st.size =3,
            transform = T, dist = 10, dist_unit = "km", location = "bottomleft",
            facet.var = "Metric", facet.lev = "Chlorophyll", st.bottom = FALSE)+xlab(NULL)+ ylab(NULL)
 
-ggsave("CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units = "in")
+ggsave("plots/CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units = "in")
 #################################################################
 
 # #now try combining not-drought and wet years
