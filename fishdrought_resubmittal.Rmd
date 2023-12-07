@@ -19,7 +19,7 @@ library(ggsignif)
 library(DroughtData)
 library(zoo)
 library("ggbeeswarm")
-
+library(broom)
 ```
 
 ## Fish - multiple drought years

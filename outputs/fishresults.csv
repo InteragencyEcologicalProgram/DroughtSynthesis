@@ -1,0 +1,23 @@
+,,,Sacramento Valley Index Model,,,,Drought versus Wet ANOVA,,,
+,Species,Term,Estimate,Std. Error,t-value,p-value,Sum of Squares,Degrees of Freedom,F-value,P-value
+1,Striped Bass,(Intercept),147.318,37.868,3.890,0.001,3.149,1,6.73,0.015
+2,Striped Bass,Sac Valley Index,0.109,0.038,2.874,0.007,5.650,1,12.07,0.002
+3,Striped Bass,Year,-0.072,0.019,-3.882,0.001,1.480,1,3.16,0.085
+4,Striped Bass,SB(t-1),0.237,0.163,1.450,0.157,14.041,30,NA,NA
+5,Delta Smelt,(Intercept),78.411,31.834,2.463,0.020,1.200,1,2.10,0.158
+6,Delta Smelt,Sac Valley Index,0.059,0.042,1.414,0.168,3.398,1,5.95,0.021
+7,Delta Smelt,Year,-0.039,0.016,-2.468,0.020,22.898,1,40.10,0.000
+8,Delta Smelt,DS(t-1),0.680,0.106,6.393,0.000,17.129,30,NA,NA
+9,Longfin Smelt,(Intercept),110.344,44.227,2.495,0.018,34.074,1,20.84,0.000
+10,Longfin Smelt,Sac Valley Index,0.371,0.075,4.969,0.000,7.923,1,4.85,0.036
+11,Longfin Smelt,Year,-0.054,0.022,-2.484,0.019,3.149,1,1.93,0.175
+12,Longfin Smelt,LS(t-1),0.217,0.151,1.441,0.160,49.056,30,NA,NA
+13,American Shad,(Intercept),37.640,22.146,1.700,0.100,2.465,1,3.97,0.056
+14,American Shad,Index,0.120,0.045,2.691,0.012,1.237,1,1.99,0.169
+15,American Shad,Year,-0.017,0.011,-1.567,0.128,3.291,1,5.30,0.029
+16,American Shad,AS(t-1),0.335,0.156,2.152,0.040,18.645,30,NA,NA
+17,Threadfin Shad,(Intercept),63.676,30.618,2.080,0.046,0.648,1,0.69,0.412
+18,Threadfin Shad,Index,0.002,0.055,0.031,0.976,3.474,1,3.72,0.063
+19,Threadfin Shad,Year,-0.031,0.015,-2.037,0.051,19.230,1,20.60,0.000
+20,Threadfin Shad,TS(t-1),0.658,0.137,4.796,0.000,28.012,30,NA,NA
+,,,,,,,,,,
