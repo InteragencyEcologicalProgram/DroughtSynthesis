@@ -20,6 +20,7 @@ library(DroughtData)
 library(zoo)
 library("ggbeeswarm")
 library(broom)
+ library(gridExtra)
 ```
 
 ## Fish - multiple drought years
@@ -327,9 +328,9 @@ visreg(TFshad1)
 
 
 
-```{r, warn = FALSE }
+```{r Fig3, warn = FALSE }
 
-#final plot for paper
+#final plot for paper - 
 
 #data frame of pairwise comparison results
 # FishDrought = droplevels(FishDrought)
@@ -520,14 +521,14 @@ TFS =  ggplot(filter(FishDrought, Metric == "logTFS"),  aes(x = as.factor(Drough
     
 #print just the legend
 legend <- cowplot::get_legend(sb)
- library(gridExtra)
+
 plots = grid.arrange(ds, LF, sh,TFS, sb2, Wrcrr,Frcrr, Srcrr, legend,  
                      nrow =5, ncol = 2,heights = c(2,2,2,2, .5))
 
 plotsnosalmon = grid.arrange(ds, LF, sh,TFS, sb2, legend,  
                      nrow =4, ncol = 2,heights = c(2,2,2,2))
   
-  
+####THIS IS FIGURE 3
 ggsave(plot = plotsnosalmon,"plots/FishDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
 
 
