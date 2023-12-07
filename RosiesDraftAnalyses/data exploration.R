@@ -303,6 +303,26 @@ DroughtImpact2f = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logL
                             Pval > 0.05 ~ "(NS)"),
             Cohen = Cohen*sign(estimate)*-1)
 
+
+#Sam wants the results without the long-term impact of year
+DroughtImpact2fb = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(Metric) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  summarize(Cohen = cohens_f(lm(Value ~ Drought+ lagValue))$Cohens_f_partial[1], 
+            
+            Pval = summary(lm(Value ~ Drought+  lagValue))$coefficients[2,4],
+            estimate = summary(lm(Value ~ Drought+ lagValue))$coefficients[2,1],
+            Sig = case_when(Pval < 0.05 & Pval > 0.01 ~ "*",
+                            Pval < 0.01 & Pval > 0.001 ~ "**",
+                            Pval < 0.001 ~ "***",
+                            Pval > 0.05 ~ "(NS)"),
+            Cohen = Cohen*sign(estimate)*-1)
+#Hm. American shad is significant where it wasn't before, but not the other fish
+
+
 DroughtImpact2 = bind_rows(DroughtImpact2, DroughtImpact2f)
 
 #BAR PLOTS/Arrow plows
@@ -344,7 +364,7 @@ DroughtImpact2a = mutate(DroughtImpact2a, yval = case_when(Cohen< 0 ~ 0.1,
 write.csv(DroughtImpact2a, "DroughtImpact.csv", row.names = F)
 
 save(DroughtImpact2a, Int3a,  file = "outputs/DroughtImpac.RData")
-#load("outputs/DroughtImpac.RData")
+load("outputs/DroughtImpac.RData")
 
 ##Arrow plot with all things, even the non-significant ones
 ggplot(DroughtImpact2a, aes(x = Metric, y = 0)) + 
@@ -448,7 +468,7 @@ library(ggsn)
 ggplot()+ 
   geom_sf(data = test, aes(fill = Cohen)) +
   geom_sf(data = WW_Delta, alpha = 0.2) + theme_bw()+
-  scale_fill_viridis(name = "Drought \nImpact", na.value = "grey90")+
+  scale_fill_distiller(name = "Drought \nImpact", palette = "RdYlBu", na.value = "grey90")+
   facet_wrap(~Metric, nrow = 2)+
   coord_sf(xlim = c(-122.2, -121.2), ylim = c(37.7, 38.45))+
   north(x.min = -122.1, x.max = -121.2, y.min = 37.8, y.max = 38.4, scale = .15)+
@@ -482,12 +502,11 @@ ggsave("plots/CHlZoopsmap.tiff", device = "tiff", height = 8, width = 6, units =
 
 
 #############################################################################
-#linear models of stuff versus residence time
 
 #Verses sac valley index
 
 Int3a = filter(Int3a, MetricL != "X2", !is.na(MetricL))
-Indexes = Int3a %>%
+Indexesa = filter(Int3a, !Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
   group_by(MetricL) %>%
   summarize(intercept = coef(lm(Value ~ Index))[1],
             grad = coef(lm(Value ~ Index))[2],
@@ -498,27 +517,89 @@ Indexes = Int3a %>%
                             P > 0.05 ~ F)) 
 
 
+#do the fish seperately (per Matt Nobriga)
+Indexesf = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(MetricL) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  summarize(intercept = coef(lm(Value ~ Index+ Year + lagValue))[1],
+            grad = coef(lm(Value ~ Index+ Year + lagValue))[2],
+            r2 = summary(lm(Value ~ Index+ Year + lagValue))$r.squared,
+            P =  summary(lm(Value ~ Index+ Year + lagValue))$coefficients[2,4],
+            Y = max(Value, na.rm = T),
+            sig = case_when(P < 0.05 ~ T,
+                            P > 0.05 ~ F))
+
+#see if anything changes if we don't include year
+Indexesfv = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(MetricL) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  summarize(intercept = coef(lm(Value ~ Index+ Year + lagValue))[1],
+            grad = coef(lm(Value ~ Index+  lagValue))[2],
+            r2 = summary(lm(Value ~ Index+  lagValue))$r.squared,
+            P =  summary(lm(Value ~ Index+ lagValue))$coefficients[2,4],
+            Y = max(Value, na.rm = T),
+            sig = case_when(P < 0.05 ~ T,
+                            P > 0.05 ~ F))
+#not really, so we'll ignore it
+
+Indexesb = bind_rows(Indexesa, Indexesf)
+
+#just do this for plotting
+Indexes = Int3a %>%
+  group_by(MetricL) %>%
+  summarize(intercept = coef(lm(Value ~ Index))[1],
+            grad = coef(lm(Value ~ Index))[2],
+            r2 = summary(lm(Value ~ Index))$r.squared,
+            P =  summary(lm(Value ~ Index))$coefficients[2,4],
+            Y = max(Value, na.rm = T),
+            sig = case_when(P < 0.05 ~ T,
+                            P > 0.05 ~ F)) 
 ggplot(filter(Int3a, !is.na(MetricL)), aes(x = Index, y = Value)) +
   geom_point(aes(color = Yr_type))+
   drt_color_pal_yrtype(aes_type = "color")+
   geom_smooth(method = lm, color = "grey 50", alpha = 0.2, linetype =2)+
-  geom_abline(data = Indexes, aes(intercept = intercept, slope = grad, alpha = sig), size = 1)+
+  geom_abline(data =Indexes, aes(intercept = intercept, slope = grad, alpha = sig), size = 1)+
   scale_alpha_manual(values = c(0.1, 1), guide = NULL)+
-  # geom_text(data = Indexes, aes(x = 9, y = Y, 
-  #                                 label = paste(#"y = x", round(grad, 3),
-  #                                               #"+", round(intercept, 3), "\n 
-  #                                               "R2 =", round(r2, 2),
-  #                                               " P = ", round(P, 4), sep = "")),
-  #           size = 3, nudge_y = -1)+
   facet_wrap(~MetricL, scales = "free_y")+
   theme_bw() + xlab("Sacramento Valley Index")
+
 
 #Having the formulas on the plots is a mess. Maybe just the R2 and p-value?
 
 ggsave("plots/WYindexRegressions.tiff", device = "tiff", width = 10, height = 10, units = "in")
 
-write.csv(Indexes, "IndexRegressions.csv", row.names = FALSE)
 
+write.csv(Indexesb, "IndexRegressions.csv", row.names = FALSE)
+##################################################################################
+#full fish model results for supplemental information. 
+
+fishresults = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(MetricL) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  reframe(results = tidy(lm(Value ~ Index+ Year + lagValue)))
+
+ summary(lm(Value ~ Index+ Year, data =  filter(Int3a, Metric == "logDS")))
+
+fishresultsD = filter(Int3a, Metric %in% c("logDS", "logShad", "logSB", "logLFS", "logTFS")) %>%
+  mutate(Drought = as.factor(Drought)) %>%
+  group_by(MetricL) %>%
+  arrange(Year) %>%
+  mutate(lagValue = lag(Value)) %>%
+  filter(Drought !="N") %>%
+  reframe(results = tidy(Anova(lm(Value ~ Drought+ Year + lagValue))))
+
+fishesall = bind_cols(fishresults, fishresultsD)
+
+write.csv(fishesall, file = "outputs/fishresults.csv")
 #######################################################################################
 #look at delta outflow (controlled by management) versus unimpaired flow
 
@@ -712,3 +793,21 @@ ggplot(filter(Chlorophyll,  Region =="South-Central Delta"), aes(y = SJRT, x = c
   xlab("South-Central Delta log CHL")+
   ylab("San Joaquin Residence time (days)")
 
+##############################################################
+#quick graph of turbidity for Vivian
+
+turb = filter(Int3a, Metric == "Secchi" ) 
+
+ggplot(turb, aes(x = Index, y = Value)) + geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm")+
+  theme_bw()+ drt_color_pal_yrtype()+ylab("Secchi Depth")+
+  xlab("Sacramento Valley Index")
+
+
+ggplot(turb, aes(x = Index, y = Value)) + geom_point(aes(color = Year)) + geom_smooth(method = "lm")+
+  theme_bw()+ scale_color_viridis_c()+ylab("Secchi Depth")+
+  xlab("Sacramento Valley Index")
+
+ggplot(turb, aes(x =Year, y = Value)) + geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm")+
+  theme_bw()+ drt_color_pal_yrtype()+ylab("Secchi Depth")+
+  xlab("Year")
+write.csv(turb, "AverageTurbidity.csv")

@@ -9,7 +9,7 @@ library(cder)
 library(DroughtData)
 
 #dayflow data
-load("data/dayflow.RData")
+load("data/Dayflow.RData")
 yrs = read_csv("data/yearassignments.csv")
 
 #Delta outflow, Sacramento flow, SJR flow, etc, from 2022
@@ -46,6 +46,11 @@ DF3 = pivot_longer(DF2, cols = c(SAC, OUT, EXPORTS, SJR, GCD, CVP, SWP, MISDV, P
 
 
 ggplot(DF3, aes(x = Date, y = Flow, color = Station)) + geom_line()
+ggplot(filter(DF3, Station == "SWP+CVP Exports", Year >2000, Year <2023),  aes(x = Day, y = Flow, color = Yr_type)) + 
+  geom_point()+ geom_smooth()
+
+ggplot(filter(DF3, Station == "Delta Outflow", Year >2000, Year <2023),  aes(x = Day, y = Flow, color = Yr_type)) + 
+  geom_point()+ geom_smooth()
 ########################################################################
 
 #Plot of change in exports over time for SBDS paper
@@ -71,6 +76,21 @@ ggplot(DFyear, aes(x = Year, y = AnnualFlow, color = Station))+ geom_line(linewi
     theme_bw()+
   ylab("Average Annual Flow (CFS)")+
   xlab("Water Year")
+
+#we decided to just do outflow and exports
+ggplot(filter(DFyear, Station %in% c("Delta Outflow", "SWP+CVP Exports")),
+              aes(x = Year, y = AnnualFlow, color = Station))+ geom_line(linewidth = 1)+
+  facet_wrap(~Station, scales = "free_y", nrow =2)+ 
+  scale_color_brewer(palette = "Dark2", guide = NULL)+
+  geom_rect(data = filter(droughts, Station %in% c("Delta Outflow", "SWP+CVP Exports")),
+            aes(xmin = droughtstart-.5, xmax = droughtend+.5, ymin = 0, ymax = ymax), inherit.aes = F,
+            alpha = 0.3)+
+  theme_bw()+
+  ylab("Average Annual Flow (CFS)")+
+  xlab("Water Year")
+
+ggsave("plots/OutflowExports.tiff", device = "tiff", width = 8, height =6)
+
 
 #########################################################
 library(zoo)
@@ -159,3 +179,5 @@ ggplot(DFsum3, aes(x = Year, y = PercentDiverted))+ geom_line() +
   ylab("Annual Percent of inflow diverted")+
   xlab("Water Year")
 
+
+#############################

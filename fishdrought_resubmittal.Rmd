@@ -81,9 +81,12 @@ FD1 = lm(Value ~ DroughtYear3 + Year + LagValue, data = SB)
 acf(residuals(FD1))
 summary(FD1)
 plot(FD1)
-emmeans(FD1, pairwise ~ DroughtYear)
+emmeans(FD1, pairwise ~ DroughtYear3)
 visreg(FD1)
+```
 
+
+```{r}
 #drought year as a non-ordered factor
 FD1.1 = lm(Value ~ DroughtYear + Year+ LagValue, data = SB)
 
@@ -91,7 +94,10 @@ summary(FD1.1)
 plot(FD1.1)
 emmeans(FD1.1, pairwise ~ DroughtYear)
 visreg(FD1.1)
+```
 
+
+```{r}
 #drought year as a continuous variable
 FD1.2 = lm(Value ~ DroughtYear2 + Year+ LagValue, data = SB)
 summary(FD1.2)
@@ -159,8 +165,6 @@ aictab(models, modnames)
 ### Delta Smelt
 
 ```{r}
-
-
 DS = filter(FishDrought, Metric == "logDS") 
 
 DS1 = lm(Value ~ DroughtYear + Year + LagValue, data = DS)
@@ -169,13 +173,19 @@ acf(residuals(DS1))
 summary(DS1)
 plot(DS1)
 visreg(DS1)
+```
 
+
+```{r}
 DS1.1 = lm(Value ~ DroughtYear + Year+LagValue, data = DS)
 acf(residuals(DS1.1))
 summary(DS1.1)
 plot(DS1.1)
 visreg(DS1.1)
+```
 
+
+```{r}
 DS1.2 = lm(Value ~ DroughtYear2 + Year+ LagValue, data = DS)
 summary(DS1.2)
 plot(DS1.2)
@@ -191,8 +201,6 @@ Delta Smelt just don't want to behave.
 ### American Shad
 
 ```{r}
-
-
 shad = filter(FishDrought, Metric == "logShad") 
 
 shad1 = lm(Value ~ DroughtYear + Year+ LagValue, data = shad)
@@ -201,14 +209,20 @@ summary(shad1)
 emmeans(shad1, pairwise ~ DroughtYear)
 plot(shad1)
 visreg(shad1)
+```
 
+
+```{r}
 shad1.1 = lm(Value ~ DroughtYear + Year+LagValue, data = shad)
 summary(shad1.1)
 acf(residuals(shad1.1))
 emmeans(shad1.1, pairwise ~ DroughtYear)
 plot(shad1.1)
 visreg(shad1.1)
+```
 
+
+```{r}
 shad1.2 = lm(Value ~ DroughtYear2 + Year+LagValue, data = shad)
 summary(shad1.2)
 
@@ -424,6 +438,7 @@ Wrcrr = ggplot(WR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(
   xlab("Migration Year")+ ylab(NULL)+ #ylim(0,5.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 
+  
   Wrcrr2
 
 
@@ -484,8 +499,8 @@ ds = ggplot(filter(FishDrought, Metric == "logDS"),  aes(x = as.factor(DroughtYe
  # geom_text(data = pairs, aes(y = Y, label = Group))+
   xlab(NULL)+ ylab(NULL)+ ylim(0,12.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("0, Wet years", "1, First/only dry year",
-                                                                            "2, Second dry year", "3+ Third or more dry year"))+
-    theme(legend.position = "bottom")
+                                                                            "2, Second dry year", "3+ Third or more dry year"))#+
+   # theme(legend.position = "bottom")
 
   sb
   sb2 = sb +  scale_fill_brewer(palette = "Dark2", guide = NULL)
@@ -508,8 +523,12 @@ legend <- cowplot::get_legend(sb)
  library(gridExtra)
 plots = grid.arrange(ds, LF, sh,TFS, sb2, Wrcrr,Frcrr, Srcrr, legend,  
                      nrow =5, ncol = 2,heights = c(2,2,2,2, .5))
+
+plotsnosalmon = grid.arrange(ds, LF, sh,TFS, sb2, legend,  
+                     nrow =4, ncol = 2,heights = c(2,2,2,2))
   
-ggsave(plot = plots,"plots/FishDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
+  
+ggsave(plot = plotsnosalmon,"plots/FishDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
 
 
 #now do just the salmon

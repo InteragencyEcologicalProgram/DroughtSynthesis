@@ -363,12 +363,14 @@ DFRT_long = pivot_longer(DFRTann, cols = c(SACRT, SJRT), names_to = "River", val
 ggplot(DFRT_long) + 
   geom_col(aes(x = WY, y = 130, fill = Drought), alpha = 0.3)+
   geom_line( aes(x = WY, y = RT))+
-  drt_color_pal_drought()+
+  scale_fill_manual(values = c(D = "#FDE333", N = "#53CC67", W = "#00588B"), 
+                    labels = c("Drought", "Neutral", "Wet"), name = NULL)+
   facet_wrap(~River, scale= "free_y", nrow = 2)+
   xlab("Year")+ylab("Water Residence Time (Days)")+
-  theme_bw()
+  theme_bw()+
+  theme(legend.position = "bottom")
 
-ggsave("plots/Restime.tiff", device = "tiff", width = 8, height = 8, units = "in")
+ggsave("plots/Restime.tiff", device = "tiff", width = 6, height = 6, units = "in")
 
 #OK, what's the deal with different results than the other data? But I like these better, so I won't worry about it
 pal_yrtype <- c( "C" = "#FDE333", "D" = "#53CC67", "BN" = "#009B95","AN" = "#00588B", "W" = "#481F70FF") 

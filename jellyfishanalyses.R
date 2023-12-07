@@ -32,7 +32,7 @@ pal_yrtypecols = darken(pal_yrtype, amount = .3)
 monthly = group_by(AlljelliesTot, Month, Source) %>%
   summarize(Jellies = mean(TotJellies))
 ylab3 = expression(paste(italic("M. marginata"), " CPUE (log-transformed)"))
-ylabMaeotias <- expression(paste("Mean Jun-Oct ", italic("M. marginata"), " CPUE (log-transformed)"))
+ylabMaeotias <- expression(paste("Mean Jun-Oct ", italic(" M. marginata"), " CPUE (log-transformed)"))
 
 AlljelliesTot = filter(AlljelliesTot, Year <2021) %>%
   mutate(Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
@@ -67,13 +67,22 @@ ggplot(AlljelliesMean, aes(x = Year, y = meanJellies, fill = Yr_type)) +
 ggplot(monthly, aes(x = Month, y = Jellies, fill = Source))+ geom_col(position = "dodge")
 
 ggplot(AlljelliesMean, aes(x = Year, y = meanJellies)) +
-  geom_col(aes(fill = Yr_type), position = "dodge")+
+  geom_col(aes(fill = Yr_type), color = "black", position = "dodge")+
   scale_fill_manual(values = pal_yrtype)+
-  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies, group = Region))+
+  #geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies, group = Region))+
   ylab("Mean monthly Maeotias CPUE") + theme_bw()+
   facet_wrap(~Region)
 
-#############this was figure 3, then we cut it.
+AlljelliesMean3 = group_by(AlljelliesMean, Year, Region, Yr_type) %>%
+  summarize(CPUE = mean(meanJellies), sdJellies = sd(meanJellies), seJellies = sdJellies/n())
+ggplot(AlljelliesMean3, aes(x = Year, y = CPUE)) +
+  geom_col(aes(fill = Yr_type), color = "black", position = "dodge")+
+  scale_fill_manual(values = pal_yrtype)+
+  geom_errorbar(aes(ymin = CPUE-seJellies, ymax = CPUE+ seJellies, group = Region))+
+  ylab("Mean monthly Maeotias CPUE") + theme_bw()+
+  facet_wrap(~Region)
+
+#############this was figure 3, then we cut it. But maybe I want it in supplemental...
 ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
   geom_boxplot(aes(fill = Yr_type, color = Yr_type))+
   scale_fill_manual(values = pal_yrtype, name = "Year Type")+
@@ -85,6 +94,19 @@ ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
   facet_wrap(~Region, nrow = 1)
 
 ggsave("plots/jelliesbyyear.tiff", device = "tiff", width = 8, height = 6)
+
+
+ggplot(AlljelliesTot, aes(x = as.factor(Year), y = log(TotJellies+1))) +
+  geom_boxplot(aes(fill = Yr_type, color = Yr_type))+
+  scale_fill_manual(values = pal_yrtype, name = "Year Type")+
+  scale_color_manual(values = pal_yrtypecols, name = "Year Type")+
+  # geom_errorbar(aes(ymin = meanJellies-sdJellies, ymax = meanJellies + sdJellies))+
+  ylab(ylab3) + theme_bw()+ xlab(NULL)+
+  scale_x_discrete(breaks = c(2010, 2015, 2020))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5), legend.position = "bottom")+
+  facet_wrap(~Region, nrow = 1)
+
+
 #is abundance related to temperature?
 ggplot(AlljelliesTot, aes(x = Temp_surf, y = TotJellies, 
                           color = Yr_type)) +
@@ -277,7 +299,7 @@ ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1))) + geom_boxplot()
 #plot of catch between 4.5 and 7.5
 ggplot(sweetspot, aes(x = Yr_type, y = log(meanJellies+1), fill = Yr_type)) + geom_boxplot(alpha = 0.8)  +
   # facet_wrap(~Region)+
-  scale_fill_manual(values = pal_yrtype2) +
+  scale_fill_manual(values = pal_yrtype) +
   ylab(ylabMaeotias) + xlab("Water Year Type")+
   theme_bw()+ theme(legend.position = "none")
 ggsave("plots/Maeotias4_7ppt.tiff", device = "tiff", height = 4, width = 4)
@@ -375,7 +397,7 @@ EQ = paste("y = ", format(unname(coef(jl1s)[1]), digits = 3), " + ",
  pal_yrtype2 <- c( "Critical" = "#FDE333", "Dry" = "#53CC67", "Below Normal" = "#009B95","Wet" = "#481F70FF") 
 # 
 # #Plot of outflow versus center of distribution for paper
- ylabMaeotias2 =  expression(paste("Center of ", italic("Maeotias"), " distribution (Km from Golden Gate)"))
+ ylabMaeotias2 =  expression(paste("Center of ", italic("M. marginata"), " distribution (Km from Golden Gate)"))
  ggplot(droplevels(Alljelsum), aes(y = DistK, x = OutflowM)) + 
    geom_point(aes(color = Yr_type)) + geom_smooth(method = "lm") + 
    scale_color_manual(values = pal_yrtype2, name = "Water Year\nType")+
@@ -446,7 +468,9 @@ zoops3 = left_join(zoops2, zoopstas) %>%
   summarise(Copepods = sum(CPUE, na.rm = T), BPUE = sum(BPUE, na.rm =T)) %>%
   left_join(yrs) %>%
   group_by(Region, Yr_type) %>%
-  summarise(CopepodsM = mean(Copepods), sdCops = sd(Copepods)/sqrt(n()), BPUE = mean(BPUE, na.rm =T))
+  summarise(CopepodsM = mean(Copepods), sdCops = sd(Copepods)/sqrt(n()), BPUE = mean(BPUE, na.rm =T)) %>% 
+  mutate(Taxa = "Maeotias",Yr_type = factor(Yr_type, levels = c("Critical", "Dry","Below Normal", "Wet"),
+                                            labels = c("Critical", "Dry", "Below\nNormal", "Wet")))
   
 #Calculate percentage of copepods eaten over the course of the summer (assuming no copepod reproduction)
 Means2 = left_join(Means, zoops3) %>%
@@ -549,7 +573,7 @@ ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 5, 
 #combine with clorophyll data for ammount of chlorophyll
 #the critters could be eating over the course of the summer
 
-chloro = read_csv("data/Average Chloro for Jellies.csv")
+chloro = read_csv("data/Combined Average Chloro for Jellies.csv")
 #group by water year type and average
 
 chloro2 = left_join(chloro, yrs) %>%
@@ -562,16 +586,15 @@ chloro2 = left_join(chloro, yrs) %>%
 #Calculate potential annual loss of chlorophyll, in ug. Then convert to mgC by muliplying by 32 (from Lucas et al 2006) and dividing by 1000. 
 #did I do this right? Do I have to do something to reflect the fact that chlorophyll is in L and clams are in square meters? probably not because the clearence rate is a proportion.
 clear2 = left_join(clear, chloro2) %>%
-  mutate(maxchloro = chl*MaxClearence*365, meanchloro = chl*MeanClearence*365,
+  mutate(maxchloro = chl*MaxClearence, meanchloro = chl*MeanClearence,
+         maxchloroY = chl*MaxClearence*365, meanchloroY = chl*MeanClearence*365,
          maxC = maxchloro*32/1000, meanC = meanchloro*32/1000)
 
 #now zooplankton loss, in # of copepods
-zoops3 = mutate(zoops3, Taxa = "Maeotias",
-                Yr_type = factor(Yr_type, levels = c("Critical", "Dry","Below Normal", "Wet"),
-                                 labels = c("Critical", "Dry", "Below\nNormal", "Wet")))
+
 clear3 = left_join(clear2, zoops3) %>%
-  mutate(maxzoo = CopepodsM*MaxClearence*153, meanzoo = CopepodsM*MeanClearence*153,
-         maxzooB = BPUE*MaxClearence*153/1000, meanzooB = BPUE*MeanClearence*153/1000)
+  mutate(maxzoo = CopepodsM*MaxClearence, meanzoo = CopepodsM*MeanClearence,
+         maxzooB = BPUE*MaxClearence/1000, meanzooB = BPUE*MeanClearence/1000)
 
 #I need to convert to biomass of phyto and zooplankton,
 #but I'll start with this.
@@ -581,7 +604,7 @@ ggplot(dplyr::filter(clear3, Taxa == "clams"), aes(x = Yr_type))+
   geom_col(position = "dodge", aes( y = maxchloro), alpha = 0.5)+ 
   theme_bw()+
   scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-  ylab("Micrograms chlorophyll per Year per square meter")+
+  ylab("Micrograms chlorophyll per Day per square meter")+
   xlab("Water Year Type")
 
 #but I'll start with this.
@@ -591,7 +614,7 @@ ggplot(dplyr::filter(clear3, Taxa == "clams"), aes(x = Yr_type))+
   geom_col(position = "dodge", aes( y = maxchloro), alpha = 0.5)+ 
   theme_bw()+
   scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-  ylab("MgC per m3/yr")+
+  ylab("MgC per m3/day")+
   xlab("Water Year Type")
 
 ggplot(dplyr::filter(clear3, Taxa == "Maeotias"), aes(x = Yr_type))+
@@ -600,7 +623,7 @@ ggplot(dplyr::filter(clear3, Taxa == "Maeotias"), aes(x = Yr_type))+
   geom_col(position = "dodge", aes( y = maxzoo), alpha = 0.5)+ 
   theme_bw()+
   scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-  ylab("Copepods consumed per cubic meter per Year")+
+  ylab("Copepods consumed per cubic meter per Day")+
   xlab("Water Year Type")
 
 ggplot(dplyr::filter(clear3, Taxa == "Maeotias"), aes(x = Yr_type))+
@@ -610,24 +633,43 @@ ggplot(dplyr::filter(clear3, Taxa == "Maeotias"), aes(x = Yr_type))+
   theme_bw()+
   scale_fill_brewer(palette = "Dark2", name = "Taxon")+
    scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-  ylab("Biomass of Copepods (mg) consumed per cubic meter per year")+
+  ylab("Biomass of Copepods (mg) consumed per cubic meter per day")+
   xlab("Water Year Type")
 
 
 #see if I can combine the carbon consumption for both taxa
+ann = data.frame(Yr_type = "Critical", Clearance = .25, Letter = "B", Region = "North") %>%
+  mutate(Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay"),
+                         labels =  c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
+
+labelsX = c("Mean Clams", "Max Clams", 
+          expression(paste("Mean", italic(" M. marginata"))),
+          expression(paste("Max", italic(" M. marginata"))))
 
 clear4 = pivot_longer(clear3, cols = c(meanC, maxC, meanzooB, maxzooB), names_to = "parameter",
                       values_to = "CarbonConsumed") %>%
-  mutate(param = str_sub(parameter, 1, 3))
+  mutate(param = str_sub(parameter, 1, 3),
+         parameter = factor(parameter, levels = c("meanC", "maxC", "meanzooB", "maxzooB"),
+                            labels = c("Mean Clams", "Max Clams", 
+                                       "Mean M. marginata",
+                                      "Max M. marginata")),
+                
+         Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay"),
+                         labels =  c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")),
+         Taxa = factor(Taxa, levels = c("clams", "Maeotias"), labels = c("Clams", "M. marginata")))
 
-ggplot(clear4, aes(x = Yr_type, y = CarbonConsumed, fill = Taxa, alpha = param))+
+ggplot(clear4, aes(x = Yr_type, y = CarbonConsumed, fill = parameter, alpha = parameter))+
   geom_col(position = "dodge")+
   facet_wrap(~Region, nrow =1)+
-  scale_alpha_manual(values = c(0.5,1), name = "Abundance Level", labels = c("Max", "Mean"))+
   theme_bw()+
-  scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-ylab("Potential Grazing Impact (mgC/m3/year)")+
-  xlab("Water Year Type")
+  scale_alpha_manual(values = c(1, .3, 1, .4), name = NULL, labels = labelsX)+
+  scale_fill_manual(values = c("springgreen4", "springgreen4", "darkorange2", "darkorange2"), 
+                    name = NULL, labels = labelsX)+
+ylab("Estimated Grazing Impact \n(mgC/m3/day)")+
+  xlab("Water Year Type")+
+  theme(legend.position = "bottom",legend.text.align = 0)+
+  geom_text(data = ann, aes(label = Letter, x = Yr_type, y = Clearance,), inherit.aes = FALSE,
+            size = 12)
 
 ggsave("plots/grazingclamjellies2.tiff", device = "tiff", width = 8, height = 5, units = "in")
 
@@ -635,17 +677,32 @@ ggsave("plots/grazingclamjellies2.tiff", device = "tiff", width = 8, height = 5,
 #make the clearence rate graph match
 clear4.5 = pivot_longer(clear3, cols = c(MeanClearence, MaxClearence), names_to = "parameter",
                       values_to = "Clearance") %>%
-  mutate(param = str_sub(parameter, 1, 3))
+  mutate(param = paste(str_sub(parameter, 1, 3), Taxa),
+         Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay"),
+                         labels =  c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")),
 
-ggplot(clear4.5, aes(x = Yr_type, y = Clearance, fill = Taxa, alpha = param))+
+         parameter2 = factor(param, levels = c("Mea clams", "Max clams", "Mea Maeotias", "Max Maeotias"),
+                   labels = c("Mean Clams", "Max Clams", 
+                              "Mean M. marginata",
+                              "Max M. marginata")))
+
+ann2 = data.frame(Yr_type = "Critical", Clearance = .9, Letter = "A", Region = "North") %>%
+  mutate(Region = factor(Region, levels = c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay"),
+                  labels =  c("North", "SouthCentral", "Confluence", "Suisun Marsh", "Suisun Bay")))
+
+ggplot(clear4.5, aes(x = Yr_type, y = Clearance, fill = parameter2, alpha = parameter2))+
   geom_col(position = "dodge")+
   facet_wrap(~Region, nrow =1)+
-  scale_alpha_manual(values = c(0.5,1), name = "Abundance Level", labels = c("Max", "Mean"))+
   theme_bw()+
-  scale_fill_brewer(palette = "Dark2", name = "Taxon")+
-  ylab("Filtration rate (/day)")+
-  xlab("Water Year Type")
-ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 5, units = "in")
+  scale_alpha_manual(values = c(1, .3, 1, .4), name = NULL, labels = labelsX)+
+  scale_fill_manual(values = c("springgreen4", "springgreen4", "darkorange2", "darkorange2"), 
+                    name = NULL, labels = labelsX)+
+  ylab("Water Column Turnover Rate \n(proportion of water column per day)")+
+  xlab("Water Year Type")+
+  theme(legend.position = "none")+
+  geom_text(data = ann2, aes(label = Letter, x = Yr_type, y = Clearance,), inherit.aes = FALSE,
+            size = 12)
+ggsave("plots/grazingclamjellies.tiff", device = "tiff", width = 8, height = 4, units = "in")
 
 #####################################################
 
