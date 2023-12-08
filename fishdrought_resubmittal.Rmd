@@ -329,7 +329,6 @@ visreg(TFshad1)
 
 
 ```{r Fig3, warn = FALSE }
-
 #final plot for paper - 
 
 #data frame of pairwise comparison results
@@ -361,181 +360,203 @@ LF = ggplot(filter(FishDrought, Metric == "logLFS"),  aes(x = as.factor(DroughtY
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(10,11,12,8, 9), test = t.test, 
+              y_position = c(10,11,12,8, 9, 7), test = t.test, 
               map_signif_level=T)+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab(NULL)+ ylab(NULL)+ ylim(0, 13)+
+  xlab("Drought Length (Years)")+ ylab("log FMWT index")+ ylim(0, 13)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 LF
-  
+```
+
+
+```{r Fig3a, warn = FALSE }
 sh = ggplot(filter(FishDrought, Metric == "logShad"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(9,9.5,10,8, 8.5), test = t.test, 
+              y_position = c(9,9.5,10,8, 8.5, 9), test = t.test, 
               map_signif_level=T)+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab(NULL)+ ylab(NULL)+ ylim(3,11)+
+  xlab("Drought Length (Years)")+ ylab("log FMWT index")+ ylim(3,11)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
-sh  
+sh
+```
 
 
-Srcrr = ggplot(SR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
-  geom_boxplot() +
-  geom_quasirandom()+
-  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
-                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
-              map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
- # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("Return Year")+ ylab(NULL)+ ylim(0,5.5)+
-  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
-
-  Srcrr
+```{r Fig3b, warn = FALSE }
+# Srcrr = ggplot(SR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+#   geom_boxplot() +
+#   geom_quasirandom()+
+#   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+#                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
+#               y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+#               map_signif_level=T)+
+#   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+#  # geom_text(data = pairs, aes(y = Y, label = Group))+
+#   xlab("Return Year")+ ylab("CRR")+ ylim(0,5.5)+
+#   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+# 
+#   Srcrr
   
+    SR = mutate(SR, MetricL = "Spring Run Chinook") %>%
+    filter(!is.na(DroughtYearSalmon))
   Srcrr2 = ggplot(SR,  aes(x = as.factor(DroughtYearSalmon), y = Value, fill = as.factor(DroughtYearSalmon))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+              y_position = c(4,4.5,5,4.2, 3.7, 3.4), test = t.test, 
               map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("Migration Year")+ ylab(NULL)+ ylim(0,5.5)+
+  xlab("Drought Length (Migration Year)")+ ylab("CRR")+ ylim(0,5.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 
   Srcrr2
-  
-  
-  
-Wrcrr = ggplot(WR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
-  geom_boxplot() +
-  geom_quasirandom()+
-      geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
-                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
-              map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
- # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("Return Year")+ ylab(NULL)+ #ylim(0,5.5)+
-  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+```
 
-  Wrcrr
+
+```{r Fig3c, warn = FALSE }
+# Wrcrr = ggplot(WR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+#   geom_boxplot() +
+#   geom_quasirandom()+
+#       geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+#                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
+#               y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+#               map_signif_level=T)+
+#   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+#  # geom_text(data = pairs, aes(y = Y, label = Group))+
+#   xlab("Return Year")+ ylab("CRR")+ #ylim(0,5.5)+
+#   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+# 
+#   Wrcrr
   
+  WR = mutate(WR, MetricL = "Winter Run Chinook") %>%
+    filter(!is.na(DroughtYearSalmon))
   Wrcrr2 = ggplot(WR,  aes(x = as.factor(DroughtYearSalmon), y = Value, fill = as.factor(DroughtYearSalmon))) + 
   geom_boxplot() +
   geom_quasirandom()+
     geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+              y_position = c(4,4.5,5,4.2, 3.7, 3.4), test = t.test, 
               map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("Migration Year")+ ylab(NULL)+ #ylim(0,5.5)+
+  xlab("Drought Length (Migration Year)")+ ylab("CRR")+ #ylim(0,5.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 
   
   Wrcrr2
+```
 
 
-
-  
-
- Frcrr = ggplot(FR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
-  geom_boxplot() +
-  geom_quasirandom()+
-  geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
-                                 c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
-              map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
- # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("return year")+ ylab(NULL)+ ylim(0,5.5)+
-  scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
-
-  Frcrr
-
+```{r Fig3d, warn = FALSE }
+# 
+#  Frcrr = ggplot(FR,  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+#   geom_boxplot() +
+#   geom_quasirandom()+
+#   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
+#                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
+#               y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+#               map_signif_level=T)+
+#   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
+#  # geom_text(data = pairs, aes(y = Y, label = Group))+
+#   xlab("return year")+ ylab(NULL)+ ylim(0,5.5)+
+#   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
+# 
+#   Frcrr
+  FR = mutate(WR, MetricL = "Fall Run Chinook") %>%
+    filter(!is.na(DroughtYearSalmon))
  Frcrr2 = ggplot(FR,  aes(x = as.factor(DroughtYearSalmon), y = Value, fill = as.factor(DroughtYearSalmon))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(4,4.5,5,4.2, 3.7), test = t.test, 
+              y_position = c(4,4.5,5,4.2, 3.7, 3.4), test = t.test, 
               map_signif_level=T)+
-  facet_wrap(Metric~., scales = "free_y")+ theme_bw()+
+  facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab("Migration Year")+ ylab(NULL)+ ylim(0,5.5)+
+  xlab("Drought Length (Migration Year)")+ ylab("CRR")+ ylim(0,5.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)
 
   Frcrr2
-  
-  
-  
+```
+
+
+```{r Fig3d, warn = FALSE }
 ds = ggplot(filter(FishDrought, Metric == "logDS"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "3+")), annotations = "All comparisons NS")+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab(NULL)+ ylab(NULL)+ ylim(0,9)+
+  xlab("Drought Length (Years)")+ ylab("log+1 FMWT index")+ ylim(0,9)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)+
 
   theme(legend.position = NULL)
 
   ds
+```
 
-  sb = ggplot(filter(FishDrought, Metric == "logSB", !is.na(Value)),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
+
+```{r Fig3d, warn = FALSE }
+sb = ggplot(filter(FishDrought, Metric == "logSB", !is.na(Value)),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "1"), c("0", "2"), c("0", "3+"), 
                                  c("1", "2"), c("1", "3+"), c("2", "3+")), 
-              y_position = c(10,11,12,8.5, 9.5), test = t.test, 
+              y_position = c(10,11,12,8.5, 9.5, 8), test = t.test, 
               map_signif_level=T)+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab(NULL)+ ylab(NULL)+ ylim(0,12.5)+
+  xlab("Drought Length (Years)")+ ylab("log FMWT index")+ ylim(0,12.5)+
   scale_fill_brewer(palette = "Dark2", name = NULL, labels = c("0, Wet years", "1, First/only dry year",
-                                                                            "2, Second dry year", "3+ Third or more dry year"))#+
-   # theme(legend.position = "bottom")
+                                                                            "2, Second dry year", "3+ Third or more dry year"))+
+    theme(legend.position = "bottom")
 
   sb
   sb2 = sb +  scale_fill_brewer(palette = "Dark2", guide = NULL)
+```
 
+
+```{r Fig3d, warn = FALSE }
 TFS =  ggplot(filter(FishDrought, Metric == "logTFS"),  aes(x = as.factor(DroughtYear), y = Value, fill = as.factor(DroughtYear))) + 
   geom_boxplot() +
   geom_quasirandom()+
   geom_signif(comparisons = list(c("0", "3+")), annotations = "All comparisons NS")+
   facet_wrap(MetricL~., scales = "free_y")+ theme_bw()+
  # geom_text(data = pairs, aes(y = Y, label = Group))+
-  xlab(NULL)+ ylab(NULL)+ ylim(0,12)+
+  xlab("Drought Length (Years)")+ ylab("log FMWT index")+ ylim(0,12)+
   scale_fill_brewer(palette = "Dark2", name = NULL, guide = NULL)+
 
   theme(legend.position = NULL)
 
   TFS
-    
+```
+
+
+```{r Fig3d, warn = FALSE }
 #print just the legend
 legend <- cowplot::get_legend(sb)
 
-plots = grid.arrange(ds, LF, sh,TFS, sb2, Wrcrr,Frcrr, Srcrr, legend,  
-                     nrow =5, ncol = 2,heights = c(2,2,2,2, .5))
+plots = grid.arrange(ds, LF, sh,TFS, sb2, Wrcrr2,Frcrr2, Srcrr2, legend,  
+                     heights = c(2,2,2,2,.5),
+                     layout_matrix = rbind(c(1, 2), c(3,4), c(5,6), c(7,8), c(9,9)))
 
 plotsnosalmon = grid.arrange(ds, LF, sh,TFS, sb2, legend,  
                      nrow =4, ncol = 2,heights = c(2,2,2,2))
   
 ####THIS IS FIGURE 3
-ggsave(plot = plotsnosalmon,"plots/FishDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
+ggsave(plot = plots,"plots/FishDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
 
 
 #now do just the salmon
 
-salmon = grid.arrange(Wrcrr,Wrcrr2,Frcrr,Frcrr2,  Srcrr, Srcrr2,legend,
-                     nrow =4, ncol = 2,heights = c(2,2,2, .5))
+salmon = grid.arrange(Wrcrr2,Frcrr2,  Srcrr2,legend,
+                     nrow =2, ncol = 2,heights = c(2,2))
 
   
 ggsave(plot = salmon,"plots/SalmonDrought.tiff", device = "tiff", width = 8, height = 12, units = "in")
